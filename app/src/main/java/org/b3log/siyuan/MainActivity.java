@@ -1,8 +1,12 @@
 package org.b3log.siyuan;
 
 import android.content.res.AssetManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,6 +16,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -22,7 +27,8 @@ import androidk.Androidk;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView mTextView;
+    private TextView textView;
+    private WebView webView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,8 +40,39 @@ public class MainActivity extends AppCompatActivity {
         new File(siyuan).mkdirs();
         copyAssetFolder(getAssets(), "app", siyuan + "/app");
 
-        mTextView = (TextView) findViewById(R.id.hello);
-        mTextView.setText(Androidk.startKernel(siyuan) + "\nhttp://127.0.0.1:6806 for local\n http://" + getIpAddressString() + ":6806 for remote");
+        textView = (TextView) findViewById(R.id.hello);
+        textView.setText(Androidk.startKernel(siyuan) + "\nhttp://127.0.0.1:6806 for local\n http://" + getIpAddressString() + ":6806 for remote");
+
+        webView = (WebView) findViewById(R.id.wv);
+        webView.setWebViewClient(new WebViewClient());
+        WebSettings ws = webView.getSettings();
+        ws.setJavaScriptEnabled(true);
+        ws.setAllowFileAccess(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR) {
+            try {
+                Method m1 = WebSettings.class.getMethod("setDomStorageEnabled", new Class[]{Boolean.TYPE});
+                m1.invoke(ws, Boolean.TRUE);
+
+                Method m2 = WebSettings.class.getMethod("setDatabaseEnabled", new Class[]{Boolean.TYPE});
+                m2.invoke(ws, Boolean.TRUE);
+
+                Method m3 = WebSettings.class.getMethod("setDatabasePath", new Class[]{String.class});
+                m3.invoke(ws, "/data/data/" + getPackageName() + "/databases/");
+
+                Method m4 = WebSettings.class.getMethod("setAppCacheMaxSize", new Class[]{Long.TYPE});
+                m4.invoke(ws, 1024 * 1024 * 8);
+
+                Method m5 = WebSettings.class.getMethod("setAppCachePath", new Class[]{String.class});
+                m5.invoke(ws, "/data/data/" + getPackageName() + "/cache/");
+
+                Method m6 = WebSettings.class.getMethod("setAppCacheEnabled", new Class[]{Boolean.TYPE});
+                m6.invoke(ws, Boolean.TRUE);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        webView.loadUrl("http://127.0.0.1:6806");
     }
 
     private static boolean copyAssetFolder(AssetManager assetManager,
