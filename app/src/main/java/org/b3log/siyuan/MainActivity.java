@@ -2,6 +2,7 @@ package org.b3log.siyuan;
 
 import android.content.res.AssetManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,14 +24,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final String siyuan = "/sdcard/siyuan";
+        final String siyuan = Environment.getExternalStorageDirectory() + "/siyuan";
         new File(siyuan).mkdirs();
-        copyAssetFolder(getAssets(), "app", "/sdcard/siyuan/app");
+        copyAssetFolder(getAssets(), "app", siyuan + "/app");
 
         mTextView = (TextView) findViewById(R.id.hello);
-        mTextView.setText(Androidk.startKernel());
+        mTextView.setText(Androidk.startKernel(siyuan));
     }
-
 
     private static boolean copyAssetFolder(AssetManager assetManager,
                                            String fromAssetPath, String toPath) {
@@ -40,13 +40,9 @@ public class MainActivity extends AppCompatActivity {
             boolean res = true;
             for (String file : files)
                 if (file.contains("."))
-                    res &= copyAsset(assetManager,
-                            fromAssetPath + "/" + file,
-                            toPath + "/" + file);
+                    res &= copyAsset(assetManager, fromAssetPath + "/" + file, toPath + "/" + file);
                 else
-                    res &= copyAssetFolder(assetManager,
-                            fromAssetPath + "/" + file,
-                            toPath + "/" + file);
+                    res &= copyAssetFolder(assetManager, fromAssetPath + "/" + file, toPath + "/" + file);
             return res;
         } catch (Exception e) {
             e.printStackTrace();
