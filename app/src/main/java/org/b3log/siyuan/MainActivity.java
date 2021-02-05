@@ -12,6 +12,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
 
 import androidk.Androidk;
 
@@ -24,12 +29,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         final String siyuan = Environment.getExternalStorageDirectory() + "/siyuan";
         new File(siyuan).mkdirs();
         copyAssetFolder(getAssets(), "app", siyuan + "/app");
 
         mTextView = (TextView) findViewById(R.id.hello);
-        mTextView.setText(Androidk.startKernel(siyuan));
+        mTextView.setText(Androidk.startKernel(siyuan) + "\nhttp://127.0.0.1:6806 for local\n http://" + getIpAddressString() + ":6806 for remote");
     }
 
     private static boolean copyAssetFolder(AssetManager assetManager,
@@ -77,4 +83,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public static String getIpAddressString() {
+        try {
+            for (Enumeration<NetworkInterface> enNetI = NetworkInterface
+                    .getNetworkInterfaces(); enNetI.hasMoreElements(); ) {
+                NetworkInterface netI = enNetI.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = netI
+                        .getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (inetAddress instanceof Inet4Address && !inetAddress.isLoopbackAddress()) {
+                        return inetAddress.getHostAddress();
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+        return "127.0.0.1";
+    }
 }
