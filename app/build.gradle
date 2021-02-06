@@ -3,13 +3,13 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.3"
+    compileSdkVersion 28
+    buildToolsVersion "28.0.6"
 
     defaultConfig {
         applicationId "org.b3log.siyuan"
         minSdkVersion 22
-        targetSdkVersion 30
+        targetSdkVersion 28
         versionCode 1
         versionName "0.9.5"
 

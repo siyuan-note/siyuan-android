@@ -42,27 +42,27 @@ public class MainActivity extends AppCompatActivity {
 
         Androidk.startKernel(siyuan);
 
-        textView = (TextView) findViewById(R.id.hello);
-        textView.setText("http://127.0.0.1:6806 for local\nhttp://" + getIpAddressString() + ":6806 for remote");
+        textView = findViewById(R.id.hello);
+        textView.setText("http://" + getIpAddressString() + ":6806");
 
-        webView = (WebView) findViewById(R.id.wv);
+        webView = findViewById(R.id.wv);
         webView.setWebViewClient(new WebViewClient());
         WebSettings ws = webView.getSettings();
         ws.setJavaScriptEnabled(true);
         ws.setAllowFileAccess(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR) {
             try {
-                Method m1 = WebSettings.class.getMethod("setDomStorageEnabled", new Class[]{Boolean.TYPE});
+                Method m1 = WebSettings.class.getMethod("setDomStorageEnabled", Boolean.TYPE);
                 m1.invoke(ws, Boolean.TRUE);
-                Method m2 = WebSettings.class.getMethod("setDatabaseEnabled", new Class[]{Boolean.TYPE});
+                Method m2 = WebSettings.class.getMethod("setDatabaseEnabled", Boolean.TYPE);
                 m2.invoke(ws, Boolean.TRUE);
-                Method m3 = WebSettings.class.getMethod("setDatabasePath", new Class[]{String.class});
+                Method m3 = WebSettings.class.getMethod("setDatabasePath", String.class);
                 m3.invoke(ws, "/data/data/" + getPackageName() + "/databases/");
-                Method m4 = WebSettings.class.getMethod("setAppCacheMaxSize", new Class[]{Long.TYPE});
+                Method m4 = WebSettings.class.getMethod("setAppCacheMaxSize", Long.TYPE);
                 m4.invoke(ws, 1024 * 1024 * 8);
-                Method m5 = WebSettings.class.getMethod("setAppCachePath", new Class[]{String.class});
+                Method m5 = WebSettings.class.getMethod("setAppCachePath", String.class);
                 m5.invoke(ws, "/data/data/" + getPackageName() + "/cache/");
-                Method m6 = WebSettings.class.getMethod("setAppCacheEnabled", new Class[]{Boolean.TYPE});
+                Method m6 = WebSettings.class.getMethod("setAppCacheEnabled", Boolean.TYPE);
                 m6.invoke(ws, Boolean.TRUE);
             } catch (Exception e) {
                 e.printStackTrace();
