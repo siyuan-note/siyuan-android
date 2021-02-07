@@ -38,8 +38,6 @@ public class MainActivity extends AppCompatActivity {
 
         Androidk.startKernel(siyuan);
 
-        final String ip = Utils.getIpAddressString();
-
         webView = findViewById(R.id.wv);
         webView.setWebViewClient(new WebViewClient());
         WebSettings ws = webView.getSettings();
