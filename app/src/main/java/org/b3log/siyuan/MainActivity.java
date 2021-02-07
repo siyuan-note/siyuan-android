@@ -46,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
         WebSettings ws = webView.getSettings();
         ws.setJavaScriptEnabled(true);
         ws.setDomStorageEnabled(true);
+        ws.setAppCacheEnabled(false);
+        ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webView.loadUrl("http://127.0.0.1:6806");
     }
 
