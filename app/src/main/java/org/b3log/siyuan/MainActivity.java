@@ -36,11 +36,13 @@ public class MainActivity extends AppCompatActivity {
 
         String siyuan = Environment.getExternalStorageDirectory() + "/siyuan";
         new File(siyuan).mkdirs();
+        new File(siyuan + "/data").mkdir();
 
         try {
             FileUtils.deleteDirectory(new File(siyuan + "/app"));
         } catch (final Exception e) {
             e.printStackTrace();
+            System.exit(-1);
         }
 
         copyAssetFolder(getAssets(), "app", siyuan + "/app");
@@ -80,11 +82,13 @@ public class MainActivity extends AppCompatActivity {
             String[] files = assetManager.list(fromAssetPath);
             new File(toPath).mkdirs();
             boolean res = true;
-            for (String file : files)
-                if (file.contains("."))
+            for (String file : files) {
+                final String[] subFiles = assetManager.list(fromAssetPath + "/" + file);
+                if (1 > subFiles.length)
                     res &= copyAsset(assetManager, fromAssetPath + "/" + file, toPath + "/" + file);
                 else
                     res &= copyAssetFolder(assetManager, fromAssetPath + "/" + file, toPath + "/" + file);
+            }
             return res;
         } catch (Exception e) {
             e.printStackTrace();
