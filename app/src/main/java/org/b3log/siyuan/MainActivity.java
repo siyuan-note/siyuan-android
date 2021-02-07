@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
                     // granted
                 } else {
-                    onDestroy();
+                   System.exit(-1);
                 }
                 return;
             }
