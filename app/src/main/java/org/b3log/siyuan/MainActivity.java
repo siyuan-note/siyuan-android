@@ -7,9 +7,10 @@ import android.os.Environment;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,8 +27,6 @@ import java.util.Enumeration;
 import androidk.Androidk;
 
 public class MainActivity extends AppCompatActivity {
-
-    private TextView textView;
     private WebView webView;
 
     @Override
@@ -37,13 +36,16 @@ public class MainActivity extends AppCompatActivity {
 
         String siyuan = Environment.getExternalStorageDirectory() + "/siyuan";
         new File(siyuan).mkdirs();
-        new File(siyuan + "/app").delete();
+
+        try {
+            FileUtils.deleteDirectory(new File(siyuan + "/app"));
+        } catch (final Exception e) {
+            e.printStackTrace();
+        }
+
         copyAssetFolder(getAssets(), "app", siyuan + "/app");
 
         Androidk.startKernel(siyuan);
-
-        textView = findViewById(R.id.hello);
-        textView.setText("http://" + getIpAddressString() + ":6806");
 
         webView = findViewById(R.id.wv);
         webView.setWebViewClient(new WebViewClient());
