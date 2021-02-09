@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.webkit.WebSettings;
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             FileUtils.deleteDirectory(new File(siyuan + "/app"));
         } catch (final Exception e) {
-            e.printStackTrace();
+            Log.wtf("", "Delete dir [" + siyuan + "/app] failed, exit application", e);
             System.exit(-1);
         }
 
@@ -52,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
 
         webView = findViewById(R.id.wv);
         webView.setWebViewClient(new WebViewClient());
+        Repo repo = new Repo(this);
+        webView.addJavascriptInterface(repo, "Repo");
         WebSettings ws = webView.getSettings();
         ws.setJavaScriptEnabled(true);
         ws.setDomStorageEnabled(true);
@@ -64,14 +67,12 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
             case 1: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // granted
                 } else {
-                   System.exit(-1);
+                    Log.wtf("", "Request permission failed, exit application");
+                    System.exit(-1);
                 }
-                return;
             }
         }
     }

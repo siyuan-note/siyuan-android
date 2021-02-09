@@ -1,6 +1,7 @@
 package org.b3log.siyuan;
 
 import android.content.res.AssetManager;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,28 +16,27 @@ import java.util.Enumeration;
 
 public final class Utils {
 
-    public static boolean copyAssetFolder(AssetManager assetManager,
-                                           String fromAssetPath, String toPath) {
+    public static boolean copyAssetFolder(final AssetManager assetManager, final String fromAssetPath, final String toPath) {
         try {
-            String[] files = assetManager.list(fromAssetPath);
+            final String[] files = assetManager.list(fromAssetPath);
             new File(toPath).mkdirs();
             boolean res = true;
-            for (String file : files) {
+            for (final String file : files) {
                 final String[] subFiles = assetManager.list(fromAssetPath + "/" + file);
-                if (1 > subFiles.length)
+                if (1 > subFiles.length) {
                     res &= copyAsset(assetManager, fromAssetPath + "/" + file, toPath + "/" + file);
-                else
+                } else {
                     res &= copyAssetFolder(assetManager, fromAssetPath + "/" + file, toPath + "/" + file);
+                }
             }
             return res;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (final Exception e) {
+            Log.e("", "copy asset folder [from=" + fromAssetPath + ", to=" + toPath + "] failed", e);
             return false;
         }
     }
 
-    private static boolean copyAsset(AssetManager assetManager,
-                                     String fromAssetPath, String toPath) {
+    private static boolean copyAsset(final AssetManager assetManager, final String fromAssetPath, final String toPath) {
         InputStream in;
         OutputStream out;
         try {
@@ -48,13 +48,13 @@ public final class Utils {
             out.flush();
             out.close();
             return true;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (final Exception e) {
+            Log.e("", "copy asset [from=" + fromAssetPath + ", to=" + toPath + "] failed", e);
             return false;
         }
     }
 
-    private static void copyFile(InputStream in, OutputStream out) throws IOException {
+    private static void copyFile(final InputStream in, final OutputStream out) throws IOException {
         byte[] buffer = new byte[1024];
         int read;
         while ((read = in.read(buffer)) != -1) {
@@ -64,19 +64,17 @@ public final class Utils {
 
     public static String getIpAddressString() {
         try {
-            for (Enumeration<NetworkInterface> enNetI = NetworkInterface
-                    .getNetworkInterfaces(); enNetI.hasMoreElements(); ) {
-                NetworkInterface netI = enNetI.nextElement();
-                for (Enumeration<InetAddress> enumIpAddr = netI
-                        .getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
-                    InetAddress inetAddress = enumIpAddr.nextElement();
+            for (final Enumeration<NetworkInterface> enNetI = NetworkInterface.getNetworkInterfaces(); enNetI.hasMoreElements(); ) {
+                final NetworkInterface netI = enNetI.nextElement();
+                for (final Enumeration<InetAddress> enumIpAddr = netI.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
+                    final InetAddress inetAddress = enumIpAddr.nextElement();
                     if (inetAddress instanceof Inet4Address && !inetAddress.isLoopbackAddress()) {
                         return inetAddress.getHostAddress();
                     }
                 }
             }
-        } catch (SocketException e) {
-            e.printStackTrace();
+        } catch (final SocketException e) {
+            Log.e("", "Get IP failed, returns 127.0.0.1", e);
         }
         return "127.0.0.1";
     }
