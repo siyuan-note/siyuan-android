@@ -18,7 +18,6 @@ import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.RefNotAdvertisedException;
 import org.eclipse.jgit.transport.JschConfigSessionFactory;
 import org.eclipse.jgit.transport.OpenSshConfig;
-import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.SshTransport;
 import org.eclipse.jgit.util.FS;
@@ -39,7 +38,7 @@ public final class Repo {
 
     @JavascriptInterface
     public void sync() {
-        Toast.makeText(activity, Androidk.language(22), Toast.LENGTH_SHORT).show();
+        ((Runnable) () -> Toast.makeText(activity, Androidk.language(22), Toast.LENGTH_SHORT).show()).run();
 
         String keyFile = null;
         try {
@@ -72,7 +71,7 @@ public final class Repo {
             final WebView webView = ((MainActivity) activity).webView;
             webView.post(() -> webView.reload());
         } catch (final Exception e) {
-            Toast.makeText(activity, e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG).show();
         } finally {
             if (!StringUtils.isEmptyOrNull(keyFile)) {
                 FileUtils.deleteQuietly(new File(keyFile));
@@ -129,9 +128,6 @@ public final class Repo {
             sshTransport.setSshSessionFactory(jschConfigSessionFactory);
         });
 
-        final Iterable<PushResult> pushResults = pushCommand.call();
-        for (final PushResult result : pushResults) {
-            Log.i("", result.toString());
-        }
+        pushCommand.call();
     }
 }
