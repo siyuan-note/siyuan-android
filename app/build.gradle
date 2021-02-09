@@ -32,6 +32,17 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'plugin.properties'
+    }
+
 }
 
 dependencies {
@@ -46,5 +57,4 @@ dependencies {
 
     implementation('org.eclipse.jgit:org.eclipse.jgit:5.10.0.202012080955-r')
     implementation('org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:5.10.0.202012080955-r')
-    implementation('org.json:json:20201115')
 }

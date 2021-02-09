@@ -73,6 +73,7 @@ public final class Repo {
         final SshSessionFactory sshSessionFactory = new JschConfigSessionFactory() {
             @Override
             protected void configure(final OpenSshConfig.Host host, final Session session) {
+                session.setConfig("StrictHostKeyChecking", "no");
             }
 
             @Override
