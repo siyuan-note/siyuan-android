@@ -12,8 +12,6 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName "0.9.5"
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -33,6 +31,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
 }
 
 dependencies {
@@ -46,5 +45,6 @@ dependencies {
     implementation('commons-io:commons-io:2.4')
 
     implementation('org.eclipse.jgit:org.eclipse.jgit:5.10.0.202012080955-r')
+    implementation('org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:5.10.0.202012080955-r')
     implementation('org.json:json:20201115')
 }
