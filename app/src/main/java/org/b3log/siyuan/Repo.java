@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Environment;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebView;
 import android.widget.Toast;
 
 import com.jcraft.jsch.JSch;
@@ -13,8 +14,8 @@ import com.jcraft.jsch.Session;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullCommand;
-import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
+import org.eclipse.jgit.api.errors.RefNotAdvertisedException;
 import org.eclipse.jgit.transport.JschConfigSessionFactory;
 import org.eclipse.jgit.transport.OpenSshConfig;
 import org.eclipse.jgit.transport.PushResult;
@@ -32,13 +33,14 @@ import androidk.Androidk;
 public final class Repo {
     private Activity activity;
 
-    public Repo(Activity activity) {
+    public Repo(final Activity activity) {
         this.activity = activity;
     }
 
     @JavascriptInterface
     public void sync() {
         Toast.makeText(activity, Androidk.language(22), Toast.LENGTH_SHORT).show();
+
         String keyFile = null;
         try {
             Androidk.prepareSync();
@@ -56,7 +58,8 @@ public final class Repo {
 
                 final String localPath = box.optString("path");
                 final Git repo = Git.open(new File(localPath));
-
+                repo.add().addFilepattern(".").call();
+                repo.commit().setAll(true).setMessage("android ").call();
                 pull(repo, keyFile);
                 Androidk.reloadBox(localPath);
                 push(repo, keyFile);
@@ -65,6 +68,9 @@ public final class Repo {
             }
 
             Androidk.reloadRecentBlocks();
+
+            final WebView webView = ((MainActivity) activity).webView;
+            webView.post(() -> webView.reload());
         } catch (final Exception e) {
             Toast.makeText(activity, e.getMessage(), Toast.LENGTH_SHORT).show();
         } finally {
@@ -94,8 +100,12 @@ public final class Repo {
             final SshTransport sshTransport = (SshTransport) transport;
             sshTransport.setSshSessionFactory(jschConfigSessionFactory);
         });
-        final PullResult pullResult = pullCommand.call();
-        Log.i("", pullResult.toString());
+
+        try {
+            pullCommand.call();
+        } catch (final RefNotAdvertisedException e) {
+            // 忽略初次空仓库 pull
+        }
     }
 
     private static void push(final Git repo, final String keyFile) throws Exception {

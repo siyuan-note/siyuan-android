@@ -21,7 +21,7 @@ import java.io.File;
 import androidk.Androidk;
 
 public class MainActivity extends AppCompatActivity {
-    private WebView webView;
+    WebView webView;
 
     private int requestCode;
     private int grantResults[];
