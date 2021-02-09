@@ -14,8 +14,10 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
+import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.transport.JschConfigSessionFactory;
 import org.eclipse.jgit.transport.OpenSshConfig;
+import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.SshTransport;
 import org.eclipse.jgit.util.FS;
@@ -45,6 +47,8 @@ public final class Repo {
             final JSONArray boxes = conf.optJSONArray("boxes");
 
             final String keyFile = Androidk.genTempKeyFile();
+            KEY_FILE = keyFile;
+
             for (int i = 0; i < boxes.length(); i++) {
                 final JSONObject box = boxes.getJSONObject(i);
                 if (box.optBoolean("isRemote")) {
@@ -52,12 +56,11 @@ public final class Repo {
                 }
 
                 final String localPath = box.optString("path");
+                final Git repo = Git.open(new File(localPath));
 
-                pull(localPath, keyFile);
-
+                pull(repo);
                 Androidk.reloadBox(localPath);
-
-                // push
+                push(repo);
 
                 Log.i("", "synced box [" + box.optString("name") + "]");
             }
@@ -69,29 +72,42 @@ public final class Repo {
         }
     }
 
-    private static void pull(final String localPath, final String keyFile) throws Exception {
-        final SshSessionFactory sshSessionFactory = new JschConfigSessionFactory() {
-            @Override
-            protected void configure(final OpenSshConfig.Host host, final Session session) {
-                session.setConfig("StrictHostKeyChecking", "no");
-            }
-
-            @Override
-            protected JSch createDefaultJSch(final FS fs) throws JSchException {
-                final JSch defaultJSch = super.createDefaultJSch(fs);
-                defaultJSch.addIdentity(keyFile);
-                return defaultJSch;
-            }
-        };
-
-        final Git repo = Git.open(new File(localPath));
+    private static void pull(final Git repo) throws Exception {
         final PullCommand pullCommand = repo.pull();
         pullCommand.setTransportConfigCallback(transport -> {
             SshTransport sshTransport = (SshTransport) transport;
-            sshTransport.setSshSessionFactory(sshSessionFactory);
+            sshTransport.setSshSessionFactory(JSCH_CONFIG_SESSION_FACTORY);
         });
         final PullResult pullResult = pullCommand.call();
         Log.i("", pullResult.toString());
     }
 
+    private static void push(final Git repo) throws Exception {
+        final PushCommand pushCommand = repo.push();
+        pushCommand.setTransportConfigCallback(transport -> {
+            SshTransport sshTransport = (SshTransport) transport;
+            sshTransport.setSshSessionFactory(JSCH_CONFIG_SESSION_FACTORY);
+        });
+
+        final Iterable<PushResult> pushResults = pushCommand.call();
+        for (final PushResult result : pushResults) {
+            Log.i("", result.toString());
+        }
+    }
+
+    private static String KEY_FILE;
+
+    private static final SshSessionFactory JSCH_CONFIG_SESSION_FACTORY = new JschConfigSessionFactory() {
+        @Override
+        protected void configure(final OpenSshConfig.Host host, final Session session) {
+            session.setConfig("StrictHostKeyChecking", "no");
+        }
+
+        @Override
+        protected JSch createDefaultJSch(final FS fs) throws JSchException {
+            final JSch defaultJSch = super.createDefaultJSch(fs);
+            defaultJSch.addIdentity(KEY_FILE);
+            return defaultJSch;
+        }
+    };
 }
