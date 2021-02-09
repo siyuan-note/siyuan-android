@@ -38,8 +38,6 @@ public final class Repo {
 
     @JavascriptInterface
     public void sync() {
-        Toast.makeText(activity, Androidk.language(22), Toast.LENGTH_SHORT).show();
-
         String keyFile = null;
         try {
             Androidk.prepareSync();
