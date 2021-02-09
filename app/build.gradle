@@ -42,7 +42,6 @@ android {
         exclude 'META-INF/notice.txt'
         exclude 'plugin.properties'
     }
-
 }
 
 dependencies {
