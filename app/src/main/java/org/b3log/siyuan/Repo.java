@@ -38,7 +38,7 @@ public final class Repo {
 
     @JavascriptInterface
     public void sync() {
-        ((Runnable) () -> Toast.makeText(activity, Androidk.language(22), Toast.LENGTH_SHORT).show()).run();
+        Toast.makeText(activity, Androidk.language(22), Toast.LENGTH_SHORT).show();
 
         String keyFile = null;
         try {
@@ -57,8 +57,7 @@ public final class Repo {
 
                 final String localPath = box.optString("path");
                 final Git repo = Git.open(new File(localPath));
-                repo.add().addFilepattern(".").call();
-                repo.commit().setAll(true).setMessage("android ").call();
+                commit(repo);
                 pull(repo, keyFile);
                 Androidk.reloadBox(localPath);
                 push(repo, keyFile);
@@ -77,6 +76,11 @@ public final class Repo {
                 FileUtils.deleteQuietly(new File(keyFile));
             }
         }
+    }
+
+    private static void commit(final Git repo) throws Exception {
+        repo.add().addFilepattern(".").call();
+        repo.commit().setAll(true).setMessage("android ").call();
     }
 
     private static void pull(final Git repo, final String keyFile) throws Exception {
