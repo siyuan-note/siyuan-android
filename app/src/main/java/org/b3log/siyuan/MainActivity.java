@@ -1,7 +1,9 @@
 package org.b3log.siyuan;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -52,7 +54,18 @@ public class MainActivity extends AppCompatActivity {
         Androidk.startKernel(siyuan);
 
         webView = findViewById(R.id.wv);
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(final WebView view, final String url) {
+                if (url.contains("127.0.0.1")) {
+                    view.loadUrl(url);
+                } else {
+                    final Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    startActivity(i);
+                }
+                return true;
+            }
+        });
         final Repo repo = new Repo(this);
         webView.addJavascriptInterface(repo, "Repo");
         final WebSettings ws = webView.getSettings();
