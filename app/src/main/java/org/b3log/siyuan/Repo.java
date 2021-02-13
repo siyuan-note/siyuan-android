@@ -46,7 +46,9 @@ public final class Repo {
             final String confStr = FileUtils.readFileToString(new File(siyuan + "/conf/conf.json"));
             final JSONObject conf = new JSONObject(confStr);
             final JSONArray boxes = conf.optJSONArray("boxes");
-            keyFile = Androidk.genTempKeyFile();
+
+            final File dataDirectory = activity.getCacheDir();
+            keyFile = Androidk.genTempKeyFile(dataDirectory.getAbsolutePath());
             for (int i = 0; i < boxes.length(); i++) {
                 final JSONObject box = boxes.getJSONObject(i);
                 if (box.optBoolean("isRemote")) {
