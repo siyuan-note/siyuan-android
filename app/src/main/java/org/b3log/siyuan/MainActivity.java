@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, requestCode);
         onRequestPermissionsResult(requestCode, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, grantResults);
 
-        final String siyuan = Utils.getSiYuanDir();
+        final String siyuan = Utils.getSiYuanDir(this);
         new File(siyuan).mkdirs();
         new File(siyuan + "/data").mkdir();
 

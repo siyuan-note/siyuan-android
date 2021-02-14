@@ -1,7 +1,7 @@
 package org.b3log.siyuan;
 
+import android.app.Activity;
 import android.content.res.AssetManager;
-import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
@@ -17,9 +17,8 @@ import java.util.Enumeration;
 
 public final class Utils {
 
-    public static String getSiYuanDir() {
-//        final String ret = Environment.getExternalStorageDirectory() + "/siyuan";
-        final String ret = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) + "/siyuan";
+    public static String getSiYuanDir(final Activity activity) {
+        final String ret = activity.getDataDir().getAbsolutePath();
         return ret;
     }
 

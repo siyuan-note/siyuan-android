@@ -1,7 +1,6 @@
 package org.b3log.siyuan;
 
 import android.app.Activity;
-import android.os.Environment;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
@@ -42,7 +41,7 @@ public final class Repo {
         try {
             Androidk.prepareSync();
 
-            final String siyuan = Utils.getSiYuanDir();
+            final String siyuan = Utils.getSiYuanDir(activity);
             final String confStr = FileUtils.readFileToString(new File(siyuan + "/conf/conf.json"));
             final JSONObject conf = new JSONObject(confStr);
             final JSONArray boxes = conf.optJSONArray("boxes");
