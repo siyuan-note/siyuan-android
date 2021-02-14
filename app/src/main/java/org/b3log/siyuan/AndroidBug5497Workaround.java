@@ -31,6 +31,7 @@ public class AndroidBug5497Workaround {
             } else {
                 frameLayoutParams.height = usableHeightSansKeyboard;
             }
+            frameLayoutParams.height += 12;
             mChildOfContent.requestLayout();
             usableHeightPrevious = usableHeightNow;
         }

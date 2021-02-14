@@ -1,8 +1,6 @@
 package org.b3log.siyuan;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,7 +11,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 
 import org.apache.commons.io.FileUtils;
 
@@ -24,9 +21,6 @@ import androidk.Androidk;
 public class MainActivity extends AppCompatActivity {
     WebView webView;
 
-    private int requestCode;
-    private int grantResults[];
-
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,9 +28,6 @@ public class MainActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
         AndroidBug5497Workaround.assistActivity(this);
-
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, requestCode);
-        onRequestPermissionsResult(requestCode, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, grantResults);
 
         final String siyuan = Utils.getSiYuanDir(this);
         new File(siyuan).mkdirs();
@@ -76,20 +67,6 @@ public class MainActivity extends AppCompatActivity {
         ws.setAppCacheEnabled(false);
         ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webView.loadUrl("http://127.0.0.1:6806");
-    }
-
-    @Override
-    public void onRequestPermissionsResult(final int requestCode, final String permissions[], final int[] grantResults) {
-        switch (requestCode) {
-            case 1: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // granted
-                } else {
-                    Log.wtf("", "Request permission failed, exit application");
-                    System.exit(-1);
-                }
-            }
-        }
     }
 
     @Override
