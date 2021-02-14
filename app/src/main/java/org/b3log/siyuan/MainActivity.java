@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.WindowManager;
@@ -39,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, requestCode);
         onRequestPermissionsResult(requestCode, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, grantResults);
 
-        final String siyuan = Environment.getExternalStorageDirectory() + "/siyuan";
+        final String siyuan = Utils.getSiYuanDir();
         new File(siyuan).mkdirs();
         new File(siyuan + "/data").mkdir();
 

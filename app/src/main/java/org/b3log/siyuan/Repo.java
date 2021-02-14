@@ -42,7 +42,7 @@ public final class Repo {
         try {
             Androidk.prepareSync();
 
-            final String siyuan = Environment.getExternalStorageDirectory() + "/siyuan";
+            final String siyuan = Utils.getSiYuanDir();
             final String confStr = FileUtils.readFileToString(new File(siyuan + "/conf/conf.json"));
             final JSONObject conf = new JSONObject(confStr);
             final JSONArray boxes = conf.optJSONArray("boxes");
