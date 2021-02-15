@@ -26,6 +26,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         getSupportActionBar().hide();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//        getWindow().setNavigationBarContrastEnforced(false);
+//        getWindow().setNavigationBarColor(Color.TRANSPARENT);
+//        getWindow().setNavigationBarDividerColor(Color.TRANSPARENT);
+
         setContentView(R.layout.activity_main);
         AndroidBug5497Workaround.assistActivity(this);
 
@@ -59,8 +63,8 @@ public class MainActivity extends AppCompatActivity {
         });
         final Repo repo = new Repo(this);
         webView.addJavascriptInterface(repo, "Repo");
-        final Link link = new Link(this);
-        webView.addJavascriptInterface(link, "Link");
+        final JSAndroid JSAndroid = new JSAndroid(this);
+        webView.addJavascriptInterface(JSAndroid, "JSAndroid");
         final WebSettings ws = webView.getSettings();
         ws.setJavaScriptEnabled(true);
         ws.setDomStorageEnabled(true);
