@@ -18,8 +18,7 @@ import java.util.Enumeration;
 public final class Utils {
 
     public static String getSiYuanDir(final Activity activity) {
-        final String ret = activity.getDataDir().getAbsolutePath();
-        return ret;
+        return activity.getExternalFilesDir("siyuan").getAbsolutePath();
     }
 
     public static boolean copyAssetFolder(final AssetManager assetManager, final String fromAssetPath, final String toPath) {
