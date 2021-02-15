@@ -7,6 +7,8 @@ import android.net.Uri;
 import android.os.StrictMode;
 import android.webkit.JavascriptInterface;
 
+import org.eclipse.jgit.util.StringUtils;
+
 import java.lang.reflect.Method;
 
 public final class JSAndroid {
@@ -31,6 +33,11 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void setNavigationBarColor(final String color) {
-        activity.getWindow().setNavigationBarColor(Color.parseColor(color));
+        activity.runOnUiThread(() -> {
+            if (StringUtils.isEmptyOrNull(color)) {
+                return;
+            }
+            activity.getWindow().setNavigationBarColor(Color.parseColor(color));
+        });
     }
 }

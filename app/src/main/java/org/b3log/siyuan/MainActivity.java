@@ -1,6 +1,7 @@
 package org.b3log.siyuan;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -26,9 +27,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         getSupportActionBar().hide();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-//        getWindow().setNavigationBarContrastEnforced(false);
-//        getWindow().setNavigationBarColor(Color.TRANSPARENT);
-//        getWindow().setNavigationBarDividerColor(Color.TRANSPARENT);
+        getWindow().setNavigationBarDividerColor(Color.TRANSPARENT);
 
         setContentView(R.layout.activity_main);
         AndroidBug5497Workaround.assistActivity(this);
