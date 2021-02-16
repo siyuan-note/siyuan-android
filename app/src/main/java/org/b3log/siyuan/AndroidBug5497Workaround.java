@@ -37,8 +37,8 @@ public class AndroidBug5497Workaround {
                 frameLayoutParams.height = usableHeightSansKeyboard;
             }
 
-            final int height = getNavigationBarHeight();
-            frameLayoutParams.height -= height;
+//            final int height = getNavigationBarHeight();
+//            frameLayoutParams.height -= height;
             mChildOfContent.requestLayout();
             usableHeightPrevious = usableHeightNow;
         }

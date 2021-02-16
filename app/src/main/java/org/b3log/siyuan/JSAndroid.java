@@ -2,12 +2,9 @@ package org.b3log.siyuan;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.StrictMode;
 import android.webkit.JavascriptInterface;
-
-import org.eclipse.jgit.util.StringUtils;
 
 import java.lang.reflect.Method;
 
@@ -29,15 +26,5 @@ public final class JSAndroid {
 
         final Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         activity.startActivity(i);
-    }
-
-    @JavascriptInterface
-    public void setNavigationBarColor(final String color) {
-        activity.runOnUiThread(() -> {
-            if (StringUtils.isEmptyOrNull(color)) {
-                return;
-            }
-            activity.getWindow().setNavigationBarColor(Color.parseColor(color));
-        });
     }
 }
