@@ -14,7 +14,7 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PushCommand;
-import org.eclipse.jgit.api.errors.RefNotAdvertisedException;
+import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.transport.JschConfigSessionFactory;
 import org.eclipse.jgit.transport.OpenSshConfig;
 import org.eclipse.jgit.transport.SshSessionFactory;
@@ -105,8 +105,9 @@ public final class Repo {
 
         try {
             pullCommand.call();
-        } catch (final RefNotAdvertisedException e) {
+        } catch (final JGitInternalException /* RefNotAdvertisedException */ e) {
             // 忽略初次空仓库 pull
+            e.printStackTrace();
         }
     }
 

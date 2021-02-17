@@ -54,6 +54,6 @@ dependencies {
     implementation(name: 'androidk', ext: 'aar')
     implementation('commons-io:commons-io:2.4')
 
-    implementation('org.eclipse.jgit:org.eclipse.jgit:5.10.0.202012080955-r')
-    implementation('org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:5.10.0.202012080955-r')
+    implementation('org.eclipse.jgit:org.eclipse.jgit:3.7.1.201504261725-r')
+//    implementation('org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:4.11.9.201909030838-r')
 }
