@@ -42,6 +42,10 @@ android {
         exclude 'META-INF/notice.txt'
         exclude 'plugin.properties'
     }
+
+    lintOptions {
+        abortOnError false
+    }
 }
 
 dependencies {
