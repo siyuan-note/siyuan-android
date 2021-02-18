@@ -1,3 +1,9 @@
+/*
+ * SiYuan - 源于思考，饮水思源
+ * Copyright (c) 2020-present, ld246.com
+ *
+ * 本文件属于思源笔记源码的一部分，云南链滴科技有限公司版权所有。
+ */
 package org.b3log.siyuan;
 
 import android.content.Intent;
@@ -20,6 +26,13 @@ import java.io.File;
 
 import androidk.Androidk;
 
+/**
+ * 程序入口.
+ *
+ * @author <a href="http://88250.b3log.org">Liang Ding</a>
+ * @version 1.0.0.0, Feb 19, 2020
+ * @since 1.0.0
+ */
 public class MainActivity extends AppCompatActivity {
     WebView webView;
 

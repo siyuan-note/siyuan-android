@@ -1,3 +1,9 @@
+/*
+ * SiYuan - 源于思考，饮水思源
+ * Copyright (c) 2020-present, ld246.com
+ *
+ * 本文件属于思源笔记源码的一部分，云南链滴科技有限公司版权所有。
+ */
 package org.b3log.siyuan;
 
 import android.app.Activity;
@@ -8,7 +14,14 @@ import android.view.Display;
 import android.view.View;
 import android.widget.FrameLayout;
 
-public class AndroidBug5497Workaround {
+/**
+ * 解决输入法弹起时遮挡 WebView 底部.
+ *
+ * @author <a href="http://88250.b3log.org">Liang Ding</a>
+ * @version 1.0.0.0, Feb 19, 2020
+ * @since 1.0.0
+ */
+public final class AndroidBug5497Workaround {
     public static void assistActivity(final Activity activity) {
         new AndroidBug5497Workaround(activity);
     }
