@@ -5,6 +5,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.StrictMode;
 import android.webkit.JavascriptInterface;
+import android.webkit.MimeTypeMap;
+
+import org.apache.commons.io.FilenameUtils;
 
 import java.lang.reflect.Method;
 
@@ -24,7 +27,14 @@ public final class JSAndroid {
             e.printStackTrace();
         }
 
-        final Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        activity.startActivity(i);
+        final MimeTypeMap map = MimeTypeMap.getSingleton();
+        final String ext = FilenameUtils.getExtension(url);
+        String type = map.getMimeTypeFromExtension(ext);
+        if (type == null) {
+            type = "application/pdf";
+        }
+        final Uri uri = Uri.parse(url);
+        final Intent intent = new Intent(Intent.ACTION_VIEW).setDataAndType(uri, type).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        activity.startActivity(intent);
     }
 }
