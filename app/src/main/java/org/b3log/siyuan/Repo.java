@@ -72,6 +72,7 @@ public final class Repo {
                 commit(repo);
                 pull(repo, keyFile);
                 Androidk.reloadBox(localPath);
+                Androidk.downloadUnSyncAssets(localPath);
                 push(repo, keyFile);
                 repo.close();
                 Log.i("", "synced box [" + box.optString("name") + "]");
