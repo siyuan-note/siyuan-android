@@ -50,10 +50,13 @@ public final class Repo {
     public void sync() {
         String keyFile = null;
         try {
+            final WebView webView = ((MainActivity) activity).webView;
             Androidk.prepareSync();
 
             final String localPathsStr = Androidk.syncBoxPaths();
+            Log.i("", "local paths str [" + localPathsStr + "]");
             if (StringUtils.isEmptyOrNull(localPathsStr)) {
+                webView.post(webView::reload);
                 return;
             }
 
@@ -74,8 +77,7 @@ public final class Repo {
 
             Androidk.reloadRecentBlocks();
 
-            final WebView webView = ((MainActivity) activity).webView;
-            webView.post(() -> webView.reload());
+            webView.post(webView::reload);
         } catch (final Exception e) {
             Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG).show();
         } finally {
