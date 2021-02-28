@@ -54,7 +54,6 @@ public final class Repo {
             Androidk.prepareSync();
 
             final String localPathsStr = Androidk.syncBoxPaths();
-            Log.i("", "local paths str [" + localPathsStr + "]");
             if (StringUtils.isEmptyOrNull(localPathsStr)) {
                 webView.post(webView::reload);
                 return;
