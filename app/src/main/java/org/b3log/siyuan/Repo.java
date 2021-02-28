@@ -61,6 +61,7 @@ public final class Repo {
             keyFile = Androidk.genTempKeyFile(dataDirectory.getAbsolutePath());
             final String[] localPaths = localPathsStr.split("@_@");
             for (final String localPath : localPaths) {
+                Log.i("", "syncing box [" + localPath + "]");
                 final Git repo = Git.open(new File(localPath));
                 commit(repo);
                 pull(repo, keyFile);
