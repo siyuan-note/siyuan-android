@@ -27,8 +27,6 @@ import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.SshTransport;
 import org.eclipse.jgit.util.FS;
 import org.eclipse.jgit.util.StringUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.File;
 
@@ -54,20 +52,15 @@ public final class Repo {
         try {
             Androidk.prepareSync();
 
-            final String siyuan = Utils.getSiYuanDir(activity);
-            final String confStr = FileUtils.readFileToString(new File(siyuan + "/conf/conf.json"));
-            final JSONObject conf = new JSONObject(confStr);
-            final JSONArray boxes = conf.optJSONArray("boxes");
+            final String localPathsStr = Androidk.syncBoxPaths();
+            if (StringUtils.isEmptyOrNull(localPathsStr)) {
+                return;
+            }
 
             final File dataDirectory = activity.getCacheDir();
             keyFile = Androidk.genTempKeyFile(dataDirectory.getAbsolutePath());
-            for (int i = 0; i < boxes.length(); i++) {
-                final JSONObject box = boxes.getJSONObject(i);
-                if (box.optBoolean("isRemote")) {
-                    continue;
-                }
-
-                final String localPath = box.optString("path");
+            final String[] localPaths = localPathsStr.split("@_@");
+            for (final String localPath : localPaths) {
                 final Git repo = Git.open(new File(localPath));
                 commit(repo);
                 pull(repo, keyFile);
@@ -75,7 +68,7 @@ public final class Repo {
                 Androidk.downloadUnSyncAssets(localPath);
                 push(repo, keyFile);
                 repo.close();
-                Log.i("", "synced box [" + box.optString("name") + "]");
+                Log.i("", "synced box [" + localPath + "]");
             }
 
             Androidk.reloadRecentBlocks();
