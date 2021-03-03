@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
         Utils.copyAssetFolder(getAssets(), "app", siyuan + "/app");
 
-        Androidk.startKernel(siyuan);
+        Androidk.startKernel(siyuan, new Repo.JavaSyncer());
 
         webView = findViewById(R.id.wv);
         webView.setWebViewClient(new WebViewClient() {

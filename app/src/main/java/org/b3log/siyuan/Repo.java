@@ -48,8 +48,7 @@ public final class Repo {
     @JavascriptInterface
     public void sync() {
         try {
-            final Syncer syncer = new JavaSyncer();
-            Androidk.repoSync(syncer);
+            Androidk.repoSync();
 
             final WebView webView = ((MainActivity) activity).webView;
             webView.post(webView::reload);
@@ -58,7 +57,12 @@ public final class Repo {
         }
     }
 
-    private final class JavaSyncer implements Syncer {
+    final static class JavaSyncer implements Syncer {
+
+        @Override
+        public void commit(final String localPath, final String msg) throws Exception {
+            Repo.commit(localPath, msg);
+        }
 
         @Override
         public boolean pull(final String localPath, final String keyFilePath) throws Exception {
@@ -68,6 +72,16 @@ public final class Repo {
         @Override
         public void push(final String localPath, final String keyFilePath) throws Exception {
             Repo.push(localPath, keyFilePath);
+        }
+    }
+
+    private static void commit(final String localPath, final String msg) throws Exception {
+        final Git repo = Git.open(new File(localPath));
+        try {
+            repo.add().addFilepattern(".").call();
+            repo.commit().setAll(true).setMessage(msg).call();
+        } finally {
+            repo.close();
         }
     }
 
