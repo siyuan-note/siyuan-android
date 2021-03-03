@@ -7,7 +7,6 @@
 package org.b3log.siyuan;
 
 import android.app.Activity;
-import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.widget.Toast;
@@ -16,9 +15,9 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
-import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullCommand;
+import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.transport.JschConfigSessionFactory;
@@ -26,11 +25,11 @@ import org.eclipse.jgit.transport.OpenSshConfig;
 import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.SshTransport;
 import org.eclipse.jgit.util.FS;
-import org.eclipse.jgit.util.StringUtils;
 
 import java.io.File;
 
 import androidk.Androidk;
+import androidk.Syncer;
 
 /**
  * 仓库同步.
@@ -48,50 +47,33 @@ public final class Repo {
 
     @JavascriptInterface
     public void sync() {
-        String keyFile = null;
         try {
+            final Syncer syncer = new JavaSyncer();
+            Androidk.repoSync(syncer);
+
             final WebView webView = ((MainActivity) activity).webView;
-            Androidk.prepareSync();
-
-            final String localPathsStr = Androidk.syncBoxPaths();
-            if (StringUtils.isEmptyOrNull(localPathsStr)) {
-                webView.post(webView::reload);
-                return;
-            }
-
-            final File dataDirectory = activity.getCacheDir();
-            keyFile = Androidk.genTempKeyFile(dataDirectory.getAbsolutePath());
-            final String[] localPaths = localPathsStr.split("@_@");
-            for (final String localPath : localPaths) {
-                Log.i("", "syncing box [" + localPath + "]");
-                final Git repo = Git.open(new File(localPath));
-                commit(repo);
-                pull(repo, keyFile);
-                Androidk.reloadBox(localPath);
-                Androidk.downloadUnSyncAssets(localPath);
-                push(repo, keyFile);
-                repo.close();
-                Log.i("", "synced box [" + localPath + "]");
-            }
-
-            Androidk.reloadRecentBlocks();
-
             webView.post(webView::reload);
         } catch (final Exception e) {
             Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG).show();
-        } finally {
-            if (!StringUtils.isEmptyOrNull(keyFile)) {
-                FileUtils.deleteQuietly(new File(keyFile));
-            }
         }
     }
 
-    private static void commit(final Git repo) throws Exception {
-        repo.add().addFilepattern(".").call();
-        repo.commit().setAll(true).setMessage("android ").call();
+    private final class JavaSyncer implements Syncer {
+
+        @Override
+        public boolean pull(final String localPath, final String keyFilePath) throws Exception {
+            return Repo.pull(localPath, keyFilePath);
+        }
+
+        @Override
+        public void push(final String localPath, final String keyFilePath) throws Exception {
+            Repo.push(localPath, keyFilePath);
+        }
     }
 
-    private static void pull(final Git repo, final String keyFile) throws Exception {
+    private static boolean pull(final String localPath, final String keyFile) throws Exception {
+        final Git repo = Git.open(new File(localPath));
+
         final SshSessionFactory jschConfigSessionFactory = new JschConfigSessionFactory() {
             @Override
             protected void configure(final OpenSshConfig.Host host, final Session session) {
@@ -113,14 +95,23 @@ public final class Repo {
         });
 
         try {
-            pullCommand.call();
+            final PullResult call = pullCommand.call();
+            final String msg = call.toString();
+            if (msg.contains("Already-up-to-date")) {
+                return true;
+            }
         } catch (final JGitInternalException /* RefNotAdvertisedException */ e) {
             // 忽略初次空仓库 pull
             e.printStackTrace();
+        } finally {
+            repo.close();
         }
+        return false;
     }
 
-    private static void push(final Git repo, final String keyFile) throws Exception {
+    private static void push(final String localPath, final String keyFile) throws Exception {
+        final Git repo = Git.open(new File(localPath));
+
         final SshSessionFactory jschConfigSessionFactory = new JschConfigSessionFactory() {
             @Override
             protected void configure(final OpenSshConfig.Host host, final Session session) {
@@ -141,6 +132,10 @@ public final class Repo {
             sshTransport.setSshSessionFactory(jschConfigSessionFactory);
         });
 
-        pushCommand.call();
+        try {
+            pushCommand.call();
+        } finally {
+            repo.close();
+        }
     }
 }
