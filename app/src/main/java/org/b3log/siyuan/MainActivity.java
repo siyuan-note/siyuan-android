@@ -60,6 +60,29 @@ public class MainActivity extends AppCompatActivity {
         new File(siyuan).mkdirs();
         new File(siyuan + "/data").mkdir();
 
+//        try {
+//            final String rsync = getApplicationInfo().nativeLibraryDir + "/librsync.so";
+//            final String ssh = getApplicationInfo().nativeLibraryDir + "/libssh.so";
+//            String output = Utils.exec("chmod 744 " + rsync);
+//
+//            output = Utils.exec("ls " + getApplicationInfo().nativeLibraryDir);
+//
+//            new File(siyuan + "/clone").mkdir();
+//
+//            final String[] cmds = new String[]{
+//                    rsync, "-avz", "-e", ssh + " -i 'siyuan.key' -o StrictHostKeyChecking=no -o UserKnownHostsFile=known_hosts",
+//                    "git@siyuan.b3logfile.com:/siyuan/1602224134353/logseq/",
+//                    siyuan + "/clone/"
+//            };
+//
+//            output = Utils.exec(cmds);
+//
+//            Log.i("", output);
+//        } catch (final Exception e) {
+//            e.printStackTrace();
+//        }
+
+
         try {
             FileUtils.deleteDirectory(new File(siyuan + "/app"));
         } catch (final Exception e) {

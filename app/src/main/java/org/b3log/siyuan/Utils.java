@@ -10,16 +10,21 @@ import android.app.Activity;
 import android.content.res.AssetManager;
 import android.util.Log;
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.StringTokenizer;
 
 /**
  * 工具类.
@@ -29,6 +34,47 @@ import java.util.Enumeration;
  * @since 1.0.0
  */
 public final class Utils {
+
+    /**
+     * Executes the specified command.
+     *
+     * @param cmd the specified command
+     * @return execution output, returns {@code null} if execution failed
+     */
+    public static String exec(final String cmd) {
+        final StringTokenizer st = new StringTokenizer(cmd);
+        final String[] cmds = new String[st.countTokens()];
+        for (int i = 0; st.hasMoreTokens(); i++) {
+            cmds[i] = st.nextToken();
+        }
+        return exec(cmds);
+    }
+
+    /**
+     * Executes the specified commands.
+     *
+     * @param cmds the specified commands
+     * @return execution output, returns {@code null} if execution failed
+     */
+    public static String exec(final String[] cmds) {
+        try {
+            final Process process = new ProcessBuilder(cmds).redirectErrorStream(true).start();
+            final StringWriter writer = new StringWriter();
+            new Thread(() -> {
+                try {
+                    IOUtils.copy(process.getInputStream(), writer, "UTF-8");
+                } catch (final Exception e) {
+                    Log.e("", "Reads input stream failed: " + e.getMessage());
+                }
+            }).start();
+
+            process.waitFor();
+            return writer.toString();
+        } catch (final Exception e) {
+            Log.e("", "Executes commands [" + Arrays.toString(cmds) + "] failed", e);
+            return null;
+        }
+    }
 
     public static String getSiYuanDir(final Activity activity) {
         return activity.getExternalFilesDir("siyuan").getAbsolutePath();
@@ -73,7 +119,7 @@ public final class Utils {
     }
 
     private static void copyFile(final InputStream in, final OutputStream out) throws IOException {
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[4096];
         int read;
         while ((read = in.read(buffer)) != -1) {
             out.write(buffer, 0, read);
