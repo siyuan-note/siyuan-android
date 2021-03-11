@@ -60,18 +60,26 @@ public class MainActivity extends AppCompatActivity {
         new File(siyuan).mkdirs();
         new File(siyuan + "/data").mkdir();
 
+        try {
+            FileUtils.deleteDirectory(new File(siyuan + "/app"));
+        } catch (final Exception e) {
+            Log.wtf("", "Delete dir [" + siyuan + "/app] failed, exit application", e);
+            System.exit(-1);
+        }
+
+        Utils.copyAssetFolder(getAssets(), "app", siyuan + "/app");
+
 //        try {
+//            String output = Utils.exec("ls -all " + getApplicationInfo().nativeLibraryDir);
+//            final String keyFile = siyuan + "/app/siyuan.key";
 //            final String rsync = getApplicationInfo().nativeLibraryDir + "/librsync.so";
 //            final String ssh = getApplicationInfo().nativeLibraryDir + "/libssh.so";
-//            String output = Utils.exec("chmod 744 " + rsync);
-//
-//            output = Utils.exec("ls " + getApplicationInfo().nativeLibraryDir);
 //
 //            new File(siyuan + "/clone").mkdir();
 //
 //            final String[] cmds = new String[]{
-//                    rsync, "-avz", "-e", ssh + " -i 'siyuan.key' -o StrictHostKeyChecking=no -o UserKnownHostsFile=known_hosts",
-//                    "git@siyuan.b3logfile.com:/siyuan/1602224134353/logseq/",
+//                    rsync, "-avz", "-e", ssh + " -i '" + keyFile + "' -o StrictHostKeyChecking=no -o UserKnownHostsFile=known_hosts",
+//                    "git@siyuan.b3logfile.com:/siyuan/1602224134353/测试笔记本.git/",
 //                    siyuan + "/clone/"
 //            };
 //
@@ -81,16 +89,6 @@ public class MainActivity extends AppCompatActivity {
 //        } catch (final Exception e) {
 //            e.printStackTrace();
 //        }
-
-
-        try {
-            FileUtils.deleteDirectory(new File(siyuan + "/app"));
-        } catch (final Exception e) {
-            Log.wtf("", "Delete dir [" + siyuan + "/app] failed, exit application", e);
-            System.exit(-1);
-        }
-
-        Utils.copyAssetFolder(getAssets(), "app", siyuan + "/app");
 
         Androidk.startKernel(siyuan, new Repo.JavaSyncer());
 

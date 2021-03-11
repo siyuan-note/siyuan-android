@@ -69,6 +69,7 @@ public final class Utils {
             }).start();
 
             process.waitFor();
+            Thread.sleep(100);
             return writer.toString();
         } catch (final Exception e) {
             Log.e("", "Executes commands [" + Arrays.toString(cmds) + "] failed", e);
