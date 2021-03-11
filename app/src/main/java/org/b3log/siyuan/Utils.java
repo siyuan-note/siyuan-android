@@ -24,7 +24,6 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.StringTokenizer;
 
 /**
  * 工具类.
@@ -36,29 +35,17 @@ import java.util.StringTokenizer;
 public final class Utils {
 
     /**
-     * Executes the specified command.
-     *
-     * @param cmd the specified command
-     * @return execution output, returns {@code null} if execution failed
-     */
-    public static String exec(final String cmd) {
-        final StringTokenizer st = new StringTokenizer(cmd);
-        final String[] cmds = new String[st.countTokens()];
-        for (int i = 0; st.hasMoreTokens(); i++) {
-            cmds[i] = st.nextToken();
-        }
-        return exec(cmds);
-    }
-
-    /**
      * Executes the specified commands.
      *
      * @param cmds the specified commands
      * @return execution output, returns {@code null} if execution failed
      */
-    public static String exec(final String[] cmds) {
+    public static String exec(final String[] cmds, String env) {
         try {
-            final Process process = new ProcessBuilder(cmds).redirectErrorStream(true).start();
+            ProcessBuilder processBuilder = new ProcessBuilder(cmds);
+            processBuilder.environment().put("LD_LIBRARY_PATH", env);
+            processBuilder.redirectErrorStream(true);
+            final Process process = processBuilder.start();
             final StringWriter writer = new StringWriter();
             new Thread(() -> {
                 try {
