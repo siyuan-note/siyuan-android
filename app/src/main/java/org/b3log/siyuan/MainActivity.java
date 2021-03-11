@@ -96,10 +96,8 @@ public class MainActivity extends AppCompatActivity {
                     siyuan + "/clone/"
             };
 
-            while (true) {
-                String output = Utils.exec(cmds, getApplicationInfo().nativeLibraryDir);
-                Log.i("", output);
-            }
+            String output = Utils.exec(cmds, getApplicationInfo().nativeLibraryDir);
+            Log.i("", output);
         } catch (final Exception e) {
             e.printStackTrace();
         }
