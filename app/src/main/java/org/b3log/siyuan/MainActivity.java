@@ -70,37 +70,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Utils.copyAssetFolder(getAssets(), "app", siyuan + "/app");
-
-        Androidk.startKernel(siyuan, getApplicationInfo().nativeLibraryDir);
-
-        try {
-            final File dataDir = getFilesDir();
-            final File keyDir = new File(dataDir.getAbsolutePath() + "/temp");
-            if (keyDir.exists()) {
-                keyDir.delete();
-            }
-            keyDir.mkdir();
-
-            final File key = new File(keyDir + "/siyuan.key");
-            FileUtils.copyFile(new File(siyuan + "/app/siyuan.key"), key);
-            String content = IOUtils.toString(new FileReader(key));
-
-            final String rsync = getApplicationInfo().nativeLibraryDir + "/librsync.so";
-            final String ssh = getApplicationInfo().nativeLibraryDir + "/libssh.so";
-
-            new File(siyuan + "/clone").mkdir();
-
-            final String[] cmds = new String[]{
-                    rsync, "-avz", "-e", ssh + " -i '" + key.getAbsolutePath() + "' -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null",
-                    "git@siyuan.b3logfile.com:/siyuan/1602224134353/测试笔记本.git/",
-                    siyuan + "/clone/"
-            };
-
-            String output = Utils.exec(cmds, getApplicationInfo().nativeLibraryDir);
-            Log.i("", output);
-        } catch (final Exception e) {
-            e.printStackTrace();
-        }
+        Androidk.startKernel(siyuan, getApplicationInfo().nativeLibraryDir, getFilesDir().getAbsolutePath());
 
         webView = findViewById(R.id.wv);
         webView.setWebViewClient(new WebViewClient() {
