@@ -11,25 +11,7 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.widget.Toast;
 
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.PullCommand;
-import org.eclipse.jgit.api.PullResult;
-import org.eclipse.jgit.api.PushCommand;
-import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.transport.JschConfigSessionFactory;
-import org.eclipse.jgit.transport.OpenSshConfig;
-import org.eclipse.jgit.transport.SshSessionFactory;
-import org.eclipse.jgit.transport.SshTransport;
-import org.eclipse.jgit.util.FS;
-
-import java.io.File;
-
 import androidk.Androidk;
-import androidk.Syncer;
 
 /**
  * 仓库同步.
@@ -54,102 +36,6 @@ public final class Repo {
             webView.post(webView::reload);
         } catch (final Exception e) {
             Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-    }
-
-    final static class JavaSyncer implements Syncer {
-
-        @Override
-        public void commit(final String localPath, final String msg) throws Exception {
-            Repo.commit(localPath, msg);
-        }
-
-        @Override
-        public boolean pull(final String localPath, final String keyFilePath) throws Exception {
-            return Repo.pull(localPath, keyFilePath);
-        }
-
-        @Override
-        public void push(final String localPath, final String keyFilePath) throws Exception {
-            Repo.push(localPath, keyFilePath);
-        }
-    }
-
-    private static void commit(final String localPath, final String msg) throws Exception {
-        final Git repo = Git.open(new File(localPath));
-        try {
-            repo.add().addFilepattern(".").call();
-            repo.commit().setAll(true).setMessage(msg).call();
-        } finally {
-            repo.close();
-        }
-    }
-
-    private static boolean pull(final String localPath, final String keyFile) throws Exception {
-        final Git repo = Git.open(new File(localPath));
-
-        final SshSessionFactory jschConfigSessionFactory = new JschConfigSessionFactory() {
-            @Override
-            protected void configure(final OpenSshConfig.Host host, final Session session) {
-                session.setConfig("StrictHostKeyChecking", "no");
-            }
-
-            @Override
-            protected JSch createDefaultJSch(final FS fs) throws JSchException {
-                final JSch defaultJSch = super.createDefaultJSch(fs);
-                defaultJSch.addIdentity(keyFile);
-                return defaultJSch;
-            }
-        };
-
-        final PullCommand pullCommand = repo.pull();
-        pullCommand.setTransportConfigCallback(transport -> {
-            final SshTransport sshTransport = (SshTransport) transport;
-            sshTransport.setSshSessionFactory(jschConfigSessionFactory);
-        });
-
-        try {
-            final PullResult call = pullCommand.call();
-            final String msg = call.toString();
-            if (msg.contains("Already-up-to-date")) {
-                return true;
-            }
-        } catch (final JGitInternalException /* RefNotAdvertisedException */ e) {
-            // 忽略初次空仓库 pull
-            e.printStackTrace();
-        } finally {
-            repo.close();
-        }
-        return false;
-    }
-
-    private static void push(final String localPath, final String keyFile) throws Exception {
-        final Git repo = Git.open(new File(localPath));
-
-        final SshSessionFactory jschConfigSessionFactory = new JschConfigSessionFactory() {
-            @Override
-            protected void configure(final OpenSshConfig.Host host, final Session session) {
-                session.setConfig("StrictHostKeyChecking", "no");
-            }
-
-            @Override
-            protected JSch createDefaultJSch(final FS fs) throws JSchException {
-                final JSch defaultJSch = super.createDefaultJSch(fs);
-                defaultJSch.addIdentity(keyFile);
-                return defaultJSch;
-            }
-        };
-
-        final PushCommand pushCommand = repo.push();
-        pushCommand.setTransportConfigCallback(transport -> {
-            final SshTransport sshTransport = (SshTransport) transport;
-            sshTransport.setSshSessionFactory(jschConfigSessionFactory);
-        });
-
-        try {
-            pushCommand.call();
-        } finally {
-            repo.close();
         }
     }
 }

@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
         Utils.copyAssetFolder(getAssets(), "app", siyuan + "/app");
 
-        Androidk.startKernel(siyuan, new Repo.JavaSyncer());
+        Androidk.startKernel(siyuan, getApplicationInfo().nativeLibraryDir);
 
         try {
             final File dataDir = getFilesDir();
