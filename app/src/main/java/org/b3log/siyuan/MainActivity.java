@@ -25,6 +25,8 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.FileReader;
+import java.util.HashMap;
+import java.util.Map;
 
 import androidk.Androidk;
 
@@ -71,6 +73,36 @@ public class MainActivity extends AppCompatActivity {
 
         Utils.copyAssetFolder(getAssets(), "app", siyuan + "/app");
         Androidk.startKernel(siyuan, getApplicationInfo().nativeLibraryDir, getFilesDir().getAbsolutePath());
+
+//        try {
+//            final File dataDir = getFilesDir();
+//            final File keyDir = new File(dataDir.getAbsolutePath() + "/temp");
+//            if (keyDir.exists()) {
+//                keyDir.delete();
+//            }
+//            keyDir.mkdir();
+//
+//            final File key = new File(keyDir + "/siyuan.key");
+//            FileUtils.copyFile(new File(siyuan + "/app/siyuan.key"), key);
+//            String content = IOUtils.toString(new FileReader(key));
+//
+//            final String unison = getApplicationInfo().nativeLibraryDir + "/libunison.so";
+//            final String ssh = getApplicationInfo().nativeLibraryDir + "/libssh.so";
+//
+//            new File(siyuan + "/clone").mkdir();
+//
+//            final String[] cmds = new String[]{
+//                    unison, "-version"
+//            };
+//
+//            final Map<String, String> envs = new HashMap<>();
+//            envs.put("LD_LIBRARY_PATH", getApplicationInfo().nativeLibraryDir);
+//            envs.put("HOME", dataDir.getAbsolutePath());
+//            String output = Utils.exec(cmds, envs);
+//            Log.i("", output);
+//        } catch (final Exception e) {
+//            e.printStackTrace();
+//        }
 
         webView = findViewById(R.id.wv);
         webView.setWebViewClient(new WebViewClient() {

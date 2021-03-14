@@ -24,6 +24,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.Map;
 
 /**
  * 工具类.
@@ -40,10 +41,13 @@ public final class Utils {
      * @param cmds the specified commands
      * @return execution output, returns {@code null} if execution failed
      */
-    public static String exec(final String[] cmds, String env) {
+    public static String exec(final String[] cmds, final Map<String, String> envs) {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder(cmds);
-            processBuilder.environment().put("LD_LIBRARY_PATH", env);
+            final Map<String, String> procEnvs = processBuilder.environment();
+            for (final Map.Entry<String, String> kv : envs.entrySet()) {
+                procEnvs.put(kv.getKey(), kv.getValue());
+            }
             processBuilder.redirectErrorStream(true);
             final Process process = processBuilder.start();
             final StringWriter writer = new StringWriter();
