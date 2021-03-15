@@ -23,8 +23,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 import androidk.Androidk;
 
@@ -61,23 +59,18 @@ public class MainActivity extends AppCompatActivity {
         final String siyuan = Utils.getSiYuanDir(this);
         new File(siyuan).mkdirs();
         new File(siyuan + "/data").mkdir();
+        final File dataDir = getFilesDir();
+        final File libDir = new File(dataDir.getAbsolutePath() + "/lib");
 
         try {
             FileUtils.deleteDirectory(new File(siyuan + "/app"));
-            FileUtils.deleteDirectory(new File(getFilesDir().getAbsolutePath() + "/lib"));
+            FileUtils.deleteDirectory(new File(libDir.getAbsolutePath()));
         } catch (final Exception e) {
             Log.wtf("", "Delete dir [" + siyuan + "/app] failed, exit application", e);
             System.exit(-1);
         }
 
         Utils.copyAssetFolder(getAssets(), "app", siyuan + "/app");
-
-        final File dataDir = getFilesDir();
-        final File libDir = new File(dataDir.getAbsolutePath() + "/lib");
-        if (libDir.exists()) {
-            FileUtils.deleteQuietly(libDir);
-        }
-        libDir.mkdir();
         Utils.copyAssetFolder(getAssets(), "lib", libDir.getAbsolutePath());
         Androidk.startKernel(siyuan, getApplicationInfo().nativeLibraryDir, dataDir.getAbsolutePath());
 
