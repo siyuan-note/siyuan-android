@@ -100,20 +100,21 @@ public class MainActivity extends AppCompatActivity {
 
             final Map<String, String> envs = new HashMap<>();
             envs.put("LD_LIBRARY_PATH", libDir.getAbsolutePath());
-            envs.put("HOME", dataDir.getAbsolutePath());
+            new File(dataDir.getAbsolutePath() + "/home").mkdir();
+            envs.put("HOME", dataDir.getAbsolutePath() + "/home");
 
             new File(siyuan + "/clone").mkdir();
 
             final String[] cmds = new String[]{
                     unison,
-                    "-servercmd", "/home/git/unison-2.51.2/unison user=1602224134353",
+                    "-servercmd", "/home/git/unison-2.48.4/unison user=1602224134353",
                     "-sshcmd", ssh,
                     "-sshargs", "-i " + key.getAbsolutePath() + " -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null",
                     "-ignore", "Name .git",
                     "-batch",
-//                    "-debug", "all",
+                    "-debug", "all",
                     "-prefer", siyuan + "/clone/",
-                    "-ignorearchives",
+                    "-clientHostName", "Android-1602224134353",
                     siyuan + "/clone/",
                     "ssh://git@siyuan.b3logfile.com//siyuan/1602224134353/测试笔记本/"
             };
