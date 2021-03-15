@@ -49,6 +49,7 @@ public final class Utils {
                 procEnvs.put(kv.getKey(), kv.getValue());
             }
             processBuilder.redirectErrorStream(true);
+
             final Process process = processBuilder.start();
             final StringWriter writer = new StringWriter();
             new Thread(() -> {

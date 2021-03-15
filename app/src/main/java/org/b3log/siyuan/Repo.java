@@ -36,6 +36,7 @@ public final class Repo {
             webView.post(webView::reload);
         } catch (final Exception e) {
             Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG).show();
+            e.printStackTrace();
         }
     }
 }
