@@ -78,55 +78,8 @@ public class MainActivity extends AppCompatActivity {
             FileUtils.deleteQuietly(libDir);
         }
         libDir.mkdir();
-        FileUtils.deleteQuietly(new File(dataDir.getAbsolutePath() + "/.unison"));
-
         Utils.copyAssetFolder(getAssets(), "lib", libDir.getAbsolutePath());
         Androidk.startKernel(siyuan, getApplicationInfo().nativeLibraryDir, dataDir.getAbsolutePath());
-
-        try {
-            final File keyDir = new File(dataDir.getAbsolutePath() + "/temp");
-            if (keyDir.exists()) {
-                FileUtils.deleteQuietly(keyDir);
-            }
-            keyDir.mkdir();
-
-            final File key = new File(keyDir + "/siyuan.key");
-            FileUtils.copyFile(new File(siyuan + "/app/siyuan.key"), key);
-
-            final String unison = getApplicationInfo().nativeLibraryDir + "/libunison.so";
-            final String ssh = getApplicationInfo().nativeLibraryDir + "/libssh.so";
-
-            Utils.copyAssetFolder(getAssets(), "lib", libDir.getAbsolutePath());
-
-            final Map<String, String> envs = new HashMap<>();
-            envs.put("LD_LIBRARY_PATH", libDir.getAbsolutePath());
-            new File(dataDir.getAbsolutePath() + "/home").mkdir();
-            envs.put("HOME", dataDir.getAbsolutePath() + "/home");
-
-            new File(siyuan + "/clone").mkdir();
-
-            final String[] cmds = new String[]{
-                    unison,
-                    "-servercmd", "/home/git/unison-2.48.4/unison user=1602224134353",
-                    "-sshcmd", ssh,
-                    "-sshargs", "-i " + key.getAbsolutePath() + " -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null",
-                    "-ignore", "Name .git",
-                    "-batch",
-                    "-debug", "all",
-                    "-prefer", siyuan + "/clone/",
-                    "-clientHostName", "Android-1602224134353",
-                    siyuan + "/clone/",
-                    "ssh://git@siyuan.b3logfile.com//siyuan/1602224134353/测试笔记本/"
-            };
-
-
-            while (true) {
-                String output = Utils.exec(cmds, envs);
-                Log.i("", output);
-            }
-        } catch (final Exception e) {
-            e.printStackTrace();
-        }
 
         webView = findViewById(R.id.wv);
         webView.setWebViewClient(new WebViewClient() {
