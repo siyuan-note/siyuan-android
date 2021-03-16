@@ -87,8 +87,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-        final Repo repo = new Repo(this);
-        webView.addJavascriptInterface(repo, "Repo");
+
         final JSAndroid JSAndroid = new JSAndroid(this);
         webView.addJavascriptInterface(JSAndroid, "JSAndroid");
         final WebSettings ws = webView.getSettings();
