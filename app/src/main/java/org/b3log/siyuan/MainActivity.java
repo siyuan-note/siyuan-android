@@ -95,6 +95,9 @@ public class MainActivity extends AppCompatActivity {
         ws.setDomStorageEnabled(true);
         ws.setAppCacheEnabled(false);
         ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        ws.setTextZoom(100);
+        ws.setUseWideViewPort(true);
+        ws.setLoadWithOverviewMode(true);
         webView.loadUrl("http://127.0.0.1:6806");
     }
 
