@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.util.Locale;
 
 import androidk.Androidk;
 
@@ -72,6 +73,10 @@ public class MainActivity extends AppCompatActivity {
 
         Utils.copyAssetFolder(getAssets(), "app", siyuan + "/app");
         Utils.copyAssetFolder(getAssets(), "lib", libDir.getAbsolutePath());
+
+        final Locale locale = getResources().getConfiguration().locale;
+        final String lang = locale.getLanguage() + "_" + locale.getCountry();
+        Androidk.setDefaultLang(lang);
         Androidk.startKernel(siyuan, getApplicationInfo().nativeLibraryDir, dataDir.getAbsolutePath());
 
         webView = findViewById(R.id.wv);
