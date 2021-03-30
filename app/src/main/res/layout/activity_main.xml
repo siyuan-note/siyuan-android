@@ -14,6 +14,12 @@
         tools:layout_editor_absoluteX="0dp"
         tools:layout_editor_absoluteY="0dp">
 
+        <ImageView
+            android:id="@+id/bootLogo"
+            android:layout_width="84dp"
+            android:layout_height="84dp"
+            app:srcCompat="@drawable/icon" />
+
         <ProgressBar
             android:id="@+id/progressBar"
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"

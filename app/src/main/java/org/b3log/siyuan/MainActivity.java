@@ -22,6 +22,7 @@ import android.view.WindowManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -95,6 +96,8 @@ public class MainActivity extends AppCompatActivity {
     private void showMainUI() {
         bootProgressBar.setVisibility(View.GONE);
         bootDetailsText.setVisibility(View.GONE);
+        final ImageView bootLogo = findViewById(R.id.bootLogo);
+        bootLogo.setVisibility(View.GONE);
         webView.setVisibility(View.VISIBLE);
 
         AndroidBug5497Workaround.assistActivity(this);
