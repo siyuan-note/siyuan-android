@@ -22,6 +22,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -47,6 +48,7 @@ import androidk.Androidk;
 public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private ProgressBar bootProgressBar;
+    private TextView bootDetailsText;
     private int bootProgress;
     private String bootDetails;
     private Handler handler;
@@ -70,8 +72,8 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
         bootProgressBar = (ProgressBar) findViewById(R.id.progressBar);
-
-
+        bootDetailsText = (TextView) findViewById(R.id.bootDetails);
+        bootDetailsText.setText("Booting...");
         handler = new Handler(Looper.getMainLooper()) {
             public void handleMessage(final Message msg) {
                 showMainUI();
@@ -86,6 +88,8 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("SetJavaScriptEnabled")
     private void showMainUI() {
         bootProgressBar.setVisibility(View.GONE);
+        bootDetailsText.setVisibility(View.GONE);
+
         AndroidBug5497Workaround.assistActivity(this);
         webView = findViewById(R.id.wv);
         webView.setWebViewClient(new WebViewClient() {
@@ -132,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
                 final JSONObject result = new JSONObject(content);
                 final JSONObject data = result.optJSONObject("data");
                 bootDetails = data.optString("details");
+                bootDetailsText.setText(bootDetails);
                 bootProgress = data.optInt("progress");
                 bootProgressBar.setProgress(bootProgress);
                 if (100 <= bootProgress) {

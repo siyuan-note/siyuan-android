@@ -20,6 +20,11 @@
             android:layout_height="47dp"
             android:progressTint="#3b3e43" />
 
+        <TextView
+            android:id="@+id/bootDetails"
+            android:layout_width="match_parent"
+            android:layout_height="31dp" />
+
         <WebView
             android:id="@+id/wv"
             android:layout_width="match_parent"
