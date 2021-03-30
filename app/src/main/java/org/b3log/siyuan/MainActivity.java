@@ -15,7 +15,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -76,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
 
         bootProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         bootDetailsText = (TextView) findViewById(R.id.bootDetails);
-        bootDetailsText.setTextSize(TypedValue.COMPLEX_UNIT_PX, 24);
         bootDetailsText.setText("Booting...");
         webView = findViewById(R.id.webView);
         webView.setVisibility(View.GONE);

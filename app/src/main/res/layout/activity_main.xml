@@ -16,26 +16,29 @@
 
         <ImageView
             android:id="@+id/bootLogo"
-            android:layout_width="84dp"
-            android:layout_height="84dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:contentDescription="TODO"
             app:srcCompat="@drawable/icon" />
 
         <ProgressBar
             android:id="@+id/progressBar"
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
             android:layout_width="match_parent"
-            android:layout_height="47dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
+            android:layout_height="2dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
             android:progressTint="#3b3e43" />
 
         <TextView
             android:id="@+id/bootDetails"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:ellipsize="end" />
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginRight="16dp"
+            android:ellipsize="end"
+            android:textSize="8sp" />
 
         <WebView
             android:id="@+id/webView"
