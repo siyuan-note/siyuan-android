@@ -6,6 +6,7 @@
  */
 package org.b3log.siyuan;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -17,12 +18,18 @@ import android.view.WindowManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.json.JSONObject;
 
 import java.io.File;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Locale;
 
 import androidk.Androidk;
@@ -35,7 +42,10 @@ import androidk.Androidk;
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity {
-    WebView webView;
+    private WebView webView;
+    private ProgressBar bootProgressBar;
+    private int bootProgress;
+    private String bootDetails;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -54,31 +64,15 @@ public class MainActivity extends AppCompatActivity {
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         );
 
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.boot);
+
+        new Thread(this::boot).start();
+        runOnUiThread(this::bootProgress);
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    private void showMainUI() {
         AndroidBug5497Workaround.assistActivity(this);
-
-        final String siyuan = Utils.getSiYuanDir(this);
-        new File(siyuan).mkdirs();
-        new File(siyuan + "/data").mkdir();
-        final File dataDir = getFilesDir();
-        final File libDir = new File(dataDir.getAbsolutePath() + "/lib");
-
-        try {
-            FileUtils.deleteDirectory(new File(siyuan + "/app"));
-            FileUtils.deleteDirectory(new File(libDir.getAbsolutePath()));
-        } catch (final Exception e) {
-            Log.wtf("", "Delete dir [" + siyuan + "/app] failed, exit application", e);
-            System.exit(-1);
-        }
-
-        Utils.copyAssetFolder(getAssets(), "app", siyuan + "/app");
-        Utils.copyAssetFolder(getAssets(), "lib", libDir.getAbsolutePath());
-
-        final Locale locale = getResources().getConfiguration().locale;
-        final String lang = locale.getLanguage() + "_" + locale.getCountry();
-        Androidk.setDefaultLang(lang);
-        Androidk.startKernel(siyuan, getApplicationInfo().nativeLibraryDir, dataDir.getAbsolutePath());
-
         webView = findViewById(R.id.wv);
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -104,6 +98,73 @@ public class MainActivity extends AppCompatActivity {
         ws.setUseWideViewPort(true);
         ws.setLoadWithOverviewMode(true);
         webView.loadUrl("http://127.0.0.1:6806");
+    }
+
+    private void bootProgress() {
+        while (true) {
+            sleep(100);
+
+            HttpURLConnection urlConnection = null;
+            try {
+                final URL bootProgressURL = new URL("http://127.0.0.1:6806/api/system/boot/progress");
+                urlConnection = (HttpURLConnection) bootProgressURL.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.setDefaultUseCaches(false);
+                urlConnection.setConnectTimeout(500);
+                urlConnection.setReadTimeout(1000);
+                final InputStream inputStream = urlConnection.getInputStream();
+                final String content = IOUtils.toString(inputStream);
+                final JSONObject result = new JSONObject(content);
+                final JSONObject data = result.optJSONObject("data");
+                bootDetails = data.optString("details");
+                bootProgress = data.optInt("progress");
+                bootProgressBar.setProgress(bootProgress);
+
+                if (100 <= bootProgress) {
+                    setContentView(R.layout.activity_main);
+                    return;
+                }
+            } catch (final Exception e) {
+            } finally {
+                if (null != urlConnection) {
+                    urlConnection.disconnect();
+                }
+            }
+        }
+    }
+
+    private void boot() {
+        bootProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+
+        final String siyuan = Utils.getSiYuanDir(this);
+        new File(siyuan).mkdirs();
+        new File(siyuan + "/data").mkdir();
+        final File dataDir = getFilesDir();
+        final File libDir = new File(dataDir.getAbsolutePath() + "/lib");
+
+        try {
+            FileUtils.deleteDirectory(new File(siyuan + "/app"));
+            FileUtils.deleteDirectory(new File(libDir.getAbsolutePath()));
+        } catch (final Exception e) {
+            Log.wtf("", "Delete dir [" + siyuan + "/app] failed, exit application", e);
+            System.exit(-1);
+        }
+
+        Utils.copyAssetFolder(getAssets(), "app", siyuan + "/app");
+        Utils.copyAssetFolder(getAssets(), "lib", libDir.getAbsolutePath());
+
+        final Locale locale = getResources().getConfiguration().locale;
+        final String lang = locale.getLanguage() + "_" + locale.getCountry();
+        Androidk.setDefaultLang(lang);
+        Androidk.startKernel(siyuan, getApplicationInfo().nativeLibraryDir, dataDir.getAbsolutePath());
+    }
+
+    private void sleep(final long time) {
+        try {
+            Thread.sleep(time);
+        } catch (final Exception e) {
+            Log.e("", e.getMessage());
+        }
     }
 
     @Override
