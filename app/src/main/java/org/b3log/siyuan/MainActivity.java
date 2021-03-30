@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -71,9 +72,14 @@ public class MainActivity extends AppCompatActivity {
         );
 
         setContentView(R.layout.activity_main);
+
         bootProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         bootDetailsText = (TextView) findViewById(R.id.bootDetails);
+        bootDetailsText.setTextSize(TypedValue.COMPLEX_UNIT_PX, 24);
         bootDetailsText.setText("Booting...");
+        webView = findViewById(R.id.webView);
+        webView.setVisibility(View.GONE);
+
         handler = new Handler(Looper.getMainLooper()) {
             public void handleMessage(final Message msg) {
                 showMainUI();
@@ -89,9 +95,9 @@ public class MainActivity extends AppCompatActivity {
     private void showMainUI() {
         bootProgressBar.setVisibility(View.GONE);
         bootDetailsText.setVisibility(View.GONE);
+        webView.setVisibility(View.VISIBLE);
 
         AndroidBug5497Workaround.assistActivity(this);
-        webView = findViewById(R.id.wv);
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(final WebView view, final String url) {

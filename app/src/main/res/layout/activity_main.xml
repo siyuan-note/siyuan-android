@@ -10,6 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        android:gravity="center"
         tools:layout_editor_absoluteX="0dp"
         tools:layout_editor_absoluteY="0dp">
 
@@ -18,15 +19,20 @@
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
             android:layout_width="match_parent"
             android:layout_height="47dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
             android:progressTint="#3b3e43" />
 
         <TextView
             android:id="@+id/bootDetails"
             android:layout_width="match_parent"
-            android:layout_height="31dp" />
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:ellipsize="end" />
 
         <WebView
-            android:id="@+id/wv"
+            android:id="@+id/webView"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </LinearLayout>
