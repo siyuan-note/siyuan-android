@@ -11,6 +11,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -46,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar bootProgressBar;
     private int bootProgress;
     private String bootDetails;
+    private Handler handler;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -67,23 +71,21 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         bootProgressBar = (ProgressBar) findViewById(R.id.progressBar);
 
+
+        handler = new Handler(Looper.getMainLooper()) {
+            public void handleMessage(final Message msg) {
+                showMainUI();
+                Log.i("", "show");
+            }
+        };
+
         new Thread(this::boot).start();
         new Thread(this::bootProgress).start();
-
-        runOnUiThread(() -> {
-            while (true) {
-                sleep(100);
-                if (100 <= bootProgress) {
-                    bootProgressBar.setVisibility(View.GONE);
-                    showMainUI();
-                    return;
-                }
-            }
-        });
     }
 
     @SuppressLint("SetJavaScriptEnabled")
     private void showMainUI() {
+        bootProgressBar.setVisibility(View.GONE);
         AndroidBug5497Workaround.assistActivity(this);
         webView = findViewById(R.id.wv);
         webView.setWebViewClient(new WebViewClient() {
@@ -133,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
                 bootProgress = data.optInt("progress");
                 bootProgressBar.setProgress(bootProgress);
                 if (100 <= bootProgress) {
+                    handler.sendEmptyMessage(0);
                     return;
                 }
             } catch (final Exception e) {
