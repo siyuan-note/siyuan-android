@@ -64,10 +64,22 @@ public class MainActivity extends AppCompatActivity {
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         );
 
-        setContentView(R.layout.boot);
+        setContentView(R.layout.activity_main);
+        bootProgressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         new Thread(this::boot).start();
-        runOnUiThread(this::bootProgress);
+        new Thread(this::bootProgress).start();
+
+        runOnUiThread(() -> {
+            while (true) {
+                sleep(100);
+                if (100 <= bootProgress) {
+                    bootProgressBar.setVisibility(View.GONE);
+                    showMainUI();
+                    return;
+                }
+            }
+        });
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -101,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void bootProgress() {
+        sleep(1000);
         while (true) {
             sleep(100);
 
@@ -119,12 +132,11 @@ public class MainActivity extends AppCompatActivity {
                 bootDetails = data.optString("details");
                 bootProgress = data.optInt("progress");
                 bootProgressBar.setProgress(bootProgress);
-
                 if (100 <= bootProgress) {
-                    setContentView(R.layout.activity_main);
                     return;
                 }
             } catch (final Exception e) {
+                e.printStackTrace();
             } finally {
                 if (null != urlConnection) {
                     urlConnection.disconnect();
@@ -134,8 +146,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void boot() {
-        bootProgressBar = (ProgressBar) findViewById(R.id.progressBar);
-
         final String siyuan = Utils.getSiYuanDir(this);
         new File(siyuan).mkdirs();
         new File(siyuan + "/data").mkdir();

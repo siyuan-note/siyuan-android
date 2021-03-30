@@ -13,6 +13,13 @@
         tools:layout_editor_absoluteX="0dp"
         tools:layout_editor_absoluteY="0dp">
 
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="47dp"
+            android:progressTint="#3b3e43" />
+
         <WebView
             android:id="@+id/wv"
             android:layout_width="match_parent"
