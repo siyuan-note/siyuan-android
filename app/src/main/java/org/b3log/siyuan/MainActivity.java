@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void bootProgress() {
-        sleep(1000);
+        sleep(500);
         while (true) {
             sleep(100);
 
