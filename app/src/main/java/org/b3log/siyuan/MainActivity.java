@@ -161,27 +161,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void boot() {
-        final String siyuan = Utils.getSiYuanDir(this);
-        new File(siyuan).mkdirs();
-        new File(siyuan + "/data").mkdir();
+        final String workspaceDir = Utils.getSiYuanDir(this);
+        new File(workspaceDir).mkdirs();
+        new File(workspaceDir + "/data").mkdir();
         final File dataDir = getFilesDir();
         final File libDir = new File(dataDir.getAbsolutePath() + "/lib");
 
         try {
-            FileUtils.deleteDirectory(new File(siyuan + "/app"));
+            FileUtils.deleteDirectory(new File(workspaceDir + "/app"));
             FileUtils.deleteDirectory(new File(libDir.getAbsolutePath()));
         } catch (final Exception e) {
-            Log.wtf("", "Delete dir [" + siyuan + "/app] failed, exit application", e);
+            Log.wtf("", "Delete dir [" + workspaceDir + "/app] failed, exit application", e);
             System.exit(-1);
         }
 
-        Utils.copyAssetFolder(getAssets(), "app", siyuan + "/app");
+        Utils.copyAssetFolder(getAssets(), "app", workspaceDir + "/app");
         Utils.copyAssetFolder(getAssets(), "lib", libDir.getAbsolutePath());
 
         final Locale locale = getResources().getConfiguration().locale;
         final String lang = locale.getLanguage() + "_" + locale.getCountry();
         Androidk.setDefaultLang(lang);
-        Androidk.startKernel(siyuan, getApplicationInfo().nativeLibraryDir, dataDir.getAbsolutePath());
+        Androidk.startKernel(workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir.getAbsolutePath());
     }
 
     private void sleep(final long time) {
