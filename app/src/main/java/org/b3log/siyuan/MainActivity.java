@@ -143,15 +143,17 @@ public class MainActivity extends AppCompatActivity {
                 final JSONObject result = new JSONObject(content);
                 final JSONObject data = result.optJSONObject("data");
                 bootDetails = data.optString("details");
-                bootDetailsText.setText(bootDetails);
                 bootProgress = data.optInt("progress");
-                bootProgressBar.setProgress(bootProgress);
+                runOnUiThread(() -> {
+                    bootDetailsText.setText(bootDetails);
+                    bootProgressBar.setProgress(bootProgress);
+                });
                 if (100 <= bootProgress) {
                     handler.sendEmptyMessage(0);
                     return;
                 }
             } catch (final Exception e) {
-                e.printStackTrace();
+               // ignored
             } finally {
                 if (null != urlConnection) {
                     urlConnection.disconnect();
