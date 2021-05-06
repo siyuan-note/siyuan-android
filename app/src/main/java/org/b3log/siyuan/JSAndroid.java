@@ -33,6 +33,12 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void openExternal(final String url) {
+        if (!url.startsWith("http://127.0.0.1")) {
+            final Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            activity.startActivity(browserIntent);
+            return;
+        }
+
         try {
             final Method m = StrictMode.class.getMethod("disableDeathOnFileUriExposure");
             m.invoke(null);
