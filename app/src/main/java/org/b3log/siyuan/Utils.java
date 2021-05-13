@@ -8,6 +8,7 @@ package org.b3log.siyuan;
 
 import android.app.Activity;
 import android.content.res.AssetManager;
+import android.os.Environment;
 import android.util.Log;
 
 import org.apache.commons.io.IOUtils;
@@ -70,7 +71,9 @@ public final class Utils {
     }
 
     public static String getSiYuanDir(final Activity activity) {
-        return activity.getExternalFilesDir("siyuan").getAbsolutePath();
+        final File documents = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+        final String ret = documents.getAbsolutePath() + "/SiYuan/";
+        return ret;
     }
 
     public static boolean copyAssetFolder(final AssetManager assetManager, final String fromAssetPath, final String toPath) {
