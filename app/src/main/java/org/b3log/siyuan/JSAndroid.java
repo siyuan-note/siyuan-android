@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
  * JavaScript 接口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.0, Feb 19, 2020
+ * @version 1.0.0.0, Feb 19, 2021
  * @since 1.0.0
  */
 public final class JSAndroid {

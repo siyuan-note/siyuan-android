@@ -31,7 +31,7 @@ import java.util.Map;
  * 工具类.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.0, Feb 19, 2020
+ * @version 1.0.0.0, Feb 19, 2021
  * @since 1.0.0
  */
 public final class Utils {
@@ -70,7 +70,7 @@ public final class Utils {
         }
     }
 
-    public static String getSiYuanDir(final Activity activity) {
+    public static String getWorkspacePath() {
         final File documents = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
         final String ret = documents.getAbsolutePath() + "/SiYuan/";
         return ret;

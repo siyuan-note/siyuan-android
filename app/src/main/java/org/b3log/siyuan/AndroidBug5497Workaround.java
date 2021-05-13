@@ -18,7 +18,7 @@ import android.widget.FrameLayout;
  * 解决输入法弹起时遮挡 WebView 底部.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.0, Feb 19, 2020
+ * @version 1.0.0.0, Feb 19, 2021
  * @since 1.0.0
  */
 public final class AndroidBug5497Workaround {

@@ -43,7 +43,7 @@ import androidk.Androidk;
  * 程序入口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.0, Feb 19, 2020
+ * @version 1.0.0.1, May 14, 2021
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity {
@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
             } catch (final Exception e) {
-               // ignored
+                // ignored
             } finally {
                 if (null != urlConnection) {
                     urlConnection.disconnect();
@@ -163,12 +163,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void boot() {
-        final String workspaceDir = Utils.getSiYuanDir(this);
+        final String workspaceDir = Utils.getWorkspacePath();
         new File(workspaceDir).mkdirs();
         new File(workspaceDir + "/data").mkdir();
+
         final File dataDir = getFilesDir();
         final File libDir = new File(dataDir.getAbsolutePath() + "/lib");
-
         try {
             FileUtils.deleteDirectory(new File(workspaceDir + "/app"));
             FileUtils.deleteDirectory(new File(libDir.getAbsolutePath()));
