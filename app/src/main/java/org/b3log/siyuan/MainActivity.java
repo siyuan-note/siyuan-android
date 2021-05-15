@@ -152,8 +152,9 @@ public class MainActivity extends AppCompatActivity {
                     handler.sendEmptyMessage(0);
                     return;
                 }
-            } catch (final Exception e) {
+            } catch (final Throwable e) {
                 // ignored
+                //e.printStackTrace();
             } finally {
                 if (null != urlConnection) {
                     urlConnection.disconnect();
@@ -188,7 +189,8 @@ public class MainActivity extends AppCompatActivity {
         final Locale locale = getResources().getConfiguration().locale;
         final String lang = locale.getLanguage() + "_" + locale.getCountry();
         Androidk.setDefaultLang(lang);
-        Androidk.startKernel(appDir, workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir);
+        final String localIP = Utils.getIpAddressString();
+        Androidk.startKernel(appDir, workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir, localIP);
     }
 
     private void sleep(final long time) {
