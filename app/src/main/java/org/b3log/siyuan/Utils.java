@@ -72,7 +72,7 @@ public final class Utils {
 
     public static String getWorkspacePath() {
         final File documents = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-        final String ret = documents.getAbsolutePath() + "/SiYuan/";
+        final String ret = documents.getAbsolutePath() + "/SiYuan";
         return ret;
     }
 

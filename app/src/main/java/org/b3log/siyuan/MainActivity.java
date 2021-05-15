@@ -163,27 +163,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void boot() {
+        final String appDir = this.getExternalFilesDir("siyuan").getAbsolutePath();
         final String workspaceDir = Utils.getWorkspacePath();
         new File(workspaceDir).mkdirs();
-        new File(workspaceDir + "/data").mkdir();
-
-        final File dataDir = getFilesDir();
-        final File libDir = new File(dataDir.getAbsolutePath() + "/lib");
         try {
-            FileUtils.deleteDirectory(new File(workspaceDir + "/app"));
-            FileUtils.deleteDirectory(new File(libDir.getAbsolutePath()));
+            FileUtils.deleteDirectory(new File(appDir));
         } catch (final Exception e) {
-            Log.wtf("", "Delete dir [" + workspaceDir + "/app] failed, exit application", e);
+            Log.wtf("", "Delete dir [" + appDir + "] failed, exit application", e);
             System.exit(-1);
         }
 
-        Utils.copyAssetFolder(getAssets(), "app", workspaceDir + "/app");
-        Utils.copyAssetFolder(getAssets(), "lib", libDir.getAbsolutePath());
+        final String dataDir = getFilesDir().getAbsolutePath();
+        final String libDir = dataDir + "/lib";
+        try {
+            FileUtils.deleteDirectory(new File(libDir));
+        } catch (final Exception e) {
+            Log.wtf("", "Delete dir [" + libDir + "] failed, exit application", e);
+            System.exit(-1);
+        }
+
+        Utils.copyAssetFolder(getAssets(), "app", appDir + "/app");
+        Utils.copyAssetFolder(getAssets(), "lib", libDir);
 
         final Locale locale = getResources().getConfiguration().locale;
         final String lang = locale.getLanguage() + "_" + locale.getCountry();
         Androidk.setDefaultLang(lang);
-        Androidk.startKernel(workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir.getAbsolutePath());
+        Androidk.startKernel(appDir, workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir);
     }
 
     private void sleep(final long time) {
