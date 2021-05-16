@@ -70,12 +70,6 @@ public final class Utils {
         }
     }
 
-    public static String getWorkspacePath() {
-        final File documents = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-        final String ret = documents.getAbsolutePath() + "/SiYuan";
-        return ret;
-    }
-
     public static boolean copyAssetFolder(final AssetManager assetManager, final String fromAssetPath, final String toPath) {
         try {
             final String[] files = assetManager.list(fromAssetPath);

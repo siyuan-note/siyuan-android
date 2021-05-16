@@ -8,16 +8,12 @@ package org.b3log.siyuan;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -29,10 +25,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -45,10 +38,6 @@ import java.net.URL;
 import java.util.Locale;
 
 import androidk.Androidk;
-
-import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
-import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
-import static android.os.Build.VERSION.SDK_INT;
 
 /**
  * 程序入口.
@@ -67,17 +56,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
-        if (!checkPermission()) {
-            requestPermission();
-        }
-
-        while (true) {
-            if (checkPermission()) {
-                break;
-            }
-            sleep(1000);
-        }
-
         super.onCreate(savedInstanceState);
         getSupportActionBar().hide();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -147,6 +125,36 @@ public class MainActivity extends AppCompatActivity {
         webView.loadUrl("http://127.0.0.1:6806");
     }
 
+    private void boot() {
+        final String dataDir = getFilesDir().getAbsolutePath();
+        final String appDir = dataDir + "/app";
+        new File(appDir).mkdirs();
+        try {
+            FileUtils.deleteDirectory(new File(appDir));
+        } catch (final Exception e) {
+            Log.wtf("", "Delete dir [" + appDir + "] failed, exit application", e);
+            System.exit(-1);
+        }
+
+        final String libDir = dataDir + "/lib";
+        try {
+            FileUtils.deleteDirectory(new File(libDir));
+        } catch (final Exception e) {
+            Log.wtf("", "Delete dir [" + libDir + "] failed, exit application", e);
+            System.exit(-1);
+        }
+
+        Utils.copyAssetFolder(getAssets(), "app", appDir + "/app");
+        Utils.copyAssetFolder(getAssets(), "lib", libDir);
+
+        final Locale locale = getResources().getConfiguration().locale;
+        final String lang = locale.getLanguage() + "_" + locale.getCountry();
+        Androidk.setDefaultLang(lang);
+        final String localIP = Utils.getIpAddressString();
+        final String workspaceDir = getWorkspacePath();
+        Androidk.startKernel(appDir, workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir, localIP);
+    }
+
     private void bootProgress() {
         sleep(500);
         while (true) {
@@ -185,34 +193,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void boot() {
-        final String appDir = this.getExternalFilesDir("siyuan").getAbsolutePath();
-        final String workspaceDir = Utils.getWorkspacePath();
-        new File(workspaceDir).mkdirs();
-        try {
-            FileUtils.deleteDirectory(new File(appDir + "/app"));
-        } catch (final Exception e) {
-            Log.wtf("", "Delete dir [" + appDir + "] failed, exit application", e);
-            System.exit(-1);
-        }
-
-        final String dataDir = getFilesDir().getAbsolutePath();
-        final String libDir = dataDir + "/lib";
-        try {
-            FileUtils.deleteDirectory(new File(libDir));
-        } catch (final Exception e) {
-            Log.wtf("", "Delete dir [" + libDir + "] failed, exit application", e);
-            System.exit(-1);
-        }
-
-        Utils.copyAssetFolder(getAssets(), "app", appDir + "/app");
-        Utils.copyAssetFolder(getAssets(), "lib", libDir);
-
-        final Locale locale = getResources().getConfiguration().locale;
-        final String lang = locale.getLanguage() + "_" + locale.getCountry();
-        Androidk.setDefaultLang(lang);
-        final String localIP = Utils.getIpAddressString();
-        Androidk.startKernel(appDir, workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir, localIP);
+    public String getWorkspacePath() {
+        return getExternalFilesDir("siyuan").getAbsolutePath();
     }
 
     private void sleep(final long time) {
@@ -230,62 +212,5 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onKeyDown(keyCode, event);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            if (SDK_INT >= Build.VERSION_CODES.R) {
-                if (!Environment.isExternalStorageManager()) {
-                    System.exit(1);
-                }
-            }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_REQUEST_CODE:
-                if (grantResults.length > 0) {
-                    final boolean READ_EXTERNAL_STORAGE = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                    final boolean WRITE_EXTERNAL_STORAGE = grantResults[1] == PackageManager.PERMISSION_GRANTED;
-                    if (!READ_EXTERNAL_STORAGE || !WRITE_EXTERNAL_STORAGE) {
-                        System.exit(1);
-                    }
-                }
-                break;
-        }
-    }
-
-    private static final int PERMISSION_REQUEST_CODE = 2296;
-
-    private void requestPermission() {
-        if (SDK_INT >= Build.VERSION_CODES.R) {
-            try {
-                final Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                intent.addCategory("android.intent.category.DEFAULT");
-                intent.setData(Uri.parse(String.format("package:%s", getApplicationContext().getPackageName())));
-                startActivityForResult(intent, PERMISSION_REQUEST_CODE);
-            } catch (final Exception e) {
-                final Intent intent = new Intent();
-                intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-                startActivityForResult(intent, PERMISSION_REQUEST_CODE);
-            }
-        } else {
-            // below android 11
-            ActivityCompat.requestPermissions(this, new String[]{READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
-        }
-    }
-
-    private boolean checkPermission() {
-        if (SDK_INT >= Build.VERSION_CODES.R) {
-            return Environment.isExternalStorageManager();
-        } else {
-            final int result = ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE);
-            final int result1 = ContextCompat.checkSelfPermission(this, WRITE_EXTERNAL_STORAGE);
-            return result == PackageManager.PERMISSION_GRANTED && result1 == PackageManager.PERMISSION_GRANTED;
-        }
     }
 }
