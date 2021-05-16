@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
             if (checkPermission()) {
                 break;
             }
-            sleep(100);
+            sleep(1000);
         }
 
         super.onCreate(savedInstanceState);
@@ -95,8 +95,8 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        bootProgressBar = (ProgressBar) findViewById(R.id.progressBar);
-        bootDetailsText = (TextView) findViewById(R.id.bootDetails);
+        bootProgressBar = findViewById(R.id.progressBar);
+        bootDetailsText = findViewById(R.id.bootDetails);
         bootDetailsText.setText("Booting...");
         webView = findViewById(R.id.webView);
         webView.setVisibility(View.GONE);
@@ -190,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
         final String workspaceDir = Utils.getWorkspacePath();
         new File(workspaceDir).mkdirs();
         try {
-            FileUtils.deleteDirectory(new File(appDir));
+            FileUtils.deleteDirectory(new File(appDir + "/app"));
         } catch (final Exception e) {
             Log.wtf("", "Delete dir [" + appDir + "] failed, exit application", e);
             System.exit(-1);
@@ -249,8 +249,9 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case PERMISSION_REQUEST_CODE:
                 if (grantResults.length > 0) {
-                    boolean WRITE_EXTERNAL_STORAGE = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                    if (!WRITE_EXTERNAL_STORAGE) {
+                    final boolean READ_EXTERNAL_STORAGE = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                    final boolean WRITE_EXTERNAL_STORAGE = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+                    if (!READ_EXTERNAL_STORAGE || !WRITE_EXTERNAL_STORAGE) {
                         System.exit(1);
                     }
                 }
@@ -273,8 +274,8 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(intent, PERMISSION_REQUEST_CODE);
             }
         } else {
-            //below android 11
-            ActivityCompat.requestPermissions(this, new String[]{WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
+            // below android 11
+            ActivityCompat.requestPermissions(this, new String[]{READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
         }
     }
 
