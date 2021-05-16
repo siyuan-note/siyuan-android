@@ -264,12 +264,12 @@ public class MainActivity extends AppCompatActivity {
     private void requestPermission() {
         if (SDK_INT >= Build.VERSION_CODES.R) {
             try {
-                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                final Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
                 intent.addCategory("android.intent.category.DEFAULT");
                 intent.setData(Uri.parse(String.format("package:%s", getApplicationContext().getPackageName())));
                 startActivityForResult(intent, PERMISSION_REQUEST_CODE);
-            } catch (Exception e) {
-                Intent intent = new Intent();
+            } catch (final Exception e) {
+                final Intent intent = new Intent();
                 intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
                 startActivityForResult(intent, PERMISSION_REQUEST_CODE);
             }
@@ -283,8 +283,8 @@ public class MainActivity extends AppCompatActivity {
         if (SDK_INT >= Build.VERSION_CODES.R) {
             return Environment.isExternalStorageManager();
         } else {
-            int result = ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE);
-            int result1 = ContextCompat.checkSelfPermission(this, WRITE_EXTERNAL_STORAGE);
+            final int result = ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE);
+            final int result1 = ContextCompat.checkSelfPermission(this, WRITE_EXTERNAL_STORAGE);
             return result == PackageManager.PERMISSION_GRANTED && result1 == PackageManager.PERMISSION_GRANTED;
         }
     }
