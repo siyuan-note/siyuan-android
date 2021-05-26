@@ -47,7 +47,7 @@ import androidk.Androidk;
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity {
-    WebView webView;
+    private WebView webView;
     private ProgressBar bootProgressBar;
     private TextView bootDetailsText;
     private int bootProgress;

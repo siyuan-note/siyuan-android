@@ -31,13 +31,6 @@ public final class JSAndroid {
     }
 
     @JavascriptInterface
-    public void setReadonly(final boolean readonly) {
-        activity.webView.setClickable(!readonly);
-        activity.webView.setLongClickable(!readonly);
-        activity.webView.setEnabled(!readonly);
-    }
-
-    @JavascriptInterface
     public void openExternal(final String url) {
         if (!url.startsWith("http://127.0.0.1")) {
             final Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
