@@ -6,7 +6,6 @@
  */
 package org.b3log.siyuan;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.StrictMode;
@@ -25,10 +24,17 @@ import java.lang.reflect.Method;
  * @since 1.0.0
  */
 public final class JSAndroid {
-    private Activity activity;
+    private MainActivity activity;
 
-    public JSAndroid(final Activity activity) {
+    public JSAndroid(final MainActivity activity) {
         this.activity = activity;
+    }
+
+    @JavascriptInterface
+    public void setReadonly(final boolean readonly) {
+        activity.webView.setClickable(!readonly);
+        activity.webView.setLongClickable(!readonly);
+        activity.webView.setEnabled(!readonly);
     }
 
     @JavascriptInterface

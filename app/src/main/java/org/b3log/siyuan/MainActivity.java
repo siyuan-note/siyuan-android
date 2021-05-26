@@ -47,7 +47,7 @@ import androidk.Androidk;
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity {
-    private WebView webView;
+    WebView webView;
     private ProgressBar bootProgressBar;
     private TextView bootDetailsText;
     private int bootProgress;
@@ -97,6 +97,9 @@ public class MainActivity extends AppCompatActivity {
         final ImageView bootLogo = findViewById(R.id.bootLogo);
         bootLogo.setVisibility(View.GONE);
         webView.setVisibility(View.VISIBLE);
+        webView.setEnabled(false);
+        webView.setClickable(false);
+        webView.setLongClickable(false);
 
         AndroidBug5497Workaround.assistActivity(this);
         webView.setWebViewClient(new WebViewClient() {
