@@ -8,6 +8,8 @@ package org.b3log.siyuan;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -53,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private int bootProgress;
     private String bootDetails;
     private Handler handler;
+    private String version;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -61,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
         getWindow().setNavigationBarColor(Color.TRANSPARENT);
-
         final View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -70,8 +72,8 @@ public class MainActivity extends AppCompatActivity {
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         );
-
         setContentView(R.layout.activity_main);
+        initVersion();
 
         bootProgressBar = findViewById(R.id.progressBar);
         bootDetailsText = findViewById(R.id.bootDetails);
@@ -193,8 +195,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public String getWorkspacePath() {
+    private String getWorkspacePath() {
         return getExternalFilesDir("siyuan").getAbsolutePath();
+    }
+
+    private void initVersion() {
+        try {
+            final PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            version = pInfo.versionName;
+        } catch (final PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     private void sleep(final long time) {
