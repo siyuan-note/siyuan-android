@@ -234,6 +234,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onConfigurationChanged(final Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        webView.reload();
+        AndroidBug5497Workaround.assistActivity(this);
     }
 }
