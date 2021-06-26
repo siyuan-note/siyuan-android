@@ -18,7 +18,7 @@
             android:id="@+id/bootLogo"
             android:layout_width="64dp"
             android:layout_height="64dp"
-            android:contentDescription="TODO"
+            android:contentDescription="Boot logo"
             app:srcCompat="@drawable/icon" />
 
         <ProgressBar
