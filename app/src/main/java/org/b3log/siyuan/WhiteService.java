@@ -56,7 +56,7 @@ public class WhiteService extends Service {
         final NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
         final Notification notification = notificationBuilder.setOngoing(true)
                 .setSmallIcon(R.drawable.icon)
-                .setContentTitle("SiYuan is running...")
+                .setContentTitle("Then the piper will lead us to reason")
                 .setPriority(NotificationManager.IMPORTANCE_MIN)
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .build();
