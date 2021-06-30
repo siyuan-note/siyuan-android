@@ -92,8 +92,9 @@ public class MainActivity extends AppCompatActivity {
         new Thread(this::boot).start();
         new Thread(this::bootProgress).start();
 
+        // 通知栏保活
         final Intent intent = new Intent(MainActivity.this, WhiteService.class);
-        startService(intent);// （服务与开启者无联系的启动形式  ）
+        startService(intent);
     }
 
     @SuppressLint("SetJavaScriptEnabled")
