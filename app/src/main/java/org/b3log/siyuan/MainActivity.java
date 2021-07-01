@@ -91,10 +91,17 @@ public class MainActivity extends AppCompatActivity {
 
         new Thread(this::boot).start();
         new Thread(this::bootProgress).start();
+        new Thread(this::keepLive).start();
+    }
 
+    private void keepLive() {
         // 通知栏保活
-        final Intent intent = new Intent(MainActivity.this, WhiteService.class);
-        startService(intent);
+        while (true) {
+            final Intent intent = new Intent(MainActivity.this, WhiteService.class);
+            startService(intent);
+            sleep(45 * 1000);
+            stopService(intent);
+        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")

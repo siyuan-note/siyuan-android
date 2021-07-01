@@ -19,6 +19,8 @@ import android.os.IBinder;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
+import java.util.Random;
+
 /**
  * 保活服务.
  *
@@ -43,6 +45,16 @@ public class WhiteService extends Service {
         }
     }
 
+    private final String[] words = new String[]{
+            "We are programmed to receive",
+            "Then the piper will lead us to reason",
+            "You're not the only one",
+            "Sometimes I need some time...all alone",
+            "We still can find a way"
+    };
+
+    private Random random = new Random();
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void startMyOwnForeground() {
         final String NOTIFICATION_CHANNEL_ID = "org.b3log.siyuan";
@@ -52,11 +64,10 @@ public class WhiteService extends Service {
         chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
         final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         manager.createNotificationChannel(chan);
-
         final NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
         final Notification notification = notificationBuilder.setOngoing(true)
                 .setSmallIcon(R.drawable.icon)
-                .setContentTitle("Then the piper will lead us to reason")
+                .setContentTitle(words[random.nextInt(words.length)])
                 .setPriority(NotificationManager.IMPORTANCE_MIN)
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .build();
