@@ -49,8 +49,9 @@ public class WhiteService extends Service {
             "We are programmed to receive",
             "Then the piper will lead us to reason",
             "You're not the only one",
-            "Sometimes I need some time...all alone",
-            "We still can find a way"
+            "Sometimes I need some time all alone",
+            "We still can find a way",
+            "You gotta make it your own way",
     };
 
     private Random random = new Random();
