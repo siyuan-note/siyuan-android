@@ -52,6 +52,7 @@ public class WhiteService extends Service {
             "Sometimes I need some time all alone",
             "We still can find a way",
             "You gotta make it your own way",
+            "Everybody needs somebody",
     };
 
     private Random random = new Random();
