@@ -46,7 +46,7 @@ import mobile.Mobile;
  * 程序入口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.1, May 14, 2021
+ * @version 1.0.0.2, Jul 24, 2021
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity {
@@ -131,7 +131,6 @@ public class MainActivity extends AppCompatActivity {
         final WebSettings ws = webView.getSettings();
         ws.setJavaScriptEnabled(true);
         ws.setDomStorageEnabled(true);
-        ws.setAppCacheEnabled(false);
         ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
         ws.setTextZoom(100);
         ws.setUseWideViewPort(true);
@@ -239,7 +238,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        moveTaskToBack(true);
+        webView.evaluateJavascript("javascript:window.goBack()", null);
     }
 
     @Override
