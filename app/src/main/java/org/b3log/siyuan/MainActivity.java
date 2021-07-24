@@ -40,7 +40,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Locale;
 
-import androidk.Androidk;
+import mobile.Mobile;
 
 /**
  * 程序入口.
@@ -163,10 +163,10 @@ public class MainActivity extends AppCompatActivity {
 
         final Locale locale = getResources().getConfiguration().locale;
         final String lang = locale.getLanguage() + "_" + locale.getCountry();
-        Androidk.setDefaultLang(lang);
+        Mobile.setDefaultLang(lang);
         final String localIP = Utils.getIpAddressString();
         final String workspaceDir = getWorkspacePath();
-        Androidk.startKernel(appDir, workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir, localIP);
+        Mobile.startKernel(appDir, workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir, localIP);
     }
 
     private void bootProgress() {
