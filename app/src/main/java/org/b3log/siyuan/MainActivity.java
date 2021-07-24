@@ -229,8 +229,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onKeyDown(final int keyCode, final KeyEvent event) {
-        if ((keyCode == KeyEvent.KEYCODE_BACK) && webView.canGoBack()) {
-            webView.goBack();
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            webView.evaluateJavascript("javascript:window.goBack()", null);
             return true;
         }
         return super.onKeyDown(keyCode, event);
