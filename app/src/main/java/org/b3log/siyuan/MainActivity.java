@@ -175,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
 
             HttpURLConnection urlConnection = null;
             try {
-                final URL bootProgressURL = new URL("http://127.0.0.1:6806/api/system/boot/progress");
+                final URL bootProgressURL = new URL("http://127.0.0.1:6806/api/system/bootProgress");
                 urlConnection = (HttpURLConnection) bootProgressURL.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.setDefaultUseCaches(false);
