@@ -83,4 +83,4 @@ lint/outputs/
 lint/tmp/
 # lint/reports/
 
-app/src/main/assets/*.zip
+app/src/main/assets/app.zip
