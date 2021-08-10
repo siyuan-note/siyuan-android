@@ -157,8 +157,8 @@ public class MainActivity extends AppCompatActivity {
             System.exit(-1);
         }
 
-        Utils.copyAssetFolder(getAssets(), "app", appDir + "/app");
-        Utils.copyAssetFolder(getAssets(), "lib", libDir);
+        Utils.unzipAsset(getAssets(), "app.zip", appDir + "/app");
+        Utils.unzipAsset(getAssets(), "lib.zip", libDir);
 
         final Locale locale = getResources().getConfiguration().locale;
         final String lang = locale.getLanguage() + "_" + locale.getCountry();

@@ -6,14 +6,14 @@
  */
 package org.b3log.siyuan;
 
-import android.app.Activity;
 import android.content.res.AssetManager;
-import android.os.Environment;
 import android.util.Log;
 
 import org.apache.commons.io.IOUtils;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,6 +26,8 @@ import java.net.SocketException;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * 工具类.
@@ -70,11 +72,53 @@ public final class Utils {
         }
     }
 
+    public static void unzipAsset(final AssetManager assetManager, final String zipName, final String targetDirectory) {
+        ZipInputStream zis = null;
+        try {
+            final InputStream zipFile = assetManager.open(zipName);
+            zis = new ZipInputStream(new BufferedInputStream(zipFile));
+            ZipEntry ze;
+            int count;
+            byte[] buffer = new byte[1024 * 512];
+            while ((ze = zis.getNextEntry()) != null) {
+                File file = new File(targetDirectory, ze.getName());
+                File dir = ze.isDirectory() ? file : file.getParentFile();
+                if (!dir.isDirectory() && !dir.mkdirs())
+                    throw new FileNotFoundException("Failed to ensure directory: " + dir.getAbsolutePath());
+                if (ze.isDirectory())
+                    continue;
+                FileOutputStream fout = new FileOutputStream(file);
+                try {
+                    while ((count = zis.read(buffer)) != -1)
+                        fout.write(buffer, 0, count);
+                } finally {
+                    fout.close();
+                }
+            /* if time should be restored as well
+            long time = ze.getTime();
+            if (time > 0)
+                file.setLastModified(time);
+            */
+            }
+        } catch (final Exception e) {
+            Log.e("", "unzip asset [from=" + zipName + ", to=" + targetDirectory + "] failed", e);
+        } finally {
+            if (null != zis) {
+                try {
+                    zis.close();
+                } catch (final Exception e) {
+                }
+            }
+        }
+    }
+
+
     public static boolean copyAssetFolder(final AssetManager assetManager, final String fromAssetPath, final String toPath) {
         try {
             final String[] files = assetManager.list(fromAssetPath);
             new File(toPath).mkdirs();
             boolean res = true;
+            Log.i("copy asset", fromAssetPath + ":" + toPath);
             for (final String file : files) {
                 final String[] subFiles = assetManager.list(fromAssetPath + "/" + file);
                 if (1 > subFiles.length) {
