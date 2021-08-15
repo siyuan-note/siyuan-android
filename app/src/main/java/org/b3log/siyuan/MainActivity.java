@@ -165,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
         Mobile.setDefaultLang(lang);
         final String localIP = Utils.getIpAddressString();
         final String workspaceDir = getWorkspacePath();
-        Mobile.startKernel(appDir, workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir, localIP);
+        Mobile.startKernel("android", appDir, workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir, localIP);
     }
 
     private void bootProgress() {
