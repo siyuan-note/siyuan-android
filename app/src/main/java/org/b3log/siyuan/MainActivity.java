@@ -135,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
         ws.setTextZoom(100);
         ws.setUseWideViewPort(true);
         ws.setLoadWithOverviewMode(true);
+        ws.setUserAgentString("SiYuan/" + version + " https://b3log.org/siyuan " + ws.getUserAgentString());
         webView.loadUrl("http://127.0.0.1:6806");
     }
 
