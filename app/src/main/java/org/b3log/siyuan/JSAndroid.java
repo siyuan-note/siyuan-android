@@ -20,7 +20,7 @@ import java.lang.reflect.Method;
  * JavaScript 接口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.1, Jul 24, 2021
+ * @version 1.0.1.0, Aug 30, 2021
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -37,7 +37,7 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void openExternal(final String url) {
-        if (!url.startsWith("http://127.0.0.1")) {
+        if (!url.startsWith("assets/")) {
             final Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             activity.startActivity(browserIntent);
             return;
