@@ -8,6 +8,7 @@ package org.b3log.siyuan;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -113,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
         webView.setVisibility(View.VISIBLE);
 
         AndroidBug5497Workaround.assistActivity(this);
+
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(final WebView view, final String url) {
@@ -120,7 +122,12 @@ public class MainActivity extends AppCompatActivity {
                     view.loadUrl(url);
                 } else {
                     final Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                    startActivity(i);
+                    final ActivityInfo info = i.resolveActivityInfo(getPackageManager(), PackageManager.MATCH_ALL);
+                    if (null == info || !info.exported) {
+//                        Toast.makeText(getApplicationContext(), "No application that can handle this link [" + url + "]", Toast.LENGTH_LONG).show();
+                    } else {
+                        startActivity(i);
+                    }
                 }
                 return true;
             }
