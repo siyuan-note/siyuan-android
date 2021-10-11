@@ -8,19 +8,13 @@ package org.b3log.siyuan;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.os.StrictMode;
 import android.webkit.JavascriptInterface;
-import android.webkit.MimeTypeMap;
-
-import org.apache.commons.io.FilenameUtils;
-
-import java.lang.reflect.Method;
 
 /**
  * JavaScript 接口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.1.0, Aug 30, 2021
+ * @version 1.0.1.0, Oct 11, 2021
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -36,28 +30,13 @@ public final class JSAndroid {
     }
 
     @JavascriptInterface
-    public void openExternal(final String url) {
-        if (!url.startsWith("assets/")) {
-            final Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            activity.startActivity(browserIntent);
-            return;
+    public void openExternal(String url) {
+        if (url.startsWith("assets/")) {
+            url = "http://127.0.0.1:6806/" + url;
         }
 
-        try {
-            final Method m = StrictMode.class.getMethod("disableDeathOnFileUriExposure");
-            m.invoke(null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        final MimeTypeMap map = MimeTypeMap.getSingleton();
-        final String ext = FilenameUtils.getExtension(url);
-        String type = map.getMimeTypeFromExtension(ext);
-        if (type == null) {
-            type = "application/pdf";
-        }
         final Uri uri = Uri.parse(url);
-        final Intent intent = new Intent(Intent.ACTION_VIEW).setDataAndType(uri, type).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        activity.startActivity(intent);
+        final Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
+        activity.startActivity(browserIntent);
     }
 }
