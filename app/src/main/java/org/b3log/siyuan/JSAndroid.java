@@ -8,7 +8,12 @@ package org.b3log.siyuan;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 
 /**
  * JavaScript 接口.
@@ -24,8 +29,11 @@ public final class JSAndroid {
         this.activity = activity;
     }
 
+    private static boolean syncing;
+
     @JavascriptInterface
     public void returnDesktop() {
+        new Thread(this::syncByHand).start();
         activity.moveTaskToBack(true);
     }
 
@@ -38,5 +46,22 @@ public final class JSAndroid {
         final Uri uri = Uri.parse(url);
         final Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
         activity.startActivity(browserIntent);
+    }
+
+    private void syncByHand() {
+        try {
+            if (syncing) {
+                return;
+            }
+            syncing = true;
+            final OkHttpClient client = new OkHttpClient();
+            final RequestBody body = RequestBody.create(null, new byte[0]);
+            final Request request = new Request.Builder().url("http://127.0.0.1:6806/api/sync/performSync").method("POST", body).build();
+            client.newCall(request).execute();
+        } catch (final Throwable e) {
+            Log.e("sync", "sync by hand failed", e);
+        } finally {
+            syncing = false;
+        }
     }
 }

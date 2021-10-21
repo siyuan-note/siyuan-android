@@ -56,4 +56,5 @@ dependencies {
 
     implementation(name: 'kernel', ext: 'aar')
     implementation('commons-io:commons-io:2.4')
+    implementation("com.squareup.okhttp3:okhttp:4.9.2")
 }
