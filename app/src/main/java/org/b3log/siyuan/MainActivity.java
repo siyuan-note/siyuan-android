@@ -22,12 +22,15 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -59,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
     private Handler handler;
     private String version;
 
+    public ValueCallback<Uri[]> uploadMessage;
+    public static final int REQUEST_SELECT_FILE = 100;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,11 +88,31 @@ public class MainActivity extends AppCompatActivity {
         bootDetailsText.setText("Booting...");
         webView = findViewById(R.id.webView);
         webView.setVisibility(View.GONE);
+        webView.setWebChromeClient(new WebChromeClient() {
+
+            @Override
+            public boolean onShowFileChooser(WebView mWebView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams) {
+                if (uploadMessage != null) {
+                    uploadMessage.onReceiveValue(null);
+                    uploadMessage = null;
+                }
+
+                uploadMessage = filePathCallback;
+                Intent intent = fileChooserParams.createIntent();
+                try {
+                    startActivityForResult(intent, REQUEST_SELECT_FILE);
+                } catch (final Exception e) {
+                    uploadMessage = null;
+                    Toast.makeText(getApplicationContext(), "Cannot open file chooser", Toast.LENGTH_LONG).show();
+                    return false;
+                }
+                return true;
+            }
+        });
 
         handler = new Handler(Looper.getMainLooper()) {
             public void handleMessage(final Message msg) {
                 showMainUI();
-                Log.i("", "show");
             }
         };
 
@@ -253,5 +279,17 @@ public class MainActivity extends AppCompatActivity {
     public void onConfigurationChanged(final Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         AndroidBug5497Workaround.assistActivity(this);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (requestCode == REQUEST_SELECT_FILE) {
+            if (uploadMessage == null) {
+                return;
+            }
+            uploadMessage.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, intent));
+            uploadMessage = null;
+        }
+        super.onActivityResult(requestCode, resultCode, intent);
     }
 }
