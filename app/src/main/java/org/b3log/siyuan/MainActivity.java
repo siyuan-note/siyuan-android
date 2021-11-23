@@ -115,11 +115,11 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("SetJavaScriptEnabled")
     private void showBootIndex() {
+        webView.setVisibility(View.VISIBLE);
         bootProgressBar.setVisibility(View.GONE);
         bootDetailsText.setVisibility(View.GONE);
         final ImageView bootLogo = findViewById(R.id.bootLogo);
         bootLogo.setVisibility(View.GONE);
-        webView.setVisibility(View.VISIBLE);
 
         AndroidBug5497Workaround.assistActivity(this);
 
