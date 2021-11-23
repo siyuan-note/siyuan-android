@@ -35,13 +35,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.json.JSONObject;
 
 import java.io.File;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Locale;
 
 import mobile.Mobile;
@@ -57,8 +52,6 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private ProgressBar bootProgressBar;
     private TextView bootDetailsText;
-    private int bootProgress;
-    private String bootDetails;
     private Handler handler;
     private String version;
 
@@ -83,9 +76,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         initVersion();
 
-        bootProgressBar = findViewById(R.id.progressBar);
-        bootDetailsText = findViewById(R.id.bootDetails);
-        bootDetailsText.setText("Booting...");
+        new Thread(this::init).start();
+
         webView = findViewById(R.id.webView);
         webView.setVisibility(View.GONE);
         webView.setWebChromeClient(new WebChromeClient() {
@@ -112,27 +104,17 @@ public class MainActivity extends AppCompatActivity {
 
         handler = new Handler(Looper.getMainLooper()) {
             public void handleMessage(final Message msg) {
-                showMainUI();
+                if ("startKernel".equals(msg.getData().getString("cmd"))) {
+                    bootKernel();
+                } else {
+                    showBootIndex();
+                }
             }
         };
-
-        new Thread(this::boot).start();
-        new Thread(this::bootProgress).start();
-        new Thread(this::keepLive).start();
-    }
-
-    private void keepLive() {
-        // 通知栏保活
-        while (true) {
-            final Intent intent = new Intent(MainActivity.this, WhiteService.class);
-            startService(intent);
-            sleep(45 * 1000);
-            stopService(intent);
-        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private void showMainUI() {
+    private void showBootIndex() {
         bootProgressBar.setVisibility(View.GONE);
         bootDetailsText.setVisibility(View.GONE);
         final ImageView bootLogo = findViewById(R.id.bootLogo);
@@ -169,10 +151,37 @@ public class MainActivity extends AppCompatActivity {
         ws.setUseWideViewPort(true);
         ws.setLoadWithOverviewMode(true);
         ws.setUserAgentString("SiYuan/" + version + " https://b3log.org/siyuan " + ws.getUserAgentString());
-        webView.loadUrl("http://127.0.0.1:6806");
+        webView.loadUrl("http://127.0.0.1:6806/appearance/boot/index.html");
+
+        new Thread(this::keepLive).start();
     }
 
-    private void boot() {
+    private void bootKernel() {
+        final String dataDir = getFilesDir().getAbsolutePath();
+        final String appDir = dataDir + "/app";
+
+        final Locale locale = getResources().getConfiguration().locale;
+        final String lang = locale.getLanguage() + "_" + locale.getCountry();
+        Mobile.setDefaultLang(lang);
+        final String localIP = Utils.getIpAddressString();
+        final String workspaceDir = getWorkspacePath();
+        new Thread(() -> {
+            Mobile.startKernel("android", appDir, workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir, localIP);
+        }).start();
+        sleep(100);
+        final Bundle b = new Bundle();
+        b.putString("cmd", "bootIndex");
+        final Message msg = new Message();
+        msg.setData(b);
+        handler.sendMessage(msg);
+    }
+
+    private void init() {
+        bootProgressBar = findViewById(R.id.progressBar);
+        bootDetailsText = findViewById(R.id.bootDetails);
+        bootDetailsText.setText("Initializing appearance...");
+        bootProgressBar.setProgress(10);
+
         final String dataDir = getFilesDir().getAbsolutePath();
         final String appDir = dataDir + "/app";
         new File(appDir).mkdirs();
@@ -182,7 +191,9 @@ public class MainActivity extends AppCompatActivity {
             Log.wtf("", "Delete dir [" + appDir + "] failed, exit application", e);
             System.exit(-1);
         }
-
+        Utils.unzipAsset(getAssets(), "app.zip", appDir + "/app");
+        bootProgressBar.setProgress(40);
+        bootDetailsText.setText("Initializing libraries...");
         final String libDir = dataDir + "/lib";
         try {
             FileUtils.deleteDirectory(new File(libDir));
@@ -190,53 +201,25 @@ public class MainActivity extends AppCompatActivity {
             Log.wtf("", "Delete dir [" + libDir + "] failed, exit application", e);
             System.exit(-1);
         }
-
-        Utils.unzipAsset(getAssets(), "app.zip", appDir + "/app");
         Utils.unzipAsset(getAssets(), "lib.zip", libDir);
-
-        final Locale locale = getResources().getConfiguration().locale;
-        final String lang = locale.getLanguage() + "_" + locale.getCountry();
-        Mobile.setDefaultLang(lang);
-        final String localIP = Utils.getIpAddressString();
-        final String workspaceDir = getWorkspacePath();
-        Mobile.startKernel("android", appDir, workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir, localIP);
+        bootDetailsText.setText("Booting kernel...");
+        bootProgressBar.setProgress(80);
+        final Bundle b = new Bundle();
+        b.putString("cmd", "startKernel");
+        final Message msg = new Message();
+        msg.setData(b);
+        handler.sendMessage(msg);
     }
 
-    private void bootProgress() {
-        sleep(500);
+    /**
+     * 通知栏保活。
+     */
+    private void keepLive() {
         while (true) {
-            sleep(100);
-
-            HttpURLConnection urlConnection = null;
-            try {
-                final URL bootProgressURL = new URL("http://127.0.0.1:6806/api/system/bootProgress");
-                urlConnection = (HttpURLConnection) bootProgressURL.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.setDefaultUseCaches(false);
-                urlConnection.setConnectTimeout(500);
-                urlConnection.setReadTimeout(1000);
-                final InputStream inputStream = urlConnection.getInputStream();
-                final String content = IOUtils.toString(inputStream);
-                final JSONObject result = new JSONObject(content);
-                final JSONObject data = result.optJSONObject("data");
-                bootDetails = data.optString("details");
-                bootProgress = data.optInt("progress");
-                runOnUiThread(() -> {
-                    bootDetailsText.setText(bootDetails);
-                    bootProgressBar.setProgress(bootProgress);
-                });
-                if (100 <= bootProgress) {
-                    handler.sendEmptyMessage(0);
-                    return;
-                }
-            } catch (final Throwable e) {
-                // ignored
-                //e.printStackTrace();
-            } finally {
-                if (null != urlConnection) {
-                    urlConnection.disconnect();
-                }
-            }
+            final Intent intent = new Intent(MainActivity.this, WhiteService.class);
+            startService(intent);
+            sleep(45 * 1000);
+            stopService(intent);
         }
     }
 
