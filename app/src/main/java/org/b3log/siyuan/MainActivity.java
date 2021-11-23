@@ -151,8 +151,15 @@ public class MainActivity extends AppCompatActivity {
         ws.setUseWideViewPort(true);
         ws.setLoadWithOverviewMode(true);
         ws.setUserAgentString("SiYuan/" + version + " https://b3log.org/siyuan " + ws.getUserAgentString());
-        webView.loadUrl("http://127.0.0.1:6806/appearance/boot/index.html");
 
+        for (int i = 0; i < 200; i++) { // 等待内核 HTTP 服务伺服
+            sleep(50);
+            if (Mobile.isHttpServing()) {
+                break;
+            }
+        }
+
+        webView.loadUrl("http://127.0.0.1:6806/appearance/boot/index.html");
         new Thread(this::keepLive).start();
     }
 
