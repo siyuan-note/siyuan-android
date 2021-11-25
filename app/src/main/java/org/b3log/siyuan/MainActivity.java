@@ -45,7 +45,7 @@ import mobile.Mobile;
  * 程序入口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.2, Jul 24, 2021
+ * @version 1.0.0.3, Nov 25, 2021
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity {
@@ -186,8 +186,7 @@ public class MainActivity extends AppCompatActivity {
     private void init() {
         bootProgressBar = findViewById(R.id.progressBar);
         bootDetailsText = findViewById(R.id.bootDetails);
-        bootDetailsText.setText("Initializing appearance...");
-        bootProgressBar.setProgress(10);
+        setBootProgress("Initializing appearance...", 10);
 
         final String dataDir = getFilesDir().getAbsolutePath();
         final String appDir = dataDir + "/app";
@@ -199,8 +198,7 @@ public class MainActivity extends AppCompatActivity {
             System.exit(-1);
         }
         Utils.unzipAsset(getAssets(), "app.zip", appDir + "/app");
-        bootProgressBar.setProgress(40);
-        bootDetailsText.setText("Initializing libraries...");
+        setBootProgress("Initializing libraries...", 40);
         final String libDir = dataDir + "/lib";
         try {
             FileUtils.deleteDirectory(new File(libDir));
@@ -209,8 +207,7 @@ public class MainActivity extends AppCompatActivity {
             System.exit(-1);
         }
         Utils.unzipAsset(getAssets(), "lib.zip", libDir);
-        bootDetailsText.setText("Booting kernel...");
-        bootProgressBar.setProgress(80);
+        setBootProgress("Booting kernel...", 80);
         final Bundle b = new Bundle();
         b.putString("cmd", "startKernel");
         final Message msg = new Message();
@@ -228,6 +225,13 @@ public class MainActivity extends AppCompatActivity {
             sleep(45 * 1000);
             stopService(intent);
         }
+    }
+
+    private void setBootProgress(final String text, final int progressPercent) {
+        runOnUiThread(() -> {
+            bootDetailsText.setText(text);
+            bootProgressBar.setProgress(progressPercent);
+        });
     }
 
     private String getWorkspacePath() {
