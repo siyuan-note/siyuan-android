@@ -14,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -45,7 +46,7 @@ import mobile.Mobile;
  * 程序入口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.3, Nov 25, 2021
+ * @version 1.0.0.4, Dec 2, 2021
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity {
@@ -73,6 +74,9 @@ public class MainActivity extends AppCompatActivity {
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         );
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            getWindow().getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER;
+        }
         setContentView(R.layout.activity_main);
         initVersion();
 
