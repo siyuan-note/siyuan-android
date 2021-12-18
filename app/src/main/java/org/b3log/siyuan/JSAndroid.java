@@ -41,6 +41,9 @@ public final class JSAndroid {
     public void openExternal(String url) {
         if (url.startsWith("assets/")) {
             url = "http://127.0.0.1:6806/" + url;
+        } else if (url.contains("siyuan://api/system/exit")) {
+            activity.finishAndRemoveTask();
+            System.exit(0);
         }
 
         final Uri uri = Uri.parse(url);
