@@ -19,7 +19,7 @@ import okhttp3.RequestBody;
  * JavaScript 接口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.1.0, Oct 11, 2021
+ * @version 1.0.1.1, Dec 23, 2021
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -41,9 +41,6 @@ public final class JSAndroid {
     public void openExternal(String url) {
         if (url.startsWith("assets/")) {
             url = "http://127.0.0.1:6806/" + url;
-        } else if (url.contains("siyuan://api/system/exit")) {
-            activity.finishAndRemoveTask();
-            System.exit(0);
         }
 
         final Uri uri = Uri.parse(url);

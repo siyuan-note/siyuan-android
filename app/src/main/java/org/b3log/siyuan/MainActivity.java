@@ -46,7 +46,7 @@ import mobile.Mobile;
  * 程序入口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.4, Dec 2, 2021
+ * @version 1.0.1.0, Dec 23, 2021
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity {
@@ -132,6 +132,9 @@ public class MainActivity extends AppCompatActivity {
             public boolean shouldOverrideUrlLoading(final WebView view, final String url) {
                 if (url.contains("127.0.0.1")) {
                     view.loadUrl(url);
+                } else if (url.contains("siyuan://api/system/exit")) {
+                    finishAndRemoveTask();
+                    System.exit(0);
                 } else {
                     final Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     final ActivityInfo info = i.resolveActivityInfo(getPackageManager(), PackageManager.MATCH_ALL);
