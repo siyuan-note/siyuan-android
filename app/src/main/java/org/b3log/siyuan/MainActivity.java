@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
     private void init() {
         bootProgressBar = findViewById(R.id.progressBar);
         bootDetailsText = findViewById(R.id.bootDetails);
-        setBootProgress("Initializing appearance...", 10);
+        setBootProgress("Initializing appearance...", 20);
 
         final String dataDir = getFilesDir().getAbsolutePath();
         final String appDir = dataDir + "/app";
@@ -205,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
             System.exit(-1);
         }
         Utils.unzipAsset(getAssets(), "app.zip", appDir + "/app");
-        setBootProgress("Initializing libraries...", 40);
+        setBootProgress("Initializing libraries...", 50);
         final String libDir = dataDir + "/lib";
         try {
             FileUtils.deleteDirectory(new File(libDir));
