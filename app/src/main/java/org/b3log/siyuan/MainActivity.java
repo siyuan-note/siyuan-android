@@ -34,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import org.apache.commons.io.FileUtils;
 
@@ -46,7 +47,7 @@ import mobile.Mobile;
  * 程序入口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.1.0, Dec 23, 2021
+ * @version 1.0.2.0, Dec 24, 2021
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity {
@@ -227,10 +228,13 @@ public class MainActivity extends AppCompatActivity {
      */
     private void keepLive() {
         while (true) {
-            final Intent intent = new Intent(MainActivity.this, WhiteService.class);
-            startService(intent);
-            sleep(45 * 1000);
-            stopService(intent);
+            try {
+                final Intent intent = new Intent(MainActivity.this, WhiteService.class);
+                ContextCompat.startForegroundService(this, intent);
+                sleep(5000);
+                stopService(intent);
+            } catch (final Throwable t) {
+            }
         }
     }
 
