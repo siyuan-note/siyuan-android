@@ -231,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 final Intent intent = new Intent(MainActivity.this, WhiteService.class);
                 ContextCompat.startForegroundService(this, intent);
-                sleep(5000);
+                sleep(45 * 1000);
                 stopService(intent);
             } catch (final Throwable t) {
             }
