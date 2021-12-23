@@ -53,6 +53,10 @@ public class WhiteService extends Service {
             "We still can find a way",
             "You gotta make it your own way",
             "Everybody needs somebody",
+            "原谅我这一生不羁放纵爱自由",
+            "我要再次找那旧日的足迹",
+            "心中一股冲劲勇闯，抛开那现实没有顾虑",
+            "愿望是努力走向那一方",
     };
 
     private Random random = new Random();
