@@ -43,6 +43,7 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import mobile.Mobile;
 
@@ -183,8 +184,9 @@ public class MainActivity extends AppCompatActivity {
         Mobile.setDefaultLang(lang);
         final String localIP = Utils.getIpAddressString();
         final String workspaceDir = getWorkspacePath();
+        final String timezone = TimeZone.getDefault().getID();
         new Thread(() -> {
-            Mobile.startKernel("android", appDir, workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir, localIP);
+            Mobile.startKernel("android", appDir, workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir, localIP, timezone);
         }).start();
         sleep(100);
         final Bundle b = new Bundle();
