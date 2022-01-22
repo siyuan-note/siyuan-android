@@ -202,22 +202,42 @@ public class MainActivity extends AppCompatActivity {
         final String dataDir = getFilesDir().getAbsolutePath();
         final String appDir = dataDir + "/app";
         new File(appDir).mkdirs();
-        try {
-            FileUtils.deleteDirectory(new File(appDir));
-        } catch (final Exception e) {
-            Log.wtf("", "Delete dir [" + appDir + "] failed, exit application", e);
-            System.exit(-1);
+
+        boolean needUnzipAssets = true;
+        final File appVerFile = new File(appDir, "VERSION");
+        if (appVerFile.exists()) {
+            try {
+                final String ver = FileUtils.readFileToString(appVerFile);
+                needUnzipAssets = !ver.equals(version);
+            } catch (final Exception e) {
+                Log.w("", "Check version failed", e);
+            }
         }
-        Utils.unzipAsset(getAssets(), "app.zip", appDir + "/app");
-        setBootProgress("Initializing libraries...", 50);
-        final String libDir = dataDir + "/lib";
-        try {
-            FileUtils.deleteDirectory(new File(libDir));
-        } catch (final Exception e) {
-            Log.wtf("", "Delete dir [" + libDir + "] failed, exit application", e);
-            System.exit(-1);
+
+        if (needUnzipAssets) {
+            try {
+                FileUtils.deleteDirectory(new File(appDir));
+            } catch (final Exception e) {
+                Log.wtf("", "Delete dir [" + appDir + "] failed, exit application", e);
+                System.exit(-1);
+            }
+            Utils.unzipAsset(getAssets(), "app.zip", appDir + "/app");
+            setBootProgress("Initializing libraries...", 50);
+            final String libDir = dataDir + "/lib";
+            try {
+                FileUtils.deleteDirectory(new File(libDir));
+            } catch (final Exception e) {
+                Log.wtf("", "Delete dir [" + libDir + "] failed, exit application", e);
+                System.exit(-1);
+            }
+            Utils.unzipAsset(getAssets(), "lib.zip", libDir);
+
+            try {
+                FileUtils.writeStringToFile(appVerFile, version);
+            } catch (final Exception e) {
+                Log.w("", "Write version failed", e);
+            }
         }
-        Utils.unzipAsset(getAssets(), "lib.zip", libDir);
         setBootProgress("Booting kernel...", 80);
         final Bundle b = new Bundle();
         b.putString("cmd", "startKernel");
