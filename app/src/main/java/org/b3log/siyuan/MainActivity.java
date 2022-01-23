@@ -212,31 +212,24 @@ public class MainActivity extends AppCompatActivity {
                 final String appDir = dataDir + "/app";
                 final File appVerFile = new File(appDir, "VERSION");
 
-                setBootProgress("Initializing appearance...", 20);
+                setBootProgress("Clearing appearance...", 20);
                 try {
                     FileUtils.deleteDirectory(new File(appDir));
                 } catch (final Exception e) {
                     Log.wtf("", "Delete dir [" + appDir + "] failed, exit application", e);
                     System.exit(-1);
                 }
+
+                setBootProgress("Initializing appearance...", 60);
                 Utils.unzipAsset(getAssets(), "app.zip", appDir + "/app");
-                setBootProgress("Initializing libraries...", 50);
-                final String libDir = dataDir + "/lib";
-                try {
-                    FileUtils.deleteDirectory(new File(libDir));
-                } catch (final Exception e) {
-                    Log.wtf("", "Delete dir [" + libDir + "] failed, exit application", e);
-                    System.exit(-1);
-                }
-                Utils.unzipAsset(getAssets(), "lib.zip", libDir);
 
                 try {
                     FileUtils.writeStringToFile(appVerFile, version, StandardCharsets.UTF_8);
                 } catch (final Exception e) {
                     Log.w("", "Write version failed", e);
                 }
-                setBootProgress("Booting kernel...", 80);
 
+                setBootProgress("Booting kernel...", 80);
                 final Bundle b = new Bundle();
                 b.putString("cmd", "startKernel");
                 final Message msg = new Message();
