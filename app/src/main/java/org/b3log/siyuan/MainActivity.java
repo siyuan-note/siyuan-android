@@ -104,7 +104,6 @@ public class MainActivity extends AppCompatActivity {
 
         init();
 
-        webView.setVisibility(View.GONE);
         webView.setWebChromeClient(new WebChromeClient() {
 
             @Override
