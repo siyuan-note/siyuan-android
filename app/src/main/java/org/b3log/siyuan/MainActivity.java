@@ -91,10 +91,19 @@ public class MainActivity extends AppCompatActivity {
         bootLogo = findViewById(R.id.bootLogo);
         bootProgressBar = findViewById(R.id.progressBar);
         bootDetailsText = findViewById(R.id.bootDetails);
-
-        new Thread(this::init).start();
-
         webView = findViewById(R.id.webView);
+        handler = new Handler(Looper.getMainLooper()) {
+            public void handleMessage(final Message msg) {
+                if ("startKernel".equals(msg.getData().getString("cmd"))) {
+                    bootKernel();
+                } else {
+                    showBootIndex();
+                }
+            }
+        };
+
+        init();
+
         webView.setVisibility(View.GONE);
         webView.setWebChromeClient(new WebChromeClient() {
 
@@ -116,16 +125,6 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-
-        handler = new Handler(Looper.getMainLooper()) {
-            public void handleMessage(final Message msg) {
-                if ("startKernel".equals(msg.getData().getString("cmd"))) {
-                    bootKernel();
-                } else {
-                    showBootIndex();
-                }
-            }
-        };
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -204,57 +203,54 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init() {
-        final String dataDir = getFilesDir().getAbsolutePath();
-        final String appDir = dataDir + "/app";
-        new File(appDir).mkdirs();
-
-        boolean needUnzipAssets = true;
-        final File appVerFile = new File(appDir, "VERSION");
-        if (appVerFile.exists()) {
-            try {
-                final String ver = FileUtils.readFileToString(appVerFile, StandardCharsets.UTF_8);
-                needUnzipAssets = !ver.equals(version);
-            } catch (final Exception e) {
-                Log.w("", "Check version failed", e);
-            }
-        }
-
-        if (needUnzipAssets) {
+        if (needUnzipAssets()) {
             bootLogo.setVisibility(View.VISIBLE);
             bootProgressBar.setVisibility(View.VISIBLE);
             bootDetailsText.setVisibility(View.VISIBLE);
-            setBootProgress("Initializing appearance...", 20);
-            try {
-                FileUtils.deleteDirectory(new File(appDir));
-            } catch (final Exception e) {
-                Log.wtf("", "Delete dir [" + appDir + "] failed, exit application", e);
-                System.exit(-1);
-            }
-            Utils.unzipAsset(getAssets(), "app.zip", appDir + "/app");
-            setBootProgress("Initializing libraries...", 50);
-            final String libDir = dataDir + "/lib";
-            try {
-                FileUtils.deleteDirectory(new File(libDir));
-            } catch (final Exception e) {
-                Log.wtf("", "Delete dir [" + libDir + "] failed, exit application", e);
-                System.exit(-1);
-            }
-            Utils.unzipAsset(getAssets(), "lib.zip", libDir);
 
-            try {
-                FileUtils.writeStringToFile(appVerFile, version, StandardCharsets.UTF_8);
-            } catch (final Exception e) {
-                Log.w("", "Write version failed", e);
-            }
+            new Thread(() -> {
+                final String dataDir = getFilesDir().getAbsolutePath();
+                final String appDir = dataDir + "/app";
+                final File appVerFile = new File(appDir, "VERSION");
 
-            setBootProgress("Booting kernel...", 80);
+                setBootProgress("Initializing appearance...", 20);
+                try {
+                    FileUtils.deleteDirectory(new File(appDir));
+                } catch (final Exception e) {
+                    Log.wtf("", "Delete dir [" + appDir + "] failed, exit application", e);
+                    System.exit(-1);
+                }
+                Utils.unzipAsset(getAssets(), "app.zip", appDir + "/app");
+                setBootProgress("Initializing libraries...", 50);
+                final String libDir = dataDir + "/lib";
+                try {
+                    FileUtils.deleteDirectory(new File(libDir));
+                } catch (final Exception e) {
+                    Log.wtf("", "Delete dir [" + libDir + "] failed, exit application", e);
+                    System.exit(-1);
+                }
+                Utils.unzipAsset(getAssets(), "lib.zip", libDir);
+
+                try {
+                    FileUtils.writeStringToFile(appVerFile, version, StandardCharsets.UTF_8);
+                } catch (final Exception e) {
+                    Log.w("", "Write version failed", e);
+                }
+                setBootProgress("Booting kernel...", 80);
+
+                final Bundle b = new Bundle();
+                b.putString("cmd", "startKernel");
+                final Message msg = new Message();
+                msg.setData(b);
+                handler.sendMessage(msg);
+            }).start();
+        } else {
+            final Bundle b = new Bundle();
+            b.putString("cmd", "startKernel");
+            final Message msg = new Message();
+            msg.setData(b);
+            handler.sendMessage(msg);
         }
-
-        final Bundle b = new Bundle();
-        b.putString("cmd", "startKernel");
-        final Message msg = new Message();
-        msg.setData(b);
-        handler.sendMessage(msg);
     }
 
     /**
@@ -330,6 +326,24 @@ public class MainActivity extends AppCompatActivity {
             uploadMessage = null;
         }
         super.onActivityResult(requestCode, resultCode, intent);
+    }
+
+    private boolean needUnzipAssets() {
+        final String dataDir = getFilesDir().getAbsolutePath();
+        final String appDir = dataDir + "/app";
+        new File(appDir).mkdirs();
+
+        boolean ret = true;
+        final File appVerFile = new File(appDir, "VERSION");
+        if (appVerFile.exists()) {
+            try {
+                final String ver = FileUtils.readFileToString(appVerFile, StandardCharsets.UTF_8);
+                ret = !ver.equals(version);
+            } catch (final Exception e) {
+                Log.w("", "Check version failed", e);
+            }
+        }
+        return ret;
     }
 
     public static void setWindowFlag(final Activity activity, final int bits, boolean on) {
