@@ -42,6 +42,7 @@ import androidx.core.content.ContextCompat;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -57,6 +58,7 @@ import mobile.Mobile;
 public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
+    private ImageView bootLogo;
     private ProgressBar bootProgressBar;
     private TextView bootDetailsText;
     private Handler handler;
@@ -85,6 +87,10 @@ public class MainActivity extends AppCompatActivity {
 //        if (null != startUri) {
 //            Toast.makeText(getApplicationContext(), startUri.toString(), Toast.LENGTH_LONG).show();
 //        }
+
+        bootLogo = findViewById(R.id.bootLogo);
+        bootProgressBar = findViewById(R.id.progressBar);
+        bootDetailsText = findViewById(R.id.bootDetails);
 
         new Thread(this::init).start();
 
@@ -125,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("SetJavaScriptEnabled")
     private void showBootIndex() {
         webView.setVisibility(View.VISIBLE);
+        bootLogo.setVisibility(View.GONE);
         bootProgressBar.setVisibility(View.GONE);
         bootDetailsText.setVisibility(View.GONE);
         final ImageView bootLogo = findViewById(R.id.bootLogo);
@@ -197,10 +204,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init() {
-        bootProgressBar = findViewById(R.id.progressBar);
-        bootDetailsText = findViewById(R.id.bootDetails);
-        setBootProgress("Initializing appearance...", 20);
-
         final String dataDir = getFilesDir().getAbsolutePath();
         final String appDir = dataDir + "/app";
         new File(appDir).mkdirs();
@@ -209,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
         final File appVerFile = new File(appDir, "VERSION");
         if (appVerFile.exists()) {
             try {
-                final String ver = FileUtils.readFileToString(appVerFile);
+                final String ver = FileUtils.readFileToString(appVerFile, StandardCharsets.UTF_8);
                 needUnzipAssets = !ver.equals(version);
             } catch (final Exception e) {
                 Log.w("", "Check version failed", e);
@@ -217,6 +220,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (needUnzipAssets) {
+            bootLogo.setVisibility(View.VISIBLE);
+            bootProgressBar.setVisibility(View.VISIBLE);
+            bootDetailsText.setVisibility(View.VISIBLE);
+            setBootProgress("Initializing appearance...", 20);
             try {
                 FileUtils.deleteDirectory(new File(appDir));
             } catch (final Exception e) {
@@ -235,12 +242,14 @@ public class MainActivity extends AppCompatActivity {
             Utils.unzipAsset(getAssets(), "lib.zip", libDir);
 
             try {
-                FileUtils.writeStringToFile(appVerFile, version);
+                FileUtils.writeStringToFile(appVerFile, version, StandardCharsets.UTF_8);
             } catch (final Exception e) {
                 Log.w("", "Write version failed", e);
             }
+
+            setBootProgress("Booting kernel...", 80);
         }
-        setBootProgress("Booting kernel...", 80);
+
         final Bundle b = new Bundle();
         b.putString("cmd", "startKernel");
         final Message msg = new Message();

@@ -19,6 +19,7 @@
             android:layout_width="148dp"
             android:layout_height="148dp"
             android:contentDescription="Boot logo"
+            android:visibility="invisible"
             app:srcCompat="@drawable/icon" />
 
         <ProgressBar
@@ -29,7 +30,8 @@
             android:layout_marginLeft="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginRight="16dp"
-            android:progressTint="#3b3e43" />
+            android:progressTint="#3b3e43"
+            android:visibility="invisible" />
 
         <TextView
             android:id="@+id/bootDetails"
@@ -39,7 +41,8 @@
             android:layout_marginTop="2dp"
             android:layout_marginRight="16dp"
             android:ellipsize="end"
-            android:textSize="8sp" />
+            android:textSize="8sp"
+            android:visibility="invisible" />
 
         <WebView
             android:id="@+id/webView"
