@@ -92,20 +92,7 @@ public class MainActivity extends AppCompatActivity {
         bootProgressBar = findViewById(R.id.progressBar);
         bootDetailsText = findViewById(R.id.bootDetails);
         webView = findViewById(R.id.webView);
-        handler = new Handler(Looper.getMainLooper()) {
-            public void handleMessage(final Message msg) {
-                if ("startKernel".equals(msg.getData().getString("cmd"))) {
-                    bootKernel();
-                } else {
-                    showBootIndex();
-                }
-            }
-        };
-
-        init();
-
         webView.setWebChromeClient(new WebChromeClient() {
-
             @Override
             public boolean onShowFileChooser(WebView mWebView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams) {
                 if (uploadMessage != null) {
@@ -124,6 +111,18 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+        handler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(final Message msg) {
+                if ("startKernel".equals(msg.getData().getString("cmd"))) {
+                    bootKernel();
+                } else {
+                    showBootIndex();
+                }
+            }
+        };
+
+        init();
     }
 
     @SuppressLint("SetJavaScriptEnabled")
