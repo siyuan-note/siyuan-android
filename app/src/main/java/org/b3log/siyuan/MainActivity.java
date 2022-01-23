@@ -167,15 +167,9 @@ public class MainActivity extends AppCompatActivity {
         ws.setUseWideViewPort(true);
         ws.setLoadWithOverviewMode(true);
         ws.setUserAgentString("SiYuan/" + version + " https://b3log.org/siyuan " + ws.getUserAgentString());
-
-        for (int i = 0; i < 200; i++) { // 等待内核 HTTP 服务伺服
-            sleep(50);
-            if (Mobile.isHttpServing()) {
-                break;
-            }
-        }
-
+        waitFotKernelHttpServing();
         webView.loadUrl("http://127.0.0.1:6806/appearance/boot/index.html");
+
         new Thread(this::keepLive).start();
     }
 
@@ -198,6 +192,18 @@ public class MainActivity extends AppCompatActivity {
         final Message msg = new Message();
         msg.setData(b);
         handler.sendMessage(msg);
+    }
+
+    /**
+     * 等待内核 HTTP 服务伺服。
+     */
+    private void waitFotKernelHttpServing() {
+        for (int i = 0; i < 500; i++) {
+            sleep(10);
+            if (Mobile.isHttpServing()) {
+                break;
+            }
+        }
     }
 
     private void init() {
