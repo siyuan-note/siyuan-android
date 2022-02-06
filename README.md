@@ -5,3 +5,7 @@
    * appearance
    * guide
    * stage
+
+目录结构参考：
+
+![project-tree](project-tree.png)
