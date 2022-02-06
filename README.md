@@ -9,3 +9,5 @@
 目录结构参考：
 
 ![project-tree](project-tree.png)
+
+![app.zip](app-zip.png)
