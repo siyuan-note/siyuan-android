@@ -7,8 +7,10 @@
 package org.b3log.siyuan;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
+import android.view.View;
 import android.webkit.JavascriptInterface;
 
 import okhttp3.OkHttpClient;
@@ -46,6 +48,17 @@ public final class JSAndroid {
         final Uri uri = Uri.parse(url);
         final Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
         activity.startActivity(browserIntent);
+    }
+
+    @JavascriptInterface
+    public void changeStatusBarColor(final String color, final int appearanceMode) {
+        activity.getWindow().setStatusBarColor(Color.parseColor(color));
+        if (0 == appearanceMode) { // Light
+            activity.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        } else { // Dark
+            final View decorView = activity.getWindow().getDecorView();
+            decorView.setSystemUiVisibility(decorView.getSystemUiVisibility() & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
     }
 
     private void syncByHand() {
