@@ -2,7 +2,7 @@
 
 ## 概述
 
-* 报告问题/咨询讨论请到 [SiYuan issues](https://github.com/siyuan-note/siyuan)
+* 报告问题/咨询讨论请到 [SiYuan issues](https://github.com/siyuan-note/siyuan/issues)
 * 欢迎参与代码贡献
 
 ## 搭建步骤

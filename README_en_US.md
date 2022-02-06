@@ -2,7 +2,7 @@
 
 ## Overview
 
-* Please go to [SiYuan issues](https://github.com/siyuan-note/siyuan) to report issues/consult discussions
+* Please go to [SiYuan issues](https://github.com/siyuan-note/siyuan/issues) to report issues/consult discussions
 * Code contributions are welcome
 
 ## Construction guide
