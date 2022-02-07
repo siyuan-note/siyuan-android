@@ -51,14 +51,18 @@ public final class JSAndroid {
     }
 
     @JavascriptInterface
-    public void changeStatusBarColor(final String color, final int appearanceMode) {
-        activity.getWindow().setStatusBarColor(Color.parseColor(color));
+    public void changeStatusBarColor(String color, final int appearanceMode) {
+        color = color.trim();
+        final int iColor;
         if (0 == appearanceMode) { // Light
+            iColor = Color.parseColor(color + "FF");
             activity.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         } else { // Dark
+            iColor = Color.parseColor(color + "00");
             final View decorView = activity.getWindow().getDecorView();
             decorView.setSystemUiVisibility(decorView.getSystemUiVisibility() & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
+        activity.getWindow().setStatusBarColor(iColor);
     }
 
     private void syncByHand() {
