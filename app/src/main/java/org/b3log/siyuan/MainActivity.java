@@ -359,7 +359,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showAgreements() {
-        Toast.makeText(getApplicationContext(), "请务必浏览《隐私条款》和《用户授权协议》，后续在应用内置的帮助文档中也可以随时打开阅读浏览它们", Toast.LENGTH_LONG).show();
         final TextView msg = new TextView(this);
         msg.setPadding(32, 32, 32, 32);
         msg.setMovementMethod(new ScrollingMovementMethod());
@@ -433,10 +432,10 @@ public class MainActivity extends AppCompatActivity {
                 "</div>"));
 
         AlertDialog.Builder ab = new AlertDialog.Builder(this);
-        ab.setTitle("使用须知");
+        ab.setTitle("使用须知 / Notice");
         ab.setView(msg);
         ab.setCancelable(true);
-        ab.setPositiveButton("同意 / agree", null);
+        ab.setPositiveButton("同意 / Agree", null);
         ab.show();
     }
 }
