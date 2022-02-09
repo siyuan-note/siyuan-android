@@ -33,7 +33,7 @@ import java.util.zip.ZipInputStream;
  * 工具类.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.0, Feb 19, 2021
+ * @version 1.0.0.1, Feb 9, 2022
  * @since 1.0.0
  */
 public final class Utils {
@@ -81,8 +81,14 @@ public final class Utils {
             int count;
             byte[] buffer = new byte[1024 * 512];
             while ((ze = zis.getNextEntry()) != null) {
-                File file = new File(targetDirectory, ze.getName());
-                File dir = ze.isDirectory() ? file : file.getParentFile();
+                final File file = new File(targetDirectory, ze.getName());
+                try {
+                    ensureZipPathSafety(file, targetDirectory);
+                } catch (final Exception se) {
+                    throw se;
+                }
+
+                final File dir = ze.isDirectory() ? file : file.getParentFile();
                 if (!dir.isDirectory() && !dir.mkdirs())
                     throw new FileNotFoundException("Failed to ensure directory: " + dir.getAbsolutePath());
                 if (ze.isDirectory())
@@ -112,6 +118,13 @@ public final class Utils {
         }
     }
 
+    private static void ensureZipPathSafety(final File outputFile, final String destDirectory) throws Exception {
+        final String destDirCanonicalPath = (new File(destDirectory)).getCanonicalPath();
+        final String outputFileCanonicalPath = outputFile.getCanonicalPath();
+        if (!outputFileCanonicalPath.startsWith(destDirCanonicalPath)) {
+            throw new Exception(String.format("Found Zip Path Traversal Vulnerability with %s", outputFileCanonicalPath));
+        }
+    }
 
     public static boolean copyAssetFolder(final AssetManager assetManager, final String fromAssetPath, final String toPath) {
         try {
