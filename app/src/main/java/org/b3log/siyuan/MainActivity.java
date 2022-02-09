@@ -363,12 +363,32 @@ public class MainActivity extends AppCompatActivity {
         msg.setPadding(32, 32, 32, 32);
         msg.setMovementMethod(new ScrollingMovementMethod());
         msg.setText(Html.fromHtml("<div class=\"protyle-wysiwyg protyle-wysiwyg--attr\" style=\"max-width: 800px;margin: 0 auto;\" id=\"preview\"><h2 id=\"隐私条款\">隐私条款</h2>\n" +
+                "<p>思源笔记（SiYuan）隐私条款文件，以此声明对用户隐私保护的许诺。最近更新时间为 2022 年 2 月 9 日。</p>\n" +
+                "<h3 id=\"是否会收集个人信息或数据-\">是否会收集个人信息或数据？</h3>\n" +
                 "<ul>\n" +
-                "<li id=\"20220207234353-czammzp\">\n" +
-                "<p>所有数据都保存在用户自己完全控制的设备上</p>\n" +
+                "<li id=\"20220209214329-p8tqr2v\">\n" +
+                "<p>不会收集用户个人信息和使用数据（笔记、资源文件、操作记录和程序日志等任何形式的数据）</p>\n" +
                 "</li>\n" +
-                "<li id=\"20220207234353-u5xpuhi\">\n" +
-                "<p>不会收集任何使用数据</p>\n" +
+                "<li id=\"20220209214329-6mypire\">\n" +
+                "<p>所有数据都保持在用户自己完全控制的设备上</p>\n" +
+                "</li>\n" +
+                "</ul>\n" +
+                "<h3 id=\"开发者信息和联系方式\">开发者信息和联系方式</h3>\n" +
+                "<ul>\n" +
+                "<li id=\"20220209214329-87gzj6p\">\n" +
+                "<p>思源笔记由云南链滴科技有限公司设计并开发</p>\n" +
+                "</li>\n" +
+                "<li id=\"20220209214329-bi7xhc5\">\n" +
+                "<p>可通过 845765@qq.com 进行联系</p>\n" +
+                "</li>\n" +
+                "</ul>\n" +
+                "<h3 id=\"查看隐私条款方式\">查看隐私条款方式</h3>\n" +
+                "<ul>\n" +
+                "<li id=\"20220209214329-px6s2k2\">\n" +
+                "<p>通过访问网页 <a href=\"https://b3log.org/siyuan/privacy.html\">https://b3log.org/siyuan/privacy.html</a></p>\n" +
+                "</li>\n" +
+                "<li id=\"20220209214329-55rc81s\">\n" +
+                "<p>在软件中点击“帮助”，在打开的《思源笔记用户指南》中打开《隐私条款和使用授权》文档</p>\n" +
                 "</li>\n" +
                 "</ul>\n" +
                 "<h2 id=\"用户授权协议\">用户授权协议</h2>\n" +
@@ -377,58 +397,24 @@ public class MainActivity extends AppCompatActivity {
                 "<p>在享有条款授予的权力的同时，受到相关的约束和限制。协议许可范围以外的行为，将直接违反本授权协议并构成侵权，我们有权随时终止授权，责令停止损害，并保留追究相关责任的权力。</p>\n" +
                 "<h3 id=\"协议许可的权利\">协议许可的权利</h3>\n" +
                 "<ol>\n" +
-                "<li id=\"20220207234353-iiwf6ym\">\n" +
+                "<li id=\"20220209214329-gotjmxk\">\n" +
                 "<p>你可以在协议规定的约束和限制范围内使用本软件</p>\n" +
                 "</li>\n" +
-                "<li id=\"20220207234353-n62phav\">\n" +
+                "<li id=\"20220209214329-goez9a7\">\n" +
                 "<p>你拥有使用本软件所撰写的内容的所有权，并独立承担与这些内容的相关法律义务</p>\n" +
                 "</li>\n" +
                 "</ol>\n" +
                 "<h3 id=\"协议规定的约束和限制\">协议规定的约束和限制</h3>\n" +
                 "<ol>\n" +
-                "<li id=\"20220207234353-rrz7av9\">\n" +
+                "<li id=\"20220209214329-3ytkx0m\">\n" +
                 "<p>未经官方许可，禁止在本软件的整体或任何部分基础上发展派生版本、修改版本或第三方版本用于重新分发</p>\n" +
                 "</li>\n" +
-                "<li id=\"20220207234353-i69esgs\">\n" +
+                "<li id=\"20220209214329-5869ps9\">\n" +
                 "<p>如果你未能遵守本协议的条款，你的授权将被终止，所被许可的权利将被收回，并承担相应法律责任</p>\n" +
                 "</li>\n" +
                 "</ol>\n" +
                 "<h3 id=\"有限担保和免责声明\">有限担保和免责声明</h3>\n" +
                 "<p>本软件及所附带的文件是作为不提供任何明确的或隐含的赔偿或担保的形式提供的。</p>\n" +
-                "</div>" +
-                "<div class=\"protyle-wysiwyg protyle-wysiwyg--attr\" style=\"max-width: 800px;margin: 0 auto;\" id=\"preview\"><h2 id=\"Privacy-Policy\">Privacy Policy</h2>\n" +
-                "<ul>\n" +
-                "<li id=\"20220207234218-9iv463l\">\n" +
-                "<p>All data is saved on a device under the user's full control</p>\n" +
-                "</li>\n" +
-                "<li id=\"20220207234218-k7eqg1w\">\n" +
-                "<p>No usage data will be collected</p>\n" +
-                "</li>\n" +
-                "</ul>\n" +
-                "<h2 id=\"User-authorization-agreement\">User authorization agreement</h2>\n" +
-                "<p>This license agreement applies and only applies to SiYuan (hereinafter referred to as the \"software\"), Yunnan Liandi Technology Co., Ltd. has the final right to interpret this license agreement.</p>\n" +
-                "<p>Once you confirm this agreement and start using the software, you are deemed to fully understand and accept the terms of this agreement. The authorization agreement in electronic text is the same as the agreement signed by both parties in writing, which has full and equivalent legal effect.</p>\n" +
-                "<p>While enjoying the power granted by the clause, it is subject to relevant constraints and restrictions. Behavior outside the scope of the agreement will directly violate this authorization agreement and constitute an infringement. We have the right to terminate the authorization at any time, order the damage to stop, and reserve the right to pursue relevant liabilities.</p>\n" +
-                "<h3 id=\"Rights-of-Agreement-License\">Rights of Agreement License</h3>\n" +
-                "<ol>\n" +
-                "<li id=\"20220207234218-unseya8\">\n" +
-                "<p>You can use this software within the bounds and restrictions stipulated in the agreement</p>\n" +
-                "</li>\n" +
-                "<li id=\"20220207234218-o4benc4\">\n" +
-                "<p>You own the ownership of the content written using this software, and independently assume legal obligations related to these content</p>\n" +
-                "</li>\n" +
-                "</ol>\n" +
-                "<h3 id=\"Restrictions-and-limitations-stipulated-in-the-agreement\">Restrictions and limitations stipulated in the agreement</h3>\n" +
-                "<ol>\n" +
-                "<li id=\"20220207234218-j5bfacn\">\n" +
-                "<p>Without official permission, it is prohibited to develop derivative versions, modified versions or third-party versions for redistribution based on the whole or any part of this software</p>\n" +
-                "</li>\n" +
-                "<li id=\"20220207234218-zqbg1oe\">\n" +
-                "<p>If you fail to abide by the terms of this agreement, your authorization will be terminated, the licensed rights will be taken back, and you will bear the corresponding legal responsibilities</p>\n" +
-                "</li>\n" +
-                "</ol>\n" +
-                "<h3 id=\"Limited-Warranty-and-Disclaimer\">Limited Warranty and Disclaimer</h3>\n" +
-                "<p>This software and the accompanying files are provided as a form of not providing any explicit or implicit compensation or guarantee.</p>\n" +
                 "</div>"));
 
         AlertDialog.Builder ab = new AlertDialog.Builder(this);
