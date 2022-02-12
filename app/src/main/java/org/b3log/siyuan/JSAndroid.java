@@ -10,8 +10,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
-import android.view.View;
 import android.webkit.JavascriptInterface;
+
+import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -51,18 +52,18 @@ public final class JSAndroid {
     }
 
     @JavascriptInterface
-    public void changeStatusBarColor(String color, final int appearanceMode) {
-        color = color.trim();
-        final int iColor;
-        if (0 == appearanceMode) { // Light
-            iColor = Color.parseColor(color + "FF");
-            activity.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-        } else { // Dark
-            iColor = Color.parseColor(color + "00");
-            final View decorView = activity.getWindow().getDecorView();
-            decorView.setSystemUiVisibility(decorView.getSystemUiVisibility() & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-        }
-        activity.getWindow().setStatusBarColor(iColor);
+    public void changeStatusBarColor(final String color, final int appearanceMode) {
+        activity.runOnUiThread(() -> {
+            UltimateBarX.statusBar(activity)
+                    .transparent()
+                    .light(appearanceMode == 0)
+                    .color(Color.parseColor(color.trim()))
+                    .apply();
+
+            UltimateBarX.navigationBar(activity)
+                    .color(Color.parseColor(color.trim()))
+                    .apply();
+        });
     }
 
     private void syncByHand() {

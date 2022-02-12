@@ -10,12 +10,10 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -23,22 +21,22 @@ import android.os.Message;
 import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.WindowManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+
+import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import org.apache.commons.io.FileUtils;
 
@@ -63,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar bootProgressBar;
     private TextView bootDetailsText;
     private Handler handler;
-    private String version;
+    private final String version = BuildConfig.VERSION_NAME;
 
     public ValueCallback<Uri[]> uploadMessage;
     public static final int REQUEST_SELECT_FILE = 100;
@@ -71,31 +69,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        final ActionBar actionBar = getSupportActionBar();
-        if (null != actionBar) {
-            actionBar.hide();
-        }
-
-        getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-        getWindow().setNavigationBarColor(Color.TRANSPARENT);
-        getWindow().setStatusBarColor(Color.TRANSPARENT);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            getWindow().getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER;
-        }
         setContentView(R.layout.activity_main);
-        initVersion();
-
-//        final Uri startUri = getIntent().getData();
-//        if (null != startUri) {
-//            Toast.makeText(getApplicationContext(), startUri.toString(), Toast.LENGTH_LONG).show();
-//        }
 
         bootLogo = findViewById(R.id.bootLogo);
         bootProgressBar = findViewById(R.id.progressBar);
@@ -130,6 +104,19 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
+
+        // 沉浸式状态栏设置
+        UltimateBarX.statusBar(this)
+                .transparent()
+                .light(false)
+                .color(Color.parseColor("#212224"))
+                .apply();
+
+        // 修正 webView 显示区域
+        FrameLayout.LayoutParams webViewLayoutParams = new FrameLayout.LayoutParams(-1, -1);
+        webViewLayoutParams.topMargin = UltimateBarX.getStatusBarHeight();
+        webViewLayoutParams.bottomMargin = UltimateBarX.getNavigationBarHeight();
+        webView.setLayoutParams(webViewLayoutParams);
 
         init();
     }
@@ -285,30 +272,12 @@ public class MainActivity extends AppCompatActivity {
         return getExternalFilesDir("siyuan").getAbsolutePath();
     }
 
-    private void initVersion() {
-        try {
-            final PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-            version = pInfo.versionName;
-        } catch (final PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
     private void sleep(final long time) {
         try {
             Thread.sleep(time);
         } catch (final Exception e) {
             Log.e("", e.getMessage());
         }
-    }
-
-    @Override
-    public boolean onKeyDown(final int keyCode, final KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            webView.evaluateJavascript("javascript:window.goBack()", null);
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
     }
 
     @Override
