@@ -731,8 +731,7 @@ public class MainActivity extends AppCompatActivity {
             mHandler.sendMessage(message);
         });
         ab.setNegativeButton("拒绝/Decline", (dialog, which) -> {
-            finishAndRemoveTask();
-            System.exit(0);
+            finish();
         });
 
         ab.show();
