@@ -62,7 +62,7 @@ import mobile.Mobile;
  * 程序入口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.2.1, Jan 22, 2022
+ * @version 1.0.2.2, Feb 14, 2022
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity {
