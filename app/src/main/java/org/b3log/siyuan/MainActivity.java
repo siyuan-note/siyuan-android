@@ -719,8 +719,30 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder ab = new AlertDialog.Builder(this);
         ab.setTitle("使用须知 / Notice");
         ab.setView(msg);
-        ab.setCancelable(true);
-        ab.setPositiveButton("同意 / Agree", null);
+        ab.setCancelable(false);
+        final Handler mHandler = new Handler(Looper.myLooper()) {
+            @Override
+            public void handleMessage(Message msg) {
+                throw new RuntimeException();
+            }
+        };
+        ab.setPositiveButton("同意/Agree", (dialog, which) -> {
+            Message message = mHandler.obtainMessage();
+            mHandler.sendMessage(message);
+        });
+        ab.setNegativeButton("拒绝/Decline", (dialog, which) -> {
+            finishAndRemoveTask();
+            System.exit(0);
+        });
+
         ab.show();
+
+        // 阻塞主线程，等待用户选择
+        // 如果选择同意的话会在上面的消息处理那里抛出异常，然后正常执行后面的代码，解压资源文件、拉起内核等
+        // 如果选择拒绝的话，直接退出进程
+        try {
+            Looper.loop();
+        } catch (final RuntimeException ignored) {
+        }
     }
 }
