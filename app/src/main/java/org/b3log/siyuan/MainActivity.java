@@ -108,8 +108,23 @@ public class MainActivity extends AppCompatActivity {
         handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(final Message msg) {
-                if ("startKernel".equals(msg.getData().getString("cmd"))) {
+                final String cmd = msg.getData().getString("cmd");
+                if ("startKernel".equals(cmd)) {
                     bootKernel();
+                } else if ("agreement-y".equals(cmd)) {
+                } else if ("agreement-n".equals(cmd)) {
+                    final String dataDir = getFilesDir().getAbsolutePath();
+                    final String appDir = dataDir + "/app";
+                    final File appDirFile = new File(appDir);
+                    try {
+                        FileUtils.deleteQuietly(appDirFile);
+                    } catch (final Exception e) {
+                        Log.e("", "Delete [" + appDirFile.getAbsolutePath() + "] failed", e);
+                    }
+
+                    finishAndRemoveTask();
+                    Log.i("", "User did not accept the agreement, exit");
+                    System.exit(0);
                 } else {
                     showBootIndex();
                 }
@@ -128,6 +143,14 @@ public class MainActivity extends AppCompatActivity {
         webViewLayoutParams.topMargin = UltimateBarX.getStatusBarHeight();
         webViewLayoutParams.bottomMargin = UltimateBarX.getNavigationBarHeight();
         webView.setLayoutParams(webViewLayoutParams);
+
+        final String dataDir = getFilesDir().getAbsolutePath();
+        final String appDir = dataDir + "/app";
+        final File appDirFile = new File(appDir);
+        if (!appDirFile.exists()) {
+            // 首次运行弹窗提示用户隐私条款和使用授权
+            showAgreements();
+        }
 
         init();
     }
@@ -219,35 +242,33 @@ public class MainActivity extends AppCompatActivity {
             bootProgressBar.setVisibility(View.VISIBLE);
             bootDetailsText.setVisibility(View.VISIBLE);
 
-            new Thread(() -> {
-                final String dataDir = getFilesDir().getAbsolutePath();
-                final String appDir = dataDir + "/app";
-                final File appVerFile = new File(appDir, "VERSION");
+            final String dataDir = getFilesDir().getAbsolutePath();
+            final String appDir = dataDir + "/app";
+            final File appVerFile = new File(appDir, "VERSION");
 
-                setBootProgress("Clearing appearance...", 20);
-                try {
-                    FileUtils.deleteDirectory(new File(appDir));
-                } catch (final Exception e) {
-                    Log.wtf("", "Delete dir [" + appDir + "] failed, exit application", e);
-                    System.exit(-1);
-                }
+            setBootProgress("Clearing appearance...", 20);
+            try {
+                FileUtils.deleteDirectory(new File(appDir));
+            } catch (final Exception e) {
+                Log.wtf("", "Delete dir [" + appDir + "] failed, exit application", e);
+                System.exit(-1);
+            }
 
-                setBootProgress("Initializing appearance...", 60);
-                Utils.unzipAsset(getAssets(), "app.zip", appDir + "/app");
+            setBootProgress("Initializing appearance...", 60);
+            Utils.unzipAsset(getAssets(), "app.zip", appDir + "/app");
 
-                try {
-                    FileUtils.writeStringToFile(appVerFile, version, StandardCharsets.UTF_8);
-                } catch (final Exception e) {
-                    Log.w("", "Write version failed", e);
-                }
+            try {
+                FileUtils.writeStringToFile(appVerFile, version, StandardCharsets.UTF_8);
+            } catch (final Exception e) {
+                Log.w("", "Write version failed", e);
+            }
 
-                setBootProgress("Booting kernel...", 80);
-                final Bundle b = new Bundle();
-                b.putString("cmd", "startKernel");
-                final Message msg = new Message();
-                msg.setData(b);
-                handler.sendMessage(msg);
-            }).start();
+            setBootProgress("Booting kernel...", 80);
+            final Bundle b = new Bundle();
+            b.putString("cmd", "startKernel");
+            final Message msg = new Message();
+            msg.setData(b);
+            handler.sendMessage(msg);
         } else {
             final Bundle b = new Bundle();
             b.putString("cmd", "startKernel");
@@ -318,11 +339,6 @@ public class MainActivity extends AppCompatActivity {
         final String dataDir = getFilesDir().getAbsolutePath();
         final String appDir = dataDir + "/app";
         final File appDirFile = new File(appDir);
-        if (!appDirFile.exists()) {
-            // 首次运行弹窗提示用户隐私条款和使用授权
-            showAgreements();
-        }
-
         appDirFile.mkdirs();
 
         boolean ret = true;
@@ -720,28 +736,21 @@ public class MainActivity extends AppCompatActivity {
         ab.setTitle("使用须知 / Notice");
         ab.setView(msg);
         ab.setCancelable(false);
-        final Handler mHandler = new Handler(Looper.myLooper()) {
-            @Override
-            public void handleMessage(Message msg) {
-                throw new RuntimeException();
-            }
-        };
         ab.setPositiveButton("同意/Agree", (dialog, which) -> {
-            Message message = mHandler.obtainMessage();
-            mHandler.sendMessage(message);
+            final Bundle b = new Bundle();
+            b.putString("cmd", "agreement-y");
+            final Message m = new Message();
+            m.setData(b);
+            handler.sendMessage(m);
         });
         ab.setNegativeButton("拒绝/Decline", (dialog, which) -> {
-            finish();
+            final Bundle b = new Bundle();
+            b.putString("cmd", "agreement-n");
+            final Message m = new Message();
+            m.setData(b);
+            handler.sendMessage(m);
         });
 
         ab.show();
-
-        // 阻塞主线程，等待用户选择
-        // 如果选择同意的话会在上面的消息处理那里抛出异常，然后正常执行后面的代码，解压资源文件、拉起内核等
-        // 如果选择拒绝的话，直接退出进程
-        try {
-            Looper.loop();
-        } catch (final RuntimeException ignored) {
-        }
     }
 }
