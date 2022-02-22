@@ -4,6 +4,12 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
+    <uses-feature android:name="android.hardware.audio.low_latency" />
+    <uses-feature android:name="android.hardware.audio.pro" />
+    <uses-feature android:name="android.hardware.microphone" />
 
     <application
         android:extractNativeLibs="true"

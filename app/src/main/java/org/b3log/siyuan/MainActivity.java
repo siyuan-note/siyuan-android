@@ -17,6 +17,7 @@
  */
 package org.b3log.siyuan;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -33,6 +34,7 @@ import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
+import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -45,6 +47,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
@@ -62,7 +65,7 @@ import mobile.Mobile;
  * 程序入口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.2.2, Feb 14, 2022
+ * @version 1.0.2.3, Feb 22, 2022
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity {
@@ -81,6 +84,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 0);
+        }
+        if (PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(this, Manifest.permission.MODIFY_AUDIO_SETTINGS)) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.MODIFY_AUDIO_SETTINGS}, 0);
+        }
 
         bootLogo = findViewById(R.id.bootLogo);
         bootProgressBar = findViewById(R.id.progressBar);
@@ -103,6 +113,11 @@ public class MainActivity extends AppCompatActivity {
                     return false;
                 }
                 return true;
+            }
+
+            @Override
+            public void onPermissionRequest(final PermissionRequest request) {
+                request.grant(request.getResources());
             }
         });
         handler = new Handler(Looper.getMainLooper()) {
