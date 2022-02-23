@@ -72,6 +72,7 @@ public final class JSAndroid {
                     apply();
 
             UltimateBarX.navigationBar(activity).
+                    light(appearanceMode == 0).
                     color(Color.parseColor(color.trim())).
                     apply();
         });

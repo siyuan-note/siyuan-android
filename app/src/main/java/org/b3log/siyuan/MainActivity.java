@@ -23,7 +23,6 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -34,13 +33,13 @@ import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -50,6 +49,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.blankj.utilcode.util.KeyboardUtils;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import org.apache.commons.io.FileUtils;
@@ -152,12 +152,10 @@ public class MainActivity extends AppCompatActivity {
                 light(false).
                 color(Color.parseColor("#212224")).
                 apply();
+        ((ViewGroup) webView.getParent()).setPadding(0, UltimateBarX.getStatusBarHeight(), 0, 0);
 
-        // 修正 webView 显示区域
-        FrameLayout.LayoutParams webViewLayoutParams = new FrameLayout.LayoutParams(-1, -1);
-        webViewLayoutParams.topMargin = UltimateBarX.getStatusBarHeight();
-        webViewLayoutParams.bottomMargin = UltimateBarX.getNavigationBarHeight();
-        webView.setLayoutParams(webViewLayoutParams);
+        // fixAndroidBug5497
+        KeyboardUtils.fixAndroidBug5497(this);
 
         final String dataDir = getFilesDir().getAbsolutePath();
         final String appDir = dataDir + "/app";
@@ -178,8 +176,6 @@ public class MainActivity extends AppCompatActivity {
         bootDetailsText.setVisibility(View.GONE);
         final ImageView bootLogo = findViewById(R.id.bootLogo);
         bootLogo.setVisibility(View.GONE);
-
-        AndroidBug5497Workaround.assistActivity(this);
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -330,12 +326,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         webView.evaluateJavascript("javascript:window.goBack()", null);
-    }
-
-    @Override
-    public void onConfigurationChanged(final Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        AndroidBug5497Workaround.assistActivity(this);
     }
 
     @Override
