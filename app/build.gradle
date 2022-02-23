@@ -58,4 +58,5 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
 
     implementation 'com.gitee.zackratos:UltimateBarX:0.8.0'
+    implementation 'com.blankj:utilcode:1.30.6'
 }
