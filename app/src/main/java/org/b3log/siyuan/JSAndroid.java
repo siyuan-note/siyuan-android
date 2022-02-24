@@ -23,6 +23,7 @@ import android.net.Uri;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 
+import com.blankj.utilcode.util.BarUtils;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import okhttp3.OkHttpClient;
@@ -65,16 +66,14 @@ public final class JSAndroid {
     @JavascriptInterface
     public void changeStatusBarColor(final String color, final int appearanceMode) {
         activity.runOnUiThread(() -> {
-            UltimateBarX.statusBar(activity).
+            UltimateBarX.statusBarOnly(activity).
                     transparent().
                     light(appearanceMode == 0).
                     color(Color.parseColor(color.trim())).
                     apply();
 
-            UltimateBarX.navigationBar(activity).
-                    light(appearanceMode == 0).
-                    color(Color.parseColor(color.trim())).
-                    apply();
+            BarUtils.setNavBarLightMode(activity, appearanceMode == 0);
+            BarUtils.setNavBarColor(activity, Color.parseColor(color.trim()));
         });
     }
 

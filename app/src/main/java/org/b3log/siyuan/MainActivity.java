@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
         };
 
         // 沉浸式状态栏设置
-        UltimateBarX.statusBar(this).
+        UltimateBarX.statusBarOnly(this).
                 transparent().
                 light(false).
                 color(Color.parseColor("#212224")).
