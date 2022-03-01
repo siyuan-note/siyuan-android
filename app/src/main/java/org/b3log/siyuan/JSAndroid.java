@@ -34,7 +34,7 @@ import okhttp3.RequestBody;
  * JavaScript 接口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.1.1, Dec 23, 2021
+ * @version 1.0.2.0, Mar 1, 2022
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -69,12 +69,32 @@ public final class JSAndroid {
             UltimateBarX.statusBarOnly(activity).
                     transparent().
                     light(appearanceMode == 0).
-                    color(Color.parseColor(color.trim())).
+                    color(parseColor(color)).
                     apply();
 
             BarUtils.setNavBarLightMode(activity, appearanceMode == 0);
-            BarUtils.setNavBarColor(activity, Color.parseColor(color.trim()));
+            BarUtils.setNavBarColor(activity, parseColor(color));
         });
+    }
+
+    private int parseColor(String str) {
+        try {
+            str = str.trim();
+            if (str.toLowerCase().contains("rgb")) {
+                String splitStr = str.substring(str.indexOf('(') + 1, str.indexOf(')'));
+                String[] splitString = splitStr.split(",");
+
+                final int[] colorValues = new int[splitString.length];
+                for (int i = 0; i < splitString.length; i++) {
+                    colorValues[i] = Integer.parseInt(splitString[i].trim());
+                }
+                return Color.rgb(colorValues[0], colorValues[1], colorValues[2]);
+            }
+            return Color.parseColor(str);
+        } catch (final Exception e) {
+            Log.e("color", "parse color failed", e);
+            return Color.parseColor("#212224");
+        }
     }
 
     private void syncByHand() {
