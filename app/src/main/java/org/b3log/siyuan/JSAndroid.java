@@ -17,6 +17,9 @@
  */
 package org.b3log.siyuan;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -34,7 +37,7 @@ import okhttp3.RequestBody;
  * JavaScript 接口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.2.0, Mar 1, 2022
+ * @version 1.0.2.1, Mar 22, 2022
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -45,6 +48,13 @@ public final class JSAndroid {
     }
 
     private static boolean syncing;
+
+    @JavascriptInterface
+    public void writeClipboard(final String content) {
+        final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+        final ClipData clip = ClipData.newPlainText("Copied from SiYuan", content);
+        clipboard.setPrimaryClip(clip);
+    }
 
     @JavascriptInterface
     public void returnDesktop() {
