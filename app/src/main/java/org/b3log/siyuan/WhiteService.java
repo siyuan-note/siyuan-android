@@ -17,9 +17,11 @@
  */
 package org.b3log.siyuan;
 
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -30,13 +32,15 @@ import android.os.IBinder;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
+import com.blankj.utilcode.util.ActivityUtils;
+
 import java.util.Random;
 
 /**
  * 保活服务.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.0, Jun 30, 2021
+ * @version 1.0.0.1, Mar 27, 2022
  * @since 1.0.0
  */
 public class WhiteService extends Service {
@@ -68,12 +72,18 @@ public class WhiteService extends Service {
             "我要再次找那旧日的足迹",
             "心中一股冲劲勇闯，抛开那现实没有顾虑",
             "愿望是努力走向那一方",
+            "其实怕被忘记至放大来演吧",
     };
 
     private Random random = new Random();
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void startMyOwnForeground() {
+        final Activity activityByContext = ActivityUtils.getTopActivity();
+        final Intent resultIntent = new Intent(this, MainActivity.class).
+                setAction(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
+        final PendingIntent resultPendingIntent = PendingIntent.getActivity(activityByContext, 0, resultIntent, 0);
+
         final String NOTIFICATION_CHANNEL_ID = "org.b3log.siyuan";
         final String channelName = "SiYuan Kernel Service";
         final NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
@@ -82,12 +92,12 @@ public class WhiteService extends Service {
         final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         manager.createNotificationChannel(chan);
         final NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
-        final Notification notification = notificationBuilder.setOngoing(true)
-                .setSmallIcon(R.drawable.icon)
-                .setContentTitle(words[random.nextInt(words.length)])
-                .setPriority(NotificationManager.IMPORTANCE_MIN)
-                .setCategory(Notification.CATEGORY_SERVICE)
-                .build();
+        final Notification notification = notificationBuilder.setOngoing(true).
+                setSmallIcon(R.drawable.icon).
+                setContentTitle(words[random.nextInt(words.length)]).
+                setPriority(NotificationManager.IMPORTANCE_MIN).
+                setCategory(Notification.CATEGORY_SERVICE).
+                setContentIntent(resultPendingIntent).build();
         startForeground(2, notification);
     }
 }
