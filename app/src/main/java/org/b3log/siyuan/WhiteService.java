@@ -17,7 +17,6 @@
  */
 package org.b3log.siyuan;
 
-import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -31,8 +30,6 @@ import android.os.IBinder;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
-
-import com.blankj.utilcode.util.ActivityUtils;
 
 import java.util.Random;
 
@@ -79,10 +76,14 @@ public class WhiteService extends Service {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void startMyOwnForeground() {
-        final Activity activityByContext = ActivityUtils.getTopActivity();
         final Intent resultIntent = new Intent(this, MainActivity.class).
                 setAction(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
-        final PendingIntent resultPendingIntent = PendingIntent.getActivity(activityByContext, 0, resultIntent, 0);
+        PendingIntent resultPendingIntent;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_MUTABLE);
+        } else {
+            resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_ONE_SHOT);
+        }
 
         final String NOTIFICATION_CHANNEL_ID = "org.b3log.siyuan";
         final String channelName = "SiYuan Kernel Service";
@@ -97,7 +98,8 @@ public class WhiteService extends Service {
                 setContentTitle(words[random.nextInt(words.length)]).
                 setPriority(NotificationManager.IMPORTANCE_MIN).
                 setCategory(Notification.CATEGORY_SERVICE).
-                setContentIntent(resultPendingIntent).build();
+                setContentIntent(resultPendingIntent).
+                build();
         startForeground(2, notification);
     }
 }
