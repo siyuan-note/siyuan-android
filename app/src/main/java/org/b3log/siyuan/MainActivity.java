@@ -212,11 +212,11 @@ public class MainActivity extends AppCompatActivity {
         final Locale locale = getResources().getConfiguration().locale;
         final String lang = locale.getLanguage() + "_" + locale.getCountry();
         Mobile.setDefaultLang(lang);
-        final String localIP = Utils.getIpAddressString();
         final String workspaceDir = getWorkspacePath();
         final String timezone = TimeZone.getDefault().getID();
         new Thread(() -> {
-            Mobile.startKernel("android", appDir, workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir, localIP, timezone);
+            final String localIPs = Utils.getIPAddressList();
+            Mobile.startKernel("android", appDir, workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir, timezone, localIPs);
         }).start();
         sleep(100);
         final Bundle b = new Bundle();

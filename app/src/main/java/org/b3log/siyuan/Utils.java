@@ -18,6 +18,7 @@
 package org.b3log.siyuan;
 
 import android.content.res.AssetManager;
+import android.text.TextUtils;
 import android.util.Log;
 
 import org.apache.commons.io.IOUtils;
@@ -33,9 +34,10 @@ import java.io.StringWriter;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -184,20 +186,22 @@ public final class Utils {
         }
     }
 
-    public static String getIpAddressString() {
+    public static String getIPAddressList() {
+        final List<String> list = new ArrayList<>();
         try {
             for (final Enumeration<NetworkInterface> enNetI = NetworkInterface.getNetworkInterfaces(); enNetI.hasMoreElements(); ) {
                 final NetworkInterface netI = enNetI.nextElement();
                 for (final Enumeration<InetAddress> enumIpAddr = netI.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
                     final InetAddress inetAddress = enumIpAddr.nextElement();
                     if (inetAddress instanceof Inet4Address && !inetAddress.isLoopbackAddress()) {
-                        return inetAddress.getHostAddress();
+                        list.add(inetAddress.getHostAddress());
                     }
                 }
             }
-        } catch (final SocketException e) {
-            Log.e("", "Get IP failed, returns 127.0.0.1", e);
+        } catch (final Exception e) {
+            Log.e("", "Get IP list failed, returns 127.0.0.1 ", e);
         }
-        return "127.0.0.1";
+        list.add("127.0.0.1");
+        return TextUtils.join(",", list);
     }
 }
