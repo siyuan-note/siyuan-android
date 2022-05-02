@@ -20,8 +20,6 @@ package org.b3log.siyuan;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -178,12 +176,11 @@ public class MainActivity extends AppCompatActivity {
                     System.exit(0);
                 } else {
                     final Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                    final ActivityInfo info = i.resolveActivityInfo(getPackageManager(), PackageManager.MATCH_ALL);
-                    if (null == info || !info.exported) {
+//                    final ActivityInfo info = i.resolveActivityInfo(getPackageManager(), PackageManager.MATCH_ALL);
+//                    if (null == info || !info.exported) {
 //                        Toast.makeText(getApplicationContext(), "No application that can handle this link [" + url + "]", Toast.LENGTH_LONG).show();
-                    } else {
-                        startActivity(i);
-                    }
+//                    }
+                    startActivity(i);
                 }
                 return true;
             }
