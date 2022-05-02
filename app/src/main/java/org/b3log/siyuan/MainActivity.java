@@ -176,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
                     System.exit(0);
                 } else {
                     final Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    // 超链接无法打开浏览器 https://github.com/siyuan-note/siyuan/issues/4751
 //                    final ActivityInfo info = i.resolveActivityInfo(getPackageManager(), PackageManager.MATCH_ALL);
 //                    if (null == info || !info.exported) {
 //                        Toast.makeText(getApplicationContext(), "No application that can handle this link [" + url + "]", Toast.LENGTH_LONG).show();
