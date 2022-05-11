@@ -37,7 +37,7 @@ import okhttp3.RequestBody;
  * JavaScript 接口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.2.1, Mar 22, 2022
+ * @version 1.0.2.2, May 11, 2022
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -66,6 +66,9 @@ public final class JSAndroid {
     public void openExternal(String url) {
         if (url.startsWith("assets/")) {
             url = "http://127.0.0.1:6806/" + url;
+        }
+        if (url.startsWith("/")) {
+            url = "http://127.0.0.1:6806" + url;
         }
 
         final Uri uri = Uri.parse(url);
