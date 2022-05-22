@@ -208,13 +208,17 @@ public class MainActivity extends AppCompatActivity {
         final String appDir = dataDir + "/app";
 
         final Locale locale = getResources().getConfiguration().locale;
-        final String lang = locale.getLanguage() + "_" + locale.getCountry();
-        Mobile.setDefaultLang(lang);
         final String workspaceDir = getWorkspacePath();
         final String timezone = TimeZone.getDefault().getID();
         new Thread(() -> {
             final String localIPs = Utils.getIPAddressList();
-            Mobile.startKernel("android", appDir, workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir, timezone, localIPs);
+            String lang = locale.getLanguage() + "_" + locale.getCountry();
+            if (lang.toLowerCase().contains("cn")) {
+                lang = "zh_CN";
+            } else {
+                lang = "en_US";
+            }
+            Mobile.startKernel("android", appDir, workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir, timezone, localIPs, lang);
         }).start();
         sleep(100);
         final Bundle b = new Bundle();
