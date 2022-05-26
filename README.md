@@ -1,19 +1,19 @@
-<a href="https://github.com/siyuan-note/siyuan-android/blob/master/README_en_US.md">English</a>
+[中文](https://github.com/siyuan-note/siyuan-android/blob/master/README_zh_CN.md)
 
-## 概述
+## Overview
 
-* 报告问题/咨询讨论请到 [SiYuan issues](https://github.com/siyuan-note/siyuan/issues)
-* 欢迎参与代码贡献
+* Please go to [SiYuan issues](https://github.com/siyuan-note/siyuan/issues) to report issues/consult discussions
+* Code contributions are welcome
 
-## 搭建步骤
+## Construction guide
 
-1. 到 https://github.com/siyuan-note/kernel-libs 下载并拷贝内核库 app/libs/kernel.aar
-2. 从桌面端安装路径 `resources` 下拷贝资源文件并打包 app/src/main/assets/app.zip
+1. Refer to [SiYuan Development Guide](https://github.com/siyuan-note/siyuan/blob/master/DEV.md) to compile the kernel
+2. Copy the resource files and package it in app/src/main/assets/app.zip
    * appearance
    * guide
    * stage
 
-目录结构参考：
+Directory structure reference:
 
 ![project-tree](project-tree.png)
 
