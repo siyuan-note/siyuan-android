@@ -37,7 +37,7 @@ import okhttp3.RequestBody;
  * JavaScript 接口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.2.2, May 11, 2022
+ * @version 1.0.3.0, Jun 1, 2022
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -102,6 +102,10 @@ public final class JSAndroid {
                     colorValues[i] = Integer.parseInt(splitString[i].trim());
                 }
                 return Color.rgb(colorValues[0], colorValues[1], colorValues[2]);
+            }
+            if (7 > str.length()) {
+                // https://stackoverflow.com/questions/10230331/how-to-convert-3-digit-html-hex-colors-to-6-digit-flex-hex-colors
+                str = str.replaceAll("#([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])", "#$1$1$2$2$3$3");
             }
             return Color.parseColor(str);
         } catch (final Exception e) {
