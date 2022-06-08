@@ -7,7 +7,7 @@
 
 ## Construction guide
 
-1. Refer to [SiYuan Development Guide](https://github.com/siyuan-note/siyuan/blob/master/DEV.md) to compile the kernel
+1. Refer to [SiYuan Development Guide](https://github.com/siyuan-note/siyuan/blob/master/.github/CONTRIBUTING.md) to compile the kernel
 2. Copy the resource files and package it in app/src/main/assets/app.zip
    * appearance
    * guide
