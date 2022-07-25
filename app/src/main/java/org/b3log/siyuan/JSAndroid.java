@@ -50,6 +50,13 @@ public final class JSAndroid {
     private static boolean syncing;
 
     @JavascriptInterface
+    public void writeImageClipboard(final String uri) {
+        final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+        final ClipData clip = ClipData.newUri(activity.getContentResolver(), "Copied from SiYuan", Uri.parse(uri));
+        clipboard.setPrimaryClip(clip);
+    }
+
+    @JavascriptInterface
     public void writeClipboard(final String content) {
         final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
         final ClipData clip = ClipData.newPlainText("Copied from SiYuan", content);
