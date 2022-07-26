@@ -27,6 +27,7 @@ import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import com.blankj.utilcode.util.BarUtils;
+import com.blankj.utilcode.util.StringUtils;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import okhttp3.OkHttpClient;
@@ -52,7 +53,7 @@ public final class JSAndroid {
     @JavascriptInterface
     public void writeImageClipboard(final String uri) {
         final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-        final ClipData clip = ClipData.newUri(activity.getContentResolver(), "Copied from SiYuan", Uri.parse(uri));
+        final ClipData clip = ClipData.newUri(activity.getContentResolver(), "Copied from SiYuan", Uri.parse("http://127.0.0.1:6806/" + uri));
         clipboard.setPrimaryClip(clip);
     }
 
@@ -71,6 +72,10 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void openExternal(String url) {
+        if (StringUtils.isEmpty(url)) {
+            return;
+        }
+
         if (url.startsWith("assets/")) {
             url = "http://127.0.0.1:6806/" + url;
         }
