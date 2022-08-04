@@ -19,13 +19,16 @@ package org.b3log.siyuan;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.ClipData;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
@@ -50,6 +53,7 @@ import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import org.apache.commons.io.FileUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
@@ -61,7 +65,7 @@ import mobile.Mobile;
  * 程序入口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.2.3, Feb 22, 2022
+ * @version 1.0.2.4, Aug 4, 2022
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity {
@@ -90,10 +94,10 @@ public class MainActivity extends AppCompatActivity {
             public boolean onShowFileChooser(WebView mWebView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams) {
                 if (uploadMessage != null) {
                     uploadMessage.onReceiveValue(null);
-                    uploadMessage = null;
                 }
                 uploadMessage = filePathCallback;
                 final Intent intent = fileChooserParams.createIntent();
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                 try {
                     startActivityForResult(intent, REQUEST_SELECT_FILE);
                 } catch (final Exception e) {
@@ -323,13 +327,46 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (null == uploadMessage) {
+            super.onActivityResult(requestCode, resultCode, intent);
+            return;
+        }
+
+        // 以下代码参考自 https://github.com/mgks/os-fileup/blob/master/app/src/main/java/mgks/os/fileup/MainActivity.java MIT license
         if (requestCode == REQUEST_SELECT_FILE) {
-            if (uploadMessage == null) {
-                return;
+            Uri[] results;
+            ClipData clipData;
+            String stringData;
+
+            try {
+                clipData = intent.getClipData();
+                stringData = intent.getDataString();
+            } catch (Exception e) {
+                clipData = null;
+                stringData = null;
             }
-            uploadMessage.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, intent));
+
+            if (clipData != null) {
+                final int numSelectedFiles = clipData.getItemCount();
+                results = new Uri[numSelectedFiles];
+                for (int i = 0; i < clipData.getItemCount(); i++) {
+                    results[i] = clipData.getItemAt(i).getUri();
+                }
+            } else {
+                try {
+                    Bitmap cam_photo = (Bitmap) intent.getExtras().get("data");
+                    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                    cam_photo.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+                    stringData = MediaStore.Images.Media.insertImage(this.getContentResolver(), cam_photo, null, null);
+                } catch (Exception ignored) {
+                }
+                results = new Uri[]{Uri.parse(stringData)};
+            }
+
+            uploadMessage.onReceiveValue(results);
             uploadMessage = null;
         }
+
         super.onActivityResult(requestCode, resultCode, intent);
     }
 
