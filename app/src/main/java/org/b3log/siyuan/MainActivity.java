@@ -49,6 +49,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.blankj.utilcode.util.KeyboardUtils;
+import com.blankj.utilcode.util.StringUtils;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import org.apache.commons.io.FileUtils;
@@ -65,7 +66,7 @@ import mobile.Mobile;
  * 程序入口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.2.4, Aug 4, 2022
+ * @version 1.0.3.0, Aug 15, 2022
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity {
@@ -334,7 +335,7 @@ public class MainActivity extends AppCompatActivity {
 
         // 以下代码参考自 https://github.com/mgks/os-fileup/blob/master/app/src/main/java/mgks/os/fileup/MainActivity.java MIT license
         if (requestCode == REQUEST_SELECT_FILE) {
-            Uri[] results;
+            Uri[] results = null;
             ClipData clipData;
             String stringData;
 
@@ -360,7 +361,10 @@ public class MainActivity extends AppCompatActivity {
                     stringData = MediaStore.Images.Media.insertImage(this.getContentResolver(), cam_photo, null, null);
                 } catch (Exception ignored) {
                 }
-                results = new Uri[]{Uri.parse(stringData)};
+
+                if (!StringUtils.isEmpty(stringData)) {
+                    results = new Uri[]{Uri.parse(stringData)};
+                }
             }
 
             uploadMessage.onReceiveValue(results);
