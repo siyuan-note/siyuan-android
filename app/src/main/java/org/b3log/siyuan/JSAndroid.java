@@ -38,7 +38,7 @@ import okhttp3.RequestBody;
  * JavaScript 接口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.3.0, Jun 1, 2022
+ * @version 1.0.4.0, Aug 23, 2022
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -73,6 +73,10 @@ public final class JSAndroid {
     @JavascriptInterface
     public void openExternal(String url) {
         if (StringUtils.isEmpty(url)) {
+            return;
+        }
+
+        if (url.startsWith("#")) {
             return;
         }
 
