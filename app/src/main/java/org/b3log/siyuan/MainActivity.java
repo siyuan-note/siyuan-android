@@ -652,7 +652,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             Looper.loop();
         } catch (final RuntimeException re) {
-            re.printStackTrace();
+            // re.printStackTrace();
         }
     }
 }
