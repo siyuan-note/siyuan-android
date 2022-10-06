@@ -17,28 +17,25 @@
  */
 package org.b3log.siyuan;
 
+import android.app.Activity;
 import android.content.res.AssetManager;
 import android.text.TextUtils;
 import android.util.Log;
+import android.webkit.WebView;
 
-import org.apache.commons.io.IOUtils;
+import com.blankj.utilcode.util.KeyboardUtils;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.StringWriter;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -46,43 +43,19 @@ import java.util.zip.ZipInputStream;
  * 工具类.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.1, Feb 9, 2022
+ * @version 1.1.0.0, Oct 6, 2022
  * @since 1.0.0
  */
 public final class Utils {
 
-    /**
-     * Executes the specified commands.
-     *
-     * @param cmds the specified commands
-     * @return execution output, returns {@code null} if execution failed
-     */
-    public static String exec(final String[] cmds, final Map<String, String> envs) {
-        try {
-            ProcessBuilder processBuilder = new ProcessBuilder(cmds);
-            final Map<String, String> procEnvs = processBuilder.environment();
-            for (final Map.Entry<String, String> kv : envs.entrySet()) {
-                procEnvs.put(kv.getKey(), kv.getValue());
+    public static void registerSoftKeyboardToolbar(final Activity activity, final WebView webView) {
+        KeyboardUtils.registerSoftInputChangedListener(activity, height -> {
+            if (KeyboardUtils.isSoftInputVisible(activity)) {
+                webView.evaluateJavascript("javascript:showKeyboardToolbar()", null);
+            } else {
+                webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
             }
-            processBuilder.redirectErrorStream(true);
-
-            final Process process = processBuilder.start();
-            final StringWriter writer = new StringWriter();
-            new Thread(() -> {
-                try {
-                    IOUtils.copy(process.getInputStream(), writer, "UTF-8");
-                } catch (final Exception e) {
-                    Log.e("", "Reads input stream failed: " + e.getMessage());
-                }
-            }).start();
-
-            process.waitFor();
-            Thread.sleep(100);
-            return writer.toString();
-        } catch (final Exception e) {
-            Log.e("", "Executes commands [" + Arrays.toString(cmds) + "] failed", e);
-            return null;
-        }
+        });
     }
 
     public static void unzipAsset(final AssetManager assetManager, final String zipName, final String targetDirectory) {
@@ -136,53 +109,6 @@ public final class Utils {
         final String outputFileCanonicalPath = outputFile.getCanonicalPath();
         if (!outputFileCanonicalPath.startsWith(destDirCanonicalPath)) {
             throw new Exception(String.format("Found Zip Path Traversal Vulnerability with %s", outputFileCanonicalPath));
-        }
-    }
-
-    public static boolean copyAssetFolder(final AssetManager assetManager, final String fromAssetPath, final String toPath) {
-        try {
-            final String[] files = assetManager.list(fromAssetPath);
-            new File(toPath).mkdirs();
-            boolean res = true;
-            Log.i("copy asset", fromAssetPath + ":" + toPath);
-            for (final String file : files) {
-                final String[] subFiles = assetManager.list(fromAssetPath + "/" + file);
-                if (1 > subFiles.length) {
-                    res &= copyAsset(assetManager, fromAssetPath + "/" + file, toPath + "/" + file);
-                } else {
-                    res &= copyAssetFolder(assetManager, fromAssetPath + "/" + file, toPath + "/" + file);
-                }
-            }
-            return res;
-        } catch (final Exception e) {
-            Log.e("", "copy asset folder [from=" + fromAssetPath + ", to=" + toPath + "] failed", e);
-            return false;
-        }
-    }
-
-    private static boolean copyAsset(final AssetManager assetManager, final String fromAssetPath, final String toPath) {
-        InputStream in;
-        OutputStream out;
-        try {
-            in = assetManager.open(fromAssetPath);
-            new File(toPath).createNewFile();
-            out = new FileOutputStream(toPath);
-            copyFile(in, out);
-            in.close();
-            out.flush();
-            out.close();
-            return true;
-        } catch (final Exception e) {
-            Log.e("", "copy asset [from=" + fromAssetPath + ", to=" + toPath + "] failed", e);
-            return false;
-        }
-    }
-
-    private static void copyFile(final InputStream in, final OutputStream out) throws IOException {
-        byte[] buffer = new byte[4096];
-        int read;
-        while ((read = in.read(buffer)) != -1) {
-            out.write(buffer, 0, read);
         }
     }
 

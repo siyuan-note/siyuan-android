@@ -150,6 +150,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // 注册软键盘顶部跟随工具栏
+        Utils.registerSoftKeyboardToolbar(this, webView);
+
         // 沉浸式状态栏设置
         UltimateBarX.statusBarOnly(this).
                 transparent().
@@ -654,5 +657,11 @@ public class MainActivity extends AppCompatActivity {
         } catch (final RuntimeException re) {
             // re.printStackTrace();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        KeyboardUtils.unregisterSoftInputChangedListener(getWindow());
     }
 }
