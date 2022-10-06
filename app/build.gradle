@@ -49,6 +49,7 @@ android {
     lint {
         abortOnError false
     }
+    namespace 'org.b3log.siyuan'
 }
 
 dependencies {
