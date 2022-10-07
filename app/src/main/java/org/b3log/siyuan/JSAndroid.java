@@ -38,7 +38,7 @@ import okhttp3.RequestBody;
  * JavaScript 接口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.4.0, Aug 23, 2022
+ * @version 1.1.0.0, Oct 7, 2022
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -51,16 +51,44 @@ public final class JSAndroid {
     private static boolean syncing;
 
     @JavascriptInterface
+    public String readClipboard() {
+        final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+        final ClipData clipData = clipboard.getPrimaryClip();
+        if (null == clipData) {
+            return "";
+        }
+
+        final ClipData.Item item = clipData.getItemAt(0);
+        if (null != item.getUri()) {
+            final Uri uri = item.getUri();
+            final String url = uri.toString();
+            if (url.startsWith("http://127.0.0.1:6806/assets/")) {
+                final String asset = url.substring("http://127.0.0.1:6806/".length());
+                String name = asset.substring(asset.lastIndexOf("/") + 1);
+                final int suffixIdx = name.lastIndexOf(".");
+                if (0 < suffixIdx) {
+                    name = name.substring(0, suffixIdx);
+                }
+                if (23 < StringUtils.length(name)) {
+                    name = name.substring(0, name.length() - 23);
+                }
+                return "![" + name + "](" + asset + ")";
+            }
+        }
+        return item.getHtmlText();
+    }
+
+    @JavascriptInterface
     public void writeImageClipboard(final String uri) {
         final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-        final ClipData clip = ClipData.newUri(activity.getContentResolver(), "Copied from SiYuan", Uri.parse("http://127.0.0.1:6806/" + uri));
+        final ClipData clip = ClipData.newUri(activity.getContentResolver(), "Copied img from SiYuan", Uri.parse("http://127.0.0.1:6806/" + uri));
         clipboard.setPrimaryClip(clip);
     }
 
     @JavascriptInterface
     public void writeClipboard(final String content) {
         final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-        final ClipData clip = ClipData.newPlainText("Copied from SiYuan", content);
+        final ClipData clip = ClipData.newPlainText("Copied text from SiYuan", content);
         clipboard.setPrimaryClip(clip);
     }
 
