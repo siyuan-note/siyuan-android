@@ -38,7 +38,7 @@ import okhttp3.RequestBody;
  * JavaScript 接口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.0, Oct 7, 2022
+ * @version 1.1.1.0, Oct 10, 2022
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -75,7 +75,7 @@ public final class JSAndroid {
                 return "![" + name + "](" + asset + ")";
             }
         }
-        return item.getHtmlText();
+        return item.getText().toString();
     }
 
     @JavascriptInterface
