@@ -66,7 +66,7 @@ import mobile.Mobile;
  * 程序入口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.3.1, Sep 4, 2022
+ * @version 1.0.3.2, Oct 24, 2022
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity {
@@ -185,13 +185,14 @@ public class MainActivity extends AppCompatActivity {
                     finishAndRemoveTask();
                     System.exit(0);
                 } else {
-                    final Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                    // 超链接无法打开浏览器 https://github.com/siyuan-note/siyuan/issues/4751
-//                    final ActivityInfo info = i.resolveActivityInfo(getPackageManager(), PackageManager.MATCH_ALL);
-//                    if (null == info || !info.exported) {
-//                        Toast.makeText(getApplicationContext(), "No application that can handle this link [" + url + "]", Toast.LENGTH_LONG).show();
-//                    }
-                    startActivity(i);
+                    final Uri uri = Uri.parse(url);
+                    if (uri.getScheme().toLowerCase().startsWith("http")) {
+                        final Intent i = new Intent(Intent.ACTION_VIEW, uri);
+                        startActivity(i);
+                    } else {
+                        // IFrame 块不跟随重定向 https://github.com/siyuan-note/siyuan/issues/6327
+                        return false;
+                    }
                 }
                 return true;
             }
