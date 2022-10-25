@@ -186,13 +186,8 @@ public class MainActivity extends AppCompatActivity {
                     System.exit(0);
                 } else {
                     final Uri uri = Uri.parse(url);
-                    if (uri.getScheme().toLowerCase().startsWith("http")) {
-                        final Intent i = new Intent(Intent.ACTION_VIEW, uri);
-                        startActivity(i);
-                    } else {
-                        // IFrame 块不跟随重定向 https://github.com/siyuan-note/siyuan/issues/6327
-                        return false;
-                    }
+                    final Intent i = new Intent(Intent.ACTION_VIEW, uri);
+                    startActivity(i);
                 }
                 return true;
             }
