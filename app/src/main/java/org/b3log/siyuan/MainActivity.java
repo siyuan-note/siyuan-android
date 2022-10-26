@@ -37,6 +37,7 @@ import android.view.ViewGroup;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -66,7 +67,7 @@ import mobile.Mobile;
  * 程序入口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.3.2, Oct 24, 2022
+ * @version 1.0.4.2, Oct 26, 2022
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity {
@@ -178,21 +179,24 @@ public class MainActivity extends AppCompatActivity {
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
-            public boolean shouldOverrideUrlLoading(final WebView view, final String url) {
+            public boolean shouldOverrideUrlLoading(final WebView view, final WebResourceRequest request) {
+                final Uri uri = request.getUrl();
+                final String url = uri.toString();
                 if (url.contains("127.0.0.1")) {
                     view.loadUrl(url);
-                } else if (url.contains("siyuan://api/system/exit")) {
+                    return true;
+                }
+
+                if (url.contains("siyuan://api/system/exit")) {
                     finishAndRemoveTask();
                     System.exit(0);
-                } else {
-                    final Uri uri = Uri.parse(url);
-                    if (uri.getScheme().toLowerCase().startsWith("http")) {
-                        final Intent i = new Intent(Intent.ACTION_VIEW, uri);
-                        startActivity(i);
-                    } else {
-                        // IFrame 块不跟随重定向 https://github.com/siyuan-note/siyuan/issues/6327
-                        return false;
-                    }
+                    return true;
+                }
+
+                if (uri.getScheme().toLowerCase().startsWith("http")) {
+                    final Intent i = new Intent(Intent.ACTION_VIEW, uri);
+                    startActivity(i);
+                    return true;
                 }
                 return true;
             }
