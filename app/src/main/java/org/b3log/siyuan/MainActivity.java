@@ -67,7 +67,7 @@ import mobile.Mobile;
  * 程序入口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.4.2, Oct 26, 2022
+ * @version 1.0.4.3, Oct 28, 2022
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity {
@@ -182,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
             public boolean shouldOverrideUrlLoading(final WebView view, final WebResourceRequest request) {
                 final Uri uri = request.getUrl();
                 final String url = uri.toString();
-                if (url.contains("127.0.0.1")) {
+                if (url.contains("siyuan.localhost") || url.contains("127.0.0.1")) {
                     view.loadUrl(url);
                     return true;
                 }
@@ -213,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
         ws.setLoadWithOverviewMode(true);
         ws.setUserAgentString("SiYuan/" + version + " https://b3log.org/siyuan " + ws.getUserAgentString());
         waitFotKernelHttpServing();
-        webView.loadUrl("http://127.0.0.1:6806/appearance/boot/index.html");
+        webView.loadUrl("http://siyuan.localhost:6806/appearance/boot/index.html");
 
         new Thread(this::keepLive).start();
     }

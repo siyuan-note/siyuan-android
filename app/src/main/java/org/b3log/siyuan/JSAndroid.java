@@ -38,7 +38,7 @@ import okhttp3.RequestBody;
  * JavaScript 接口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.0, Oct 10, 2022
+ * @version 1.1.1.1, Oct 28, 2022
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -62,8 +62,9 @@ public final class JSAndroid {
         if (null != item.getUri()) {
             final Uri uri = item.getUri();
             final String url = uri.toString();
-            if (url.startsWith("http://127.0.0.1:6806/assets/")) {
-                final String asset = url.substring("http://127.0.0.1:6806/".length());
+            if (url.startsWith("http://siyuan.localhost:6806/assets/") || url.startsWith("http://127.0.0.1:6806/assets/")) {
+                final int idx = url.indexOf("/assets/");
+                final String asset = url.substring(idx);
                 String name = asset.substring(asset.lastIndexOf("/") + 1);
                 final int suffixIdx = name.lastIndexOf(".");
                 if (0 < suffixIdx) {
@@ -81,7 +82,7 @@ public final class JSAndroid {
     @JavascriptInterface
     public void writeImageClipboard(final String uri) {
         final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-        final ClipData clip = ClipData.newUri(activity.getContentResolver(), "Copied img from SiYuan", Uri.parse("http://127.0.0.1:6806/" + uri));
+        final ClipData clip = ClipData.newUri(activity.getContentResolver(), "Copied img from SiYuan", Uri.parse("http://siyuan.localhost:6806/" + uri));
         clipboard.setPrimaryClip(clip);
     }
 
@@ -109,10 +110,10 @@ public final class JSAndroid {
         }
 
         if (url.startsWith("assets/")) {
-            url = "http://127.0.0.1:6806/" + url;
+            url = "http://siyuan.localhost:6806/" + url;
         }
         if (url.startsWith("/")) {
-            url = "http://127.0.0.1:6806" + url;
+            url = "http://siyuan.localhost:6806" + url;
         }
 
         final Uri uri = Uri.parse(url);
@@ -166,7 +167,7 @@ public final class JSAndroid {
             syncing = true;
             final OkHttpClient client = new OkHttpClient();
             final RequestBody body = RequestBody.create(null, new byte[0]);
-            final Request request = new Request.Builder().url("http://127.0.0.1:6806/api/sync/performSync").method("POST", body).build();
+            final Request request = new Request.Builder().url("http://siyuan.localhost:6806/api/sync/performSync").method("POST", body).build();
             client.newCall(request).execute();
         } catch (final Throwable e) {
             Log.e("sync", "sync by hand failed", e);

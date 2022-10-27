@@ -43,7 +43,7 @@ import java.util.zip.ZipInputStream;
  * 工具类.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.0, Oct 6, 2022
+ * @version 1.1.0.1, Oct 28, 2022
  * @since 1.0.0
  */
 public final class Utils {
@@ -125,9 +125,9 @@ public final class Utils {
                 }
             }
         } catch (final Exception e) {
-            Log.e("", "Get IP list failed, returns 127.0.0.1 ", e);
+            Log.e("", "Get IP list failed, returns siyuan.localhost", e);
         }
-        list.add("127.0.0.1");
+        list.add("siyuan.localhost");
         return TextUtils.join(",", list);
     }
 }
