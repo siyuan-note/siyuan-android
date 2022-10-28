@@ -125,9 +125,9 @@ public final class Utils {
                 }
             }
         } catch (final Exception e) {
-            Log.e("", "Get IP list failed, returns siyuan.localhost", e);
+            Log.e("", "Get IP list failed, returns localhost", e);
         }
-        list.add("siyuan.localhost");
+        list.add("localhost");
         return TextUtils.join(",", list);
     }
 }
