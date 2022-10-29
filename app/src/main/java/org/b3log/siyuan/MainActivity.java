@@ -182,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
             public boolean shouldOverrideUrlLoading(final WebView view, final WebResourceRequest request) {
                 final Uri uri = request.getUrl();
                 final String url = uri.toString();
-                if (url.contains("localhost") || url.contains("127.0.0.1")) {
+                if (url.contains("127.0.0.1")) {
                     view.loadUrl(url);
                     return true;
                 }
@@ -213,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
         ws.setLoadWithOverviewMode(true);
         ws.setUserAgentString("SiYuan/" + version + " https://b3log.org/siyuan " + ws.getUserAgentString());
         waitFotKernelHttpServing();
-        webView.loadUrl("http://localhost:6806/appearance/boot/index.html");
+        webView.loadUrl("http://127.0.0.1:6806/appearance/boot/index.html");
 
         new Thread(this::keepLive).start();
     }

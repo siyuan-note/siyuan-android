@@ -125,9 +125,9 @@ public final class Utils {
                 }
             }
         } catch (final Exception e) {
-            Log.e("", "Get IP list failed, returns localhost", e);
+            Log.e("", "Get IP list failed, returns 127.0.0.1", e);
         }
-        list.add("localhost");
+        list.add("127.0.0.1");
         return TextUtils.join(",", list);
     }
 }
