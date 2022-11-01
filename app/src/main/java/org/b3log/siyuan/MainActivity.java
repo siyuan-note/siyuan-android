@@ -32,6 +32,7 @@ import android.provider.MediaStore;
 import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.PermissionRequest;
@@ -67,7 +68,7 @@ import mobile.Mobile;
  * 程序入口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.4.3, Oct 28, 2022
+ * @version 1.0.4.4, Nov 1, 2022
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity {
@@ -128,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
         webView = findViewById(R.id.webView);
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
-            public boolean onShowFileChooser(WebView mWebView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams) {
+            public boolean onShowFileChooser(final WebView mWebView, final ValueCallback<Uri[]> filePathCallback, final FileChooserParams fileChooserParams) {
                 if (uploadMessage != null) {
                     uploadMessage.onReceiveValue(null);
                 }
@@ -149,7 +150,15 @@ public class MainActivity extends AppCompatActivity {
             public void onPermissionRequest(final PermissionRequest request) {
                 request.grant(request.getResources());
             }
+
         });
+
+
+        webView.setOnDragListener((v, event) -> {
+            // 禁用拖拽 https://github.com/siyuan-note/siyuan/issues/6436
+            return DragEvent.ACTION_DRAG_ENDED != event.getAction();
+        });
+
 
         // 注册软键盘顶部跟随工具栏
         Utils.registerSoftKeyboardToolbar(this, webView);
