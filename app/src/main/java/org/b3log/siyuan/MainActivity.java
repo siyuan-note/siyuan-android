@@ -68,7 +68,7 @@ import mobile.Mobile;
  * 程序入口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.4.5, Nov 24, 2022
+ * @version 1.0.4.6, Dec 6, 2022
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity {
@@ -89,7 +89,12 @@ public class MainActivity extends AppCompatActivity {
             if ("startKernel".equals(cmd)) {
                 bootKernel();
             } else if ("agreement-y".equals(cmd)) {
-                agreementDialog.dismiss();
+                final String appName = getResources().getString(R.string.app_name);
+                if ("思源笔记".equals(appName)) { // 小米的隐私审核使用阻塞方案
+                    throw new RuntimeException();
+                } else {
+                    agreementDialog.dismiss();
+                }
             } else if ("agreement-n".equals(cmd)) {
                 final String dataDir = getFilesDir().getAbsolutePath();
                 final String appDir = dataDir + "/app";
@@ -439,6 +444,15 @@ public class MainActivity extends AppCompatActivity {
         });
 
         agreementDialog = ab.show();
+
+        final String appName = getResources().getString(R.string.app_name);
+        if ("思源笔记".equals(appName)) { // 小米的隐私审核使用阻塞方案
+            try {
+                Looper.loop();
+            } catch (final RuntimeException re) {
+                // re.printStackTrace();
+            }
+        }
     }
 
     @Override
