@@ -38,7 +38,7 @@
         <activity
             android:name=".MainActivity"
             android:autoRemoveFromRecents="true"
-            android:configChanges="orientation|screenSize"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|uiMode|orientation|screenSize|smallestScreenSize"
             android:exported="true"
             android:hardwareAccelerated="true">
 
