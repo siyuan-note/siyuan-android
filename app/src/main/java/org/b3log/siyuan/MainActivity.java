@@ -24,6 +24,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -56,6 +57,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -200,11 +202,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void bootKernel() {
-        final String dataDir = getFilesDir().getAbsolutePath();
-        final String appDir = dataDir + "/app";
-
+        final String appDir = getFilesDir().getAbsolutePath() + "/app";
         final Locale locale = getResources().getConfiguration().locale;
-        final String workspaceDir = getWorkspacePath();
+        final String workspaceBaseDir = getExternalFilesDir(null).getAbsolutePath();
         final String timezone = TimeZone.getDefault().getID();
         new Thread(() -> {
             final String localIPs = Utils.getIPAddressList();
@@ -214,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 lang = "en_US";
             }
-            Mobile.startKernel("android", appDir, workspaceDir, getApplicationInfo().nativeLibraryDir, dataDir, timezone, localIPs, lang);
+            Mobile.startKernel("android", appDir, workspaceBaseDir, timezone, localIPs, lang);
         }).start();
         sleep(100);
         final Bundle b = new Bundle();
@@ -300,10 +300,6 @@ public class MainActivity extends AppCompatActivity {
             bootDetailsText.setText(text);
             bootProgressBar.setProgress(progressPercent);
         });
-    }
-
-    private String getWorkspacePath() {
-        return getExternalFilesDir("siyuan").getAbsolutePath();
     }
 
     private void sleep(final long time) {
