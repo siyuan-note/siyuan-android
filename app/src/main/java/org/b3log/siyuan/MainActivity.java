@@ -18,13 +18,13 @@
 package org.b3log.siyuan;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -48,6 +48,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.StringUtils;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
@@ -57,20 +58,22 @@ import org.apache.commons.io.FileUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.Locale;
 import java.util.TimeZone;
 
 import mobile.Mobile;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 
 /**
  * 主程序.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.4.7, Dec 8, 2022
+ * @version 1.0.4.8, Jan 19, 2023
  * @since 1.0.0
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
 
     private WebView webView;
     private ImageView bootLogo;
@@ -95,6 +98,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AppUtils.registerAppStatusChangedListener(this);
+
         setContentView(R.layout.activity_main);
         bootLogo = findViewById(R.id.bootLogo);
         bootProgressBar = findViewById(R.id.progressBar);
@@ -387,5 +392,40 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         KeyboardUtils.unregisterSoftInputChangedListener(getWindow());
+        AppUtils.unregisterAppStatusChangedListener(this);
+    }
+
+    @Override
+    public void onForeground(Activity activity) {
+        startSyncData();
+    }
+
+    @Override
+    public void onBackground(Activity activity) {
+        startSyncData();
+    }
+
+    private static boolean syncing;
+
+    public static void startSyncData() {
+        new Thread(MainActivity::syncData).start();
+    }
+
+    public static void syncData() {
+        try {
+            if (syncing) {
+                Log.i("sync", "data is syncing...");
+                return;
+            }
+            syncing = true;
+            final OkHttpClient client = new OkHttpClient();
+            final RequestBody body = RequestBody.create(null, new byte[0]);
+            final Request request = new Request.Builder().url("http://127.0.0.1:6806/api/sync/performSync").method("POST", body).build();
+            client.newCall(request).execute();
+        } catch (final Throwable e) {
+            Log.e("sync", "data sync failed", e);
+        } finally {
+            syncing = false;
+        }
     }
 }

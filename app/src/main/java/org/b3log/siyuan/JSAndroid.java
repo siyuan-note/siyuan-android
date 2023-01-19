@@ -38,7 +38,7 @@ import okhttp3.RequestBody;
  * JavaScript 接口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.1, Oct 28, 2022
+ * @version 1.1.1.2, Jan 19, 2023
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -47,8 +47,6 @@ public final class JSAndroid {
     public JSAndroid(final MainActivity activity) {
         this.activity = activity;
     }
-
-    private static boolean syncing;
 
     @JavascriptInterface
     public String readClipboard() {
@@ -95,7 +93,6 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void returnDesktop() {
-        new Thread(this::syncByHand).start();
         activity.moveTaskToBack(true);
     }
 
@@ -159,20 +156,5 @@ public final class JSAndroid {
         }
     }
 
-    private void syncByHand() {
-        try {
-            if (syncing) {
-                return;
-            }
-            syncing = true;
-            final OkHttpClient client = new OkHttpClient();
-            final RequestBody body = RequestBody.create(null, new byte[0]);
-            final Request request = new Request.Builder().url("http://127.0.0.1:6806/api/sync/performSync").method("POST", body).build();
-            client.newCall(request).execute();
-        } catch (final Throwable e) {
-            Log.e("sync", "sync by hand failed", e);
-        } finally {
-            syncing = false;
-        }
-    }
+
 }
