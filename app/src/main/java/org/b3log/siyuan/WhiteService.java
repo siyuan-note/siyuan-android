@@ -37,7 +37,7 @@ import java.util.Random;
  * 保活服务.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.1, Mar 27, 2022
+ * @version 1.0.0.2, Jan 19, 2023
  * @since 1.0.0
  */
 public class WhiteService extends Service {
@@ -77,13 +77,8 @@ public class WhiteService extends Service {
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void startMyOwnForeground() {
         final Intent resultIntent = new Intent(this, MainActivity.class).
-                setAction(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
-        PendingIntent resultPendingIntent;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_MUTABLE);
-        } else {
-            resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_ONE_SHOT);
-        }
+                setAction(Intent.ACTION_MAIN).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        final PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         final String NOTIFICATION_CHANNEL_ID = "org.b3log.siyuan";
         final String channelName = "SiYuan Kernel Service";
