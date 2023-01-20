@@ -54,6 +54,7 @@ import com.blankj.utilcode.util.StringUtils;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import org.apache.commons.io.FileUtils;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -426,7 +427,8 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             }
             syncing = true;
             final OkHttpClient client = new OkHttpClient();
-            final RequestBody body = RequestBody.create(null, new byte[0]);
+            final RequestBody body = RequestBody.create(null, new JSONObject().
+                    put("mobileSwitch", true).toString());
             final Request request = new Request.Builder().url("http://127.0.0.1:6806/api/sync/performSync").method("POST", body).build();
             client.newCall(request).execute();
         } catch (final Throwable e) {
