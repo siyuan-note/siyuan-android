@@ -131,7 +131,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
         });
 
-
         webView.setOnDragListener((v, event) -> {
             // 禁用拖拽 https://github.com/siyuan-note/siyuan/issues/6436
             return DragEvent.ACTION_DRAG_ENDED != event.getAction();
@@ -149,7 +148,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 apply();
         ((ViewGroup) webView.getParent()).setPadding(0, UltimateBarX.getStatusBarHeight(), 0, 0);
 
-        // fixAndroidBug5497
         KeyboardUtils.fixAndroidBug5497(this);
 
         init();
@@ -175,9 +173,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 }
 
                 if (url.contains("siyuan://api/system/exit")) {
-                    finishAffinity();
-                    finishAndRemoveTask();
-                    //System.exit(0);
+                    exit();
                     return true;
                 }
 
@@ -256,8 +252,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 FileUtils.deleteDirectory(new File(appDir));
             } catch (final Exception e) {
                 Log.wtf("", "Delete dir [" + appDir + "] failed, exit application", e);
-                finishAffinity();
-                finishAndRemoveTask();
+                exit();
                 return;
             }
 
@@ -403,6 +398,11 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     @Override
     public void onBackground(Activity activity) {
         startSyncData();
+    }
+
+    private void exit() {
+        finishAffinity();
+        finishAndRemoveTask();
     }
 
     private static boolean syncing;
