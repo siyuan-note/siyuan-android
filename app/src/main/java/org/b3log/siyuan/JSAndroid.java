@@ -48,6 +48,14 @@ public final class JSAndroid {
         this.activity = activity;
     }
 
+    // 使用 siyuan:// 拉起时将链接保存到该变量中
+    public static String blockURL = "";
+
+    @JavascriptInterface
+    public String getBlockURL() {
+        return blockURL;
+    }
+
     @JavascriptInterface
     public String readClipboard() {
         final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);

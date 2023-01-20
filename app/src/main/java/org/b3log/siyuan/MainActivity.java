@@ -104,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         final Uri blockURL = intent.getData();
         if (null != blockURL) {
             Log.i("main", "Block URL [" + blockURL + "]");
+            JSAndroid.blockURL = blockURL.toString();
         }
 
         setContentView(R.layout.activity_main);
