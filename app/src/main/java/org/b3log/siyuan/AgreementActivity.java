@@ -19,6 +19,7 @@ package org.b3log.siyuan;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -38,7 +39,7 @@ import java.io.File;
  * 首次安装启动授权协议对话框.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.0, Dec 8, 2022
+ * @version 1.1.0.0, Jan 20, 2023
  * @since 1.0.0
  */
 public class AgreementActivity extends AppCompatActivity {
@@ -51,7 +52,7 @@ public class AgreementActivity extends AppCompatActivity {
             final String cmd = msg.getData().getString("cmd");
             if ("agreement-y".equals(cmd)) {
                 agreementDialog.dismiss();
-                startMainActivity();
+                startMainActivity(null);
             } else if ("agreement-n".equals(cmd)) {
                 final String dataDir = getFilesDir().getAbsolutePath();
                 final String appDir = dataDir + "/app";
@@ -86,13 +87,17 @@ public class AgreementActivity extends AppCompatActivity {
             return;
         }
 
+        final Intent intent = getIntent();
         // 启动主界面
-        startMainActivity();
+        startMainActivity(intent.getData());
     }
 
-    private void startMainActivity() {
+    private void startMainActivity(final Uri blockURL) {
         final Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (null != blockURL) {
+            intent.setData(blockURL);
+        }
         startActivity(intent);
     }
 

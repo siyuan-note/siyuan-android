@@ -93,7 +93,7 @@ public final class Utils {
             */
             }
         } catch (final Exception e) {
-            Log.e("", "unzip asset [from=" + zipName + ", to=" + targetDirectory + "] failed", e);
+            Log.e("boot", "unzip asset [from=" + zipName + ", to=" + targetDirectory + "] failed", e);
         } finally {
             if (null != zis) {
                 try {
@@ -125,7 +125,7 @@ public final class Utils {
                 }
             }
         } catch (final Exception e) {
-            Log.e("", "Get IP list failed, returns 127.0.0.1", e);
+            Log.e("network", "Get IP list failed, returns 127.0.0.1", e);
         }
         list.add("127.0.0.1");
         return TextUtils.join(",", list);

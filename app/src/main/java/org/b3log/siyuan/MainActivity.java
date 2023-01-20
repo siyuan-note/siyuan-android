@@ -70,7 +70,7 @@ import okhttp3.RequestBody;
  * 主程序.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.4.8, Jan 19, 2023
+ * @version 1.0.4.9, Jan 20, 2023
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -99,6 +99,12 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AppUtils.registerAppStatusChangedListener(this);
+
+        final Intent intent = getIntent();
+        final Uri blockURL = intent.getData();
+        if (null != blockURL) {
+            Log.i("main", "Block URL [" + blockURL + "]");
+        }
 
         setContentView(R.layout.activity_main);
         bootLogo = findViewById(R.id.bootLogo);
@@ -251,7 +257,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             try {
                 FileUtils.deleteDirectory(new File(appDir));
             } catch (final Exception e) {
-                Log.wtf("", "Delete dir [" + appDir + "] failed, exit application", e);
+                Log.wtf("boot", "Delete dir [" + appDir + "] failed, exit application", e);
                 exit();
                 return;
             }
@@ -262,7 +268,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             try {
                 FileUtils.writeStringToFile(appVerFile, version, StandardCharsets.UTF_8);
             } catch (final Exception e) {
-                Log.w("", "Write version failed", e);
+                Log.w("boot", "Write version failed", e);
             }
 
             setBootProgress("Booting kernel...", 80);
@@ -306,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         try {
             Thread.sleep(time);
         } catch (final Exception e) {
-            Log.e("", e.getMessage());
+            Log.e("runtime", e.getMessage());
         }
     }
 
@@ -376,7 +382,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 final String ver = FileUtils.readFileToString(appVerFile, StandardCharsets.UTF_8);
                 ret = !ver.equals(version);
             } catch (final Exception e) {
-                Log.w("", "Check version failed", e);
+                Log.w("boot", "Check version failed", e);
             }
         }
         return ret;
