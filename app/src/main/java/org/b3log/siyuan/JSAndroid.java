@@ -30,15 +30,11 @@ import com.blankj.utilcode.util.BarUtils;
 import com.blankj.utilcode.util.StringUtils;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-
 /**
  * JavaScript 接口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.2, Jan 19, 2023
+ * @version 1.1.1.3, Jan 22, 2023
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -48,11 +44,9 @@ public final class JSAndroid {
         this.activity = activity;
     }
 
-    // 使用 siyuan:// 拉起时将链接保存到该变量中
-    public static String blockURL = "";
-
     @JavascriptInterface
     public String getBlockURL() {
+        final String blockURL = activity.getIntent().getStringExtra("blockURL");
         return blockURL;
     }
 
@@ -129,11 +123,7 @@ public final class JSAndroid {
     @JavascriptInterface
     public void changeStatusBarColor(final String color, final int appearanceMode) {
         activity.runOnUiThread(() -> {
-            UltimateBarX.statusBarOnly(activity).
-                    transparent().
-                    light(appearanceMode == 0).
-                    color(parseColor(color)).
-                    apply();
+            UltimateBarX.statusBarOnly(activity).transparent().light(appearanceMode == 0).color(parseColor(color)).apply();
 
             BarUtils.setNavBarLightMode(activity, appearanceMode == 0);
             BarUtils.setNavBarColor(activity, parseColor(color));

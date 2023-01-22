@@ -39,7 +39,7 @@ import java.io.File;
  * 首次安装启动授权协议对话框.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.0, Jan 20, 2023
+ * @version 1.1.0.1, Jan 22, 2023
  * @since 1.0.0
  */
 public class AgreementActivity extends AppCompatActivity {
@@ -52,7 +52,7 @@ public class AgreementActivity extends AppCompatActivity {
             final String cmd = msg.getData().getString("cmd");
             if ("agreement-y".equals(cmd)) {
                 agreementDialog.dismiss();
-                startMainActivity(null);
+                startMainActivity("");
             } else if ("agreement-n".equals(cmd)) {
                 final String dataDir = getFilesDir().getAbsolutePath();
                 final String appDir = dataDir + "/app";
@@ -78,26 +78,40 @@ public class AgreementActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_agreement);
 
-        final String dataDir = getFilesDir().getAbsolutePath();
-        final String appDir = dataDir + "/app";
-        final File appDirFile = new File(appDir);
-        if (!appDirFile.exists()) {
+        String blockURL = "";
+        try {
+            final Intent intent = getIntent();
+            final Uri blockURLUri = intent.getData();
+            if (null != blockURLUri) {
+                Log.i("main", "Block URL [" + blockURLUri + "]");
+                blockURL = blockURLUri.toString();
+            }
+        } catch (
+                final Exception e) {
+            Log.e("main", "Gets block URL failed", e);
+        }
+
+        if (isFirstRun()) {
             // 首次运行弹窗提示用户隐私条款和使用授权
             showAgreements();
             return;
         }
 
-        final Intent intent = getIntent();
         // 启动主界面
-        startMainActivity(intent.getData());
+        startMainActivity(blockURL);
     }
 
-    private void startMainActivity(final Uri blockURL) {
+    private boolean isFirstRun() {
+        final String dataDir = getFilesDir().getAbsolutePath();
+        final String appDir = dataDir + "/app";
+        final File appDirFile = new File(appDir);
+        return !appDirFile.exists();
+    }
+
+    private void startMainActivity(final String blockURL) {
         final Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-        if (null != blockURL) {
-            intent.setData(blockURL);
-        }
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.putExtra("blockURL", blockURL);
         startActivity(intent);
     }
 

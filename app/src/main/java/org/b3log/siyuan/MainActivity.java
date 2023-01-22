@@ -71,12 +71,12 @@ import okhttp3.RequestBody;
  * 主程序.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.4.9, Jan 20, 2023
+ * @version 1.0.4.10, Jan 22, 2023
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
 
-    private WebView webView;
+    public static WebView webView;
     private ImageView bootLogo;
     private ProgressBar bootProgressBar;
     private TextView bootDetailsText;
@@ -97,16 +97,20 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     };
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (null != webView) {
+            final String blockURL = getIntent().getStringExtra("blockURL");
+            if (!StringUtils.isEmpty(blockURL)) {
+                MainActivity.webView.evaluateJavascript("javascript:window.openFileByURL('" + blockURL + "')", null);
+            }
+        }
+    }
+
+    @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AppUtils.registerAppStatusChangedListener(this);
-
-        final Intent intent = getIntent();
-        final Uri blockURL = intent.getData();
-        if (null != blockURL) {
-            Log.i("main", "Block URL [" + blockURL + "]");
-            JSAndroid.blockURL = blockURL.toString();
-        }
 
         setContentView(R.layout.activity_main);
         bootLogo = findViewById(R.id.bootLogo);
@@ -143,7 +147,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             // 禁用拖拽 https://github.com/siyuan-note/siyuan/issues/6436
             return DragEvent.ACTION_DRAG_ENDED != event.getAction();
         });
-
 
         // 注册软键盘顶部跟随工具栏
         Utils.registerSoftKeyboardToolbar(this, webView);
@@ -274,18 +277,13 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             }
 
             setBootProgress("Booting kernel...", 80);
-            final Bundle b = new Bundle();
-            b.putString("cmd", "startKernel");
-            final Message msg = new Message();
-            msg.setData(b);
-            handler.sendMessage(msg);
-        } else {
-            final Bundle b = new Bundle();
-            b.putString("cmd", "startKernel");
-            final Message msg = new Message();
-            msg.setData(b);
-            handler.sendMessage(msg);
         }
+
+        final Bundle b = new Bundle();
+        b.putString("cmd", "startKernel");
+        final Message msg = new Message();
+        msg.setData(b);
+        handler.sendMessage(msg);
     }
 
     /**
