@@ -110,7 +110,6 @@ public class AgreementActivity extends AppCompatActivity {
 
     private void startMainActivity(final String blockURL) {
         final Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intent.putExtra("blockURL", blockURL);
         startActivity(intent);
     }

@@ -97,10 +97,10 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     };
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onNewIntent(final Intent intent) {
+        super.onNewIntent(intent);
         if (null != webView) {
-            final String blockURL = getIntent().getStringExtra("blockURL");
+            final String blockURL = intent.getStringExtra("blockURL");
             if (!StringUtils.isEmpty(blockURL)) {
                 MainActivity.webView.evaluateJavascript("javascript:window.openFileByURL('" + blockURL + "')", null);
             }

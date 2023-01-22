@@ -16,11 +16,11 @@
 
         <activity
             android:name=".AgreementActivity"
-            android:launchMode="singleInstance"
             android:autoRemoveFromRecents="true"
             android:configChanges="orientation|screenSize"
             android:exported="true"
-            android:hardwareAccelerated="true">
+            android:hardwareAccelerated="true"
+            android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -38,12 +38,10 @@
 
         <activity
             android:name=".MainActivity"
-            android:launchMode="singleInstance"
             android:autoRemoveFromRecents="true"
             android:configChanges="keyboard|keyboardHidden|screenLayout|uiMode|orientation|screenSize|smallestScreenSize"
-            android:exported="true"
-            android:hardwareAccelerated="true">
-        </activity>
+            android:hardwareAccelerated="true"
+            android:launchMode="singleInstance"></activity>
 
         <service android:name=".WhiteService" />
     </application>
