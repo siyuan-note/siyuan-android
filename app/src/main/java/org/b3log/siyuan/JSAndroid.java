@@ -34,7 +34,7 @@ import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
  * JavaScript 接口.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.3, Jan 22, 2023
+ * @version 1.1.2.0, Feb 2, 2023
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -95,7 +95,10 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void returnDesktop() {
-        activity.moveTaskToBack(true);
+        final Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        activity.startActivity(intent);
     }
 
     @JavascriptInterface
