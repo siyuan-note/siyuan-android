@@ -88,6 +88,12 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(final Message msg) {
+            if (Mobile.isHttpServing()) {
+                Log.i("boot", "Kernel HTTP server is running");
+                showBootIndex();
+                return;
+            }
+
             final String cmd = msg.getData().getString("cmd");
             if ("startKernel".equals(cmd)) {
                 bootKernel();
@@ -243,6 +249,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
      */
     private void waitFotKernelHttpServing() {
         while (true) {
+            sleep(10);
             if (Mobile.isHttpServing()) {
                 break;
             }
