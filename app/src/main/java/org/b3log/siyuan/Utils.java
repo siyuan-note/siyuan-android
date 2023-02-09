@@ -125,7 +125,7 @@ public final class Utils {
                 }
             }
         } catch (final Exception e) {
-            Log.e("network", "Get IP list failed, returns 127.0.0.1", e);
+            Log.e("network", "get IP list failed, returns 127.0.0.1", e);
         }
         list.add("127.0.0.1");
         return TextUtils.join(",", list);

@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         @Override
         public void handleMessage(final Message msg) {
             if (Mobile.isHttpServing()) {
-                Log.i("boot", "Kernel HTTP server is running");
+                Log.i("boot", "kernel HTTP server is running");
                 showBootIndex();
                 return;
             }
@@ -271,7 +271,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             try {
                 FileUtils.deleteDirectory(new File(appDir));
             } catch (final Exception e) {
-                Log.wtf("boot", "Delete dir [" + appDir + "] failed, exit application", e);
+                Log.wtf("boot", "delete dir [" + appDir + "] failed, exit application", e);
                 exit();
                 return;
             }
@@ -282,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             try {
                 FileUtils.writeStringToFile(appVerFile, version, StandardCharsets.UTF_8);
             } catch (final Exception e) {
-                Log.w("boot", "Write version failed", e);
+                Log.w("boot", "write version failed", e);
             }
 
             setBootProgress("Booting kernel...", 80);
@@ -376,7 +376,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 final String ver = FileUtils.readFileToString(appVerFile, StandardCharsets.UTF_8);
                 ret = !ver.equals(version);
             } catch (final Exception e) {
-                Log.w("boot", "Check version failed", e);
+                Log.w("boot", "check version failed", e);
             }
         }
         return ret;
