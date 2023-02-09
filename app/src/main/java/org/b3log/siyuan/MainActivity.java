@@ -46,7 +46,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
 import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.KeyboardUtils;
@@ -85,24 +84,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private ValueCallback<Uri[]> uploadMessage;
     private static final int REQUEST_SELECT_FILE = 100;
 
-    private Handler handler = new Handler(Looper.getMainLooper()) {
-        @Override
-        public void handleMessage(final Message msg) {
-            if (Mobile.isHttpServing()) {
-                Log.i("boot", "kernel HTTP server is running");
-                showBootIndex();
-                return;
-            }
-
-            final String cmd = msg.getData().getString("cmd");
-            if ("startKernel".equals(cmd)) {
-                bootKernel();
-            } else {
-                showBootIndex();
-            }
-        }
-    };
-
     @Override
     public void onNewIntent(final Intent intent) {
         super.onNewIntent(intent);
@@ -121,6 +102,27 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         AppUtils.registerAppStatusChangedListener(this);
 
         setContentView(R.layout.activity_main);
+
+        // 初始化 UI 元素
+        initUIElements();
+
+        // 注册软键盘顶部跟随工具栏
+        Utils.registerSoftKeyboardToolbar(this, webView);
+
+        // 沉浸式状态栏设置
+        UltimateBarX.statusBarOnly(this).
+                transparent().
+                light(false).
+                color(Color.parseColor("#212224")).
+                apply();
+        ((ViewGroup) webView.getParent()).setPadding(0, UltimateBarX.getStatusBarHeight(), 0, 0);
+
+        KeyboardUtils.fixAndroidBug5497(this);
+
+        boot();
+    }
+
+    private void initUIElements() {
         bootLogo = findViewById(R.id.bootLogo);
         bootProgressBar = findViewById(R.id.progressBar);
         bootDetailsText = findViewById(R.id.bootDetails);
@@ -155,21 +157,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             // 禁用拖拽 https://github.com/siyuan-note/siyuan/issues/6436
             return DragEvent.ACTION_DRAG_ENDED != event.getAction();
         });
-
-        // 注册软键盘顶部跟随工具栏
-        Utils.registerSoftKeyboardToolbar(this, webView);
-
-        // 沉浸式状态栏设置
-        UltimateBarX.statusBarOnly(this).
-                transparent().
-                light(false).
-                color(Color.parseColor("#212224")).
-                apply();
-        ((ViewGroup) webView.getParent()).setPadding(0, UltimateBarX.getStatusBarHeight(), 0, 0);
-
-        KeyboardUtils.fixAndroidBug5497(this);
-
-        init();
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -219,7 +206,25 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         webView.loadUrl("http://127.0.0.1:6806/appearance/boot/index.html");
     }
 
+    private Handler bootHandler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(final Message msg) {
+            final String cmd = msg.getData().getString("cmd");
+            if ("startKernel".equals(cmd)) {
+                bootKernel();
+            } else {
+                showBootIndex();
+            }
+        }
+    };
+
     private void bootKernel() {
+        if (Mobile.isHttpServing()) {
+            Log.i("boot", "kernel HTTP server is running");
+            showBootIndex();
+            return;
+        }
+
         final String appDir = getFilesDir().getAbsolutePath() + "/app";
         final Locale locale = getResources().getConfiguration().locale;
         final String workspaceBaseDir = getExternalFilesDir(null).getAbsolutePath();
@@ -241,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             b.putString("cmd", "bootIndex");
             final Message msg = new Message();
             msg.setData(b);
-            handler.sendMessage(msg);
+            bootHandler.sendMessage(msg);
         }, 100);
     }
 
@@ -257,7 +262,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         }
     }
 
-    private void init() {
+    private void boot() {
         if (needUnzipAssets()) {
             bootLogo.setVisibility(View.VISIBLE);
             bootProgressBar.setVisibility(View.VISIBLE);
@@ -292,7 +297,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         b.putString("cmd", "startKernel");
         final Message msg = new Message();
         msg.setData(b);
-        handler.sendMessage(msg);
+        bootHandler.sendMessage(msg);
     }
 
     private void setBootProgress(final String text, final int progressPercent) {
