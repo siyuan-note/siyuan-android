@@ -86,8 +86,7 @@ public class AgreementActivity extends AppCompatActivity {
                 Log.i("main", "Block URL [" + blockURLUri + "]");
                 blockURL = blockURLUri.toString();
             }
-        } catch (
-                final Exception e) {
+        } catch (final Exception e) {
             Log.e("main", "Gets block URL failed", e);
         }
 
