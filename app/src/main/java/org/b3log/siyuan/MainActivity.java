@@ -77,7 +77,7 @@ import okhttp3.Response;
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
 
-    public static WebView webView;
+    private WebView webView;
     private ImageView bootLogo;
     private ProgressBar bootProgressBar;
     private TextView bootDetailsText;
@@ -109,13 +109,14 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         if (null != webView) {
             final String blockURL = intent.getStringExtra("blockURL");
             if (!StringUtils.isEmpty(blockURL)) {
-                MainActivity.webView.evaluateJavascript("javascript:window.openFileByURL('" + blockURL + "')", null);
+                webView.evaluateJavascript("javascript:window.openFileByURL('" + blockURL + "')", null);
             }
         }
     }
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
+        Log.i("boot", "create main activity");
         super.onCreate(savedInstanceState);
         AppUtils.registerAppStatusChangedListener(this);
 
@@ -384,9 +385,14 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
     @Override
     protected void onDestroy() {
+        Log.i("boot", "destroy main activity");
         super.onDestroy();
         KeyboardUtils.unregisterSoftInputChangedListener(getWindow());
         AppUtils.unregisterAppStatusChangedListener(this);
+        if (null != webView) {
+            webView.removeAllViews();
+            webView.destroy();
+        }
     }
 
     @Override

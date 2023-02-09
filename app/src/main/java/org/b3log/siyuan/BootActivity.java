@@ -36,17 +36,17 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 
 /**
- * 首次安装启动授权协议对话框.
+ * 引导启动.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
  * @version 1.1.0.2, Feb 9, 2023
  * @since 1.0.0
  */
-public class AgreementActivity extends AppCompatActivity {
-
+public class BootActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
+        Log.i("boot", "create boot activity");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_agreement);
 
@@ -60,6 +60,12 @@ public class AgreementActivity extends AppCompatActivity {
         final String blockURL = getBlockURL();
         // 启动主界面
         startMainActivity(blockURL);
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.i("boot", "destroy boot activity");
+        super.onDestroy();
     }
 
     private String getBlockURL() {
