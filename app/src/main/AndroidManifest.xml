@@ -43,7 +43,6 @@
             android:hardwareAccelerated="true"
             android:launchMode="singleInstance"></activity>
 
-        <service android:name=".WhiteService" />
     </application>
 
 </manifest>

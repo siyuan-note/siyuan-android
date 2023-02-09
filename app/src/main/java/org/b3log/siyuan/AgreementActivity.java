@@ -39,13 +39,59 @@ import java.io.File;
  * 首次安装启动授权协议对话框.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.1, Jan 22, 2023
+ * @version 1.1.0.2, Feb 9, 2023
  * @since 1.0.0
  */
 public class AgreementActivity extends AppCompatActivity {
 
-    private AlertDialog agreementDialog;
 
+    @Override
+    protected void onCreate(final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_agreement);
+
+        if (isFirstRun()) {
+            // 首次运行弹窗提示用户隐私条款和使用授权
+            showAgreements();
+            return;
+        }
+
+        // 获取可能存在的 block URL（通过 siyuan://blocks/xxx 打开应用时传递的）
+        final String blockURL = getBlockURL();
+        // 启动主界面
+        startMainActivity(blockURL);
+    }
+
+    private String getBlockURL() {
+        String ret = "";
+        try {
+            final Intent intent = getIntent();
+            final Uri blockURLUri = intent.getData();
+            if (null != blockURLUri) {
+                Log.i("main", "Block URL [" + blockURLUri + "]");
+                ret = blockURLUri.toString();
+            }
+        } catch (final Exception e) {
+            Log.e("main", "Gets block URL failed", e);
+        }
+
+        return ret;
+    }
+
+    private boolean isFirstRun() {
+        final String dataDir = getFilesDir().getAbsolutePath();
+        final String appDir = dataDir + "/app";
+        final File appDirFile = new File(appDir);
+        return !appDirFile.exists();
+    }
+
+    private void startMainActivity(final String blockURL) {
+        final Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        intent.putExtra("blockURL", blockURL);
+        startActivity(intent);
+    }
+
+    private AlertDialog agreementDialog;
     private Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(final Message msg) {
@@ -66,52 +112,11 @@ public class AgreementActivity extends AppCompatActivity {
                 finishAffinity();
                 finishAndRemoveTask();
                 Log.i("agreement", "User did not accept the agreement, exit");
-                //System.exit(0);
             } else {
                 Log.w("agreement", "Unknown agreement command [" + cmd + "]");
             }
         }
     };
-
-    @Override
-    protected void onCreate(final Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_agreement);
-
-        String blockURL = "";
-        try {
-            final Intent intent = getIntent();
-            final Uri blockURLUri = intent.getData();
-            if (null != blockURLUri) {
-                Log.i("main", "Block URL [" + blockURLUri + "]");
-                blockURL = blockURLUri.toString();
-            }
-        } catch (final Exception e) {
-            Log.e("main", "Gets block URL failed", e);
-        }
-
-        if (isFirstRun()) {
-            // 首次运行弹窗提示用户隐私条款和使用授权
-            showAgreements();
-            return;
-        }
-
-        // 启动主界面
-        startMainActivity(blockURL);
-    }
-
-    private boolean isFirstRun() {
-        final String dataDir = getFilesDir().getAbsolutePath();
-        final String appDir = dataDir + "/app";
-        final File appDirFile = new File(appDir);
-        return !appDirFile.exists();
-    }
-
-    private void startMainActivity(final String blockURL) {
-        final Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-        intent.putExtra("blockURL", blockURL);
-        startActivity(intent);
-    }
 
     private void showAgreements() {
         final TextView msg = new TextView(this);

@@ -71,7 +71,7 @@ import okhttp3.RequestBody;
  * 主程序.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.4.10, Jan 22, 2023
+ * @version 1.0.4.11, Feb 9, 2023
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -209,8 +209,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         ws.setUserAgentString("SiYuan/" + version + " https://b3log.org/siyuan " + ws.getUserAgentString());
         waitFotKernelHttpServing();
         webView.loadUrl("http://127.0.0.1:6806/appearance/boot/index.html");
-
-        new Thread(this::keepLive).start();
     }
 
     private void bootKernel() {
@@ -228,20 +226,22 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             }
             Mobile.startKernel("android", appDir, workspaceBaseDir, timezone, localIPs, lang);
         }).start();
-        sleep(100);
-        final Bundle b = new Bundle();
-        b.putString("cmd", "bootIndex");
-        final Message msg = new Message();
-        msg.setData(b);
-        handler.sendMessage(msg);
+
+        final Handler h = new Handler();
+        h.postDelayed(() -> {
+            final Bundle b = new Bundle();
+            b.putString("cmd", "bootIndex");
+            final Message msg = new Message();
+            msg.setData(b);
+            handler.sendMessage(msg);
+        }, 100);
     }
 
     /**
      * 等待内核 HTTP 服务伺服。
      */
     private void waitFotKernelHttpServing() {
-        for (int i = 0; i < 500; i++) {
-            sleep(10);
+        while (true) {
             if (Mobile.isHttpServing()) {
                 break;
             }
@@ -284,21 +284,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         final Message msg = new Message();
         msg.setData(b);
         handler.sendMessage(msg);
-    }
-
-    /**
-     * 通知栏保活。
-     */
-    private void keepLive() {
-        while (true) {
-            try {
-                final Intent intent = new Intent(MainActivity.this, WhiteService.class);
-                ContextCompat.startForegroundService(this, intent);
-                sleep(45 * 1000);
-                stopService(intent);
-            } catch (final Throwable t) {
-            }
-        }
     }
 
     private void setBootProgress(final String text, final int progressPercent) {

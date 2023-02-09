@@ -95,6 +95,7 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void returnDesktop() {
+        activity.moveTaskToBack(true);
         final Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_HOME);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
