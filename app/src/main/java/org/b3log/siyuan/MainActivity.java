@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -237,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             } else {
                 lang = "en_US";
             }
-            Mobile.startKernel("android", appDir, workspaceBaseDir, timezone, localIPs, lang);
+            Mobile.startKernel("android", appDir, workspaceBaseDir, timezone, localIPs, lang, Build.VERSION.RELEASE + "/" + Build.VERSION.SDK_INT);
         }).start();
 
         final Handler h = new Handler();
