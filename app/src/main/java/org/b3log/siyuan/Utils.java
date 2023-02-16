@@ -18,7 +18,10 @@
 package org.b3log.siyuan;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.res.AssetManager;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.WebView;
@@ -126,6 +129,21 @@ public final class Utils {
             }
         } catch (final Exception e) {
             Log.e("network", "get IP list failed, returns 127.0.0.1", e);
+        }
+        list.add("127.0.0.1");
+        return TextUtils.join(",", list);
+    }
+    public static String getIPAddressListWithoutCellular(Context context) {
+        final List<String> list = new ArrayList<>();
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+        int ipAddress = wifiInfo.getIpAddress();
+        String ip = (ipAddress & 0xFF) + "." +
+                ((ipAddress >> 8) & 0xFF) + "." +
+                ((ipAddress >> 16) & 0xFF) + "." +
+                (ipAddress >> 24 & 0xFF);
+        if (!"0.0.0.0".equals(ip)){
+            list.add(ip);
         }
         list.add("127.0.0.1");
         return TextUtils.join(",", list);

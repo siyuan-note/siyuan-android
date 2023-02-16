@@ -231,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         final String workspaceBaseDir = getExternalFilesDir(null).getAbsolutePath();
         final String timezone = TimeZone.getDefault().getID();
         new Thread(() -> {
-            final String localIPs = Utils.getIPAddressList();
+            final String localIPs = Utils.getIPAddressListWithoutCellular(getApplicationContext());
             String lang = locale.getLanguage() + "_" + locale.getCountry();
             if (lang.toLowerCase().contains("cn")) {
                 lang = "zh_CN";
