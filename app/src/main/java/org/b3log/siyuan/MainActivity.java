@@ -47,6 +47,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.KeyboardUtils;
@@ -205,6 +206,8 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         ws.setUserAgentString("SiYuan/" + version + " https://b3log.org/siyuan " + ws.getUserAgentString());
         waitFotKernelHttpServing();
         webView.loadUrl("http://127.0.0.1:6806/appearance/boot/index.html");
+
+        new Thread(this::keepLive).start();
     }
 
     private Handler bootHandler = new Handler(Looper.getMainLooper()) {
@@ -249,6 +252,21 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             msg.setData(b);
             bootHandler.sendMessage(msg);
         }, 100);
+    }
+
+    /**
+     * 通知栏保活。
+     */
+    private void keepLive() {
+        while (true) {
+            try {
+                final Intent intent = new Intent(MainActivity.this, KeepLiveService.class);
+                ContextCompat.startForegroundService(this, intent);
+                sleep(45 * 1000);
+                stopService(intent);
+            } catch (final Throwable t) {
+            }
+        }
     }
 
     /**
