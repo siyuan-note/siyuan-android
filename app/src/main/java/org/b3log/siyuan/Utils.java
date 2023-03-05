@@ -43,7 +43,7 @@ import java.util.zip.ZipInputStream;
  * 工具类.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.1, Oct 28, 2022
+ * @version 1.1.0.2, Mar 5, 2023
  * @since 1.0.0
  */
 public final class Utils {
@@ -51,9 +51,9 @@ public final class Utils {
     public static void registerSoftKeyboardToolbar(final Activity activity, final WebView webView) {
         KeyboardUtils.registerSoftInputChangedListener(activity, height -> {
             if (KeyboardUtils.isSoftInputVisible(activity)) {
-                webView.evaluateJavascript("javascript:showKeyboardToolbar()", null);
+                webView.evaluateJavascript("javascript:showKeyboardToolbar(" + height + ")", null);
             } else {
-                webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
+                webView.evaluateJavascript("javascript:hideKeyboardToolbar(" + height + ")", null);
             }
         });
     }
