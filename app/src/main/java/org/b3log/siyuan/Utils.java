@@ -53,7 +53,7 @@ public final class Utils {
             if (KeyboardUtils.isSoftInputVisible(activity)) {
                 webView.evaluateJavascript("javascript:showKeyboardToolbar(" + height + ")", null);
             } else {
-                webView.evaluateJavascript("javascript:hideKeyboardToolbar(" + height + ")", null);
+                webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
             }
         });
     }
