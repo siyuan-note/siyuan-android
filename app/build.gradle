@@ -59,9 +59,8 @@ dependencies {
     implementation 'androidx.work:work-runtime:2.7.1'
 
     implementation(name: 'kernel', ext: 'aar')
-    implementation("commons-io:commons-io:2.11.0")
-    /* 不要升级，否则无法兼容 Android 7 https://github.com/siyuan-note/siyuan/issues/4010 */
-    implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation("commons-io:commons-io:2.5") // 不要升级，否则无法兼容 Android 7
+    implementation("com.squareup.okhttp3:okhttp:4.9.3") // 不要升级，否则无法兼容 Android 7
     implementation 'com.gitee.zackratos:UltimateBarX:0.8.0'
     implementation 'com.blankj:utilcodex:1.31.1'
 }
