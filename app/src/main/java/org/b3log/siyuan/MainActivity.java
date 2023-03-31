@@ -73,7 +73,7 @@ import okhttp3.Response;
  * 主程序.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.4.11, Feb 9, 2023
+ * @version 1.0.4.12, Mar 31, 2023
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -197,6 +197,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         final JSAndroid JSAndroid = new JSAndroid(this);
         webView.addJavascriptInterface(JSAndroid, "JSAndroid");
         final WebSettings ws = webView.getSettings();
+        checkWebViewVer(ws);
         ws.setJavaScriptEnabled(true);
         ws.setDomStorageEnabled(true);
         ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
@@ -432,6 +433,26 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private void exit() {
         finishAffinity();
         finishAndRemoveTask();
+    }
+
+    private void checkWebViewVer(final WebSettings ws) {
+        // Android check WebView version 75+ https://github.com/siyuan-note/siyuan/issues/7840
+        final String ua = ws.getUserAgentString();
+        if (ua.contains("Chrome/")) {
+            final int minVer = 75;
+            try {
+                final String chromeVersion = ua.split("Chrome/")[1].split(" ")[0];
+                if (chromeVersion.contains(".")) {
+                    final String[] chromeVersionParts = chromeVersion.split("\\.");
+                    if (Integer.parseInt(chromeVersionParts[0]) < minVer) {
+                        Toast.makeText(this, "WebView version [" + chromeVersion + "] is too low, please upgrade to " + minVer + "+", Toast.LENGTH_LONG).show();
+                    }
+                }
+            } catch (final Exception e) {
+                Log.e("boot", "check webview version failed", e);
+                Toast.makeText(this, "Check WebView version failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     private static boolean syncing;
