@@ -83,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private ProgressBar bootProgressBar;
     private TextView bootDetailsText;
     private final String version = BuildConfig.VERSION_NAME;
+    private String webViewVer;
     private ValueCallback<Uri[]> uploadMessage;
     private static final int REQUEST_SELECT_FILE = 100;
 
@@ -159,6 +160,9 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             // 禁用拖拽 https://github.com/siyuan-note/siyuan/issues/6436
             return DragEvent.ACTION_DRAG_ENDED != event.getAction();
         });
+
+        final WebSettings ws = webView.getSettings();
+        checkWebViewVer(ws);
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -197,7 +201,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         final JSAndroid JSAndroid = new JSAndroid(this);
         webView.addJavascriptInterface(JSAndroid, "JSAndroid");
         final WebSettings ws = webView.getSettings();
-        checkWebViewVer(ws);
         ws.setJavaScriptEnabled(true);
         ws.setDomStorageEnabled(true);
         ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
@@ -242,7 +245,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             } else {
                 lang = "en_US";
             }
-            Mobile.startKernel("android", appDir, workspaceBaseDir, timezone, localIPs, lang, Build.VERSION.RELEASE + "/" + Build.VERSION.SDK_INT);
+            Mobile.startKernel("android", appDir, workspaceBaseDir, timezone, localIPs, lang, Build.VERSION.RELEASE + "/SDK " + Build.VERSION.SDK_INT + "/WebView " + webViewVer);
         }).start();
 
         final Handler h = new Handler();
@@ -444,7 +447,8 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 final String chromeVersion = ua.split("Chrome/")[1].split(" ")[0];
                 if (chromeVersion.contains(".")) {
                     final String[] chromeVersionParts = chromeVersion.split("\\.");
-                    if (Integer.parseInt(chromeVersionParts[0]) < minVer) {
+                    webViewVer = chromeVersionParts[0];
+                    if (Integer.parseInt(webViewVer) < minVer) {
                         Toast.makeText(this, "WebView version [" + chromeVersion + "] is too low, please upgrade to " + minVer + "+", Toast.LENGTH_LONG).show();
                     }
                 }
