@@ -12,6 +12,7 @@
    * appearance
    * guide
    * stage
+   * changelogs
 
 目录结构参考：
 

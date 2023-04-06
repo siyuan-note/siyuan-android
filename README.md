@@ -12,6 +12,7 @@
    * appearance
    * guide
    * stage
+   * changelogs
 
 Directory structure reference:
 
