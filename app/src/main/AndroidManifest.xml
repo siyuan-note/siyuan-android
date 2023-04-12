@@ -3,7 +3,14 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" android:minSdkVersion="33"/> <!-- https://developer.android.google.cn/guide/topics/ui/notifiers/notification-permission?hl=zh-cn -->
+
+    <!--
+    Fix the problem that notifications cannot be allowed on Android 13 https://github.com/siyuan-note/siyuan/issues/7960
+    https://developer.android.google.cn/guide/topics/ui/notifiers/notification-permission?hl=zh-cn
+    -->
+    <uses-permission
+        android:name="android.permission.POST_NOTIFICATIONS"
+        android:minSdkVersion="33" />
 
     <application
         android:name=".App"
