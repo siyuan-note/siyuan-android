@@ -17,6 +17,8 @@
  */
 package org.b3log.siyuan;
 
+import android.view.Display;
+import android.view.WindowManager;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
@@ -105,6 +107,27 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         AppUtils.registerAppStatusChangedListener(this);
 
         setContentView(R.layout.activity_main);
+        
+        Display display = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            display = this.getDisplay(); // 等效于 getApplicationContext().getDisplay() 因为Activity已经实现了Context接口，所以用 this 替换
+        } else {
+            display = getWindowManager().getDefaultDisplay(); // deprecated as of API 30: Android 11.0 (R)
+        }
+        if (display != null) {
+            Display.Mode[] modes = display.getSupportedModes();
+            Display.Mode preferredMode = modes[0];
+            for (Display.Mode mode : modes) {
+                Log.d("MainActivity Display", "supported mode: " + mode.toString());
+                if (mode.getRefreshRate() > preferredMode.getRefreshRate() && mode.getPhysicalWidth() >= preferredMode.getPhysicalWidth()) {
+                    preferredMode = mode;
+                }
+            }
+            Log.d("MainActivity Display", "preferredMode mode: " + preferredMode.toString());
+            WindowManager.LayoutParams params = getWindow().getAttributes();
+            params.preferredDisplayModeId = preferredMode.getModeId();
+            getWindow().setAttributes(params);
+        }
 
         // 初始化 UI 元素
         initUIElements();
