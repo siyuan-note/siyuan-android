@@ -73,7 +73,7 @@ import okhttp3.Response;
  * 主程序.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.4.12, Mar 31, 2023
+ * @version 1.0.4.13, May 7, 2023
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -245,7 +245,13 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             } else {
                 lang = "en_US";
             }
-            Mobile.startKernel("android", appDir, workspaceBaseDir, timezone, localIPs, lang, Build.VERSION.RELEASE + "/SDK " + Build.VERSION.SDK_INT + "/WebView " + webViewVer);
+
+            Mobile.startKernel("android", appDir, workspaceBaseDir, timezone, localIPs, lang,
+                    Build.VERSION.RELEASE +
+                            "/SDK " + Build.VERSION.SDK_INT +
+                            "/WebView " + webViewVer +
+                            "/Manufacturer " + android.os.Build.MANUFACTURER +
+                            "/Brand " + android.os.Build.BRAND);
         }).start();
 
         final Handler h = new Handler();
