@@ -73,7 +73,7 @@ import okhttp3.Response;
  * 主程序.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.4.13, May 7, 2023
+ * @version 1.0.4.14, May 29, 2023
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -207,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         ws.setTextZoom(100);
         ws.setUseWideViewPort(true);
         ws.setLoadWithOverviewMode(true);
-        ws.setUserAgentString("SiYuan/" + version + " https://b3log.org/siyuan " + ws.getUserAgentString());
+        ws.setUserAgentString("SiYuan/" + version + " https://b3log.org/siyuan Android " + ws.getUserAgentString());
         waitFotKernelHttpServing();
         webView.loadUrl("http://127.0.0.1:6806/appearance/boot/index.html");
 
