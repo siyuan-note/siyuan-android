@@ -34,6 +34,7 @@ import android.util.Log;
 import android.view.DragEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.CookieManager;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -73,7 +74,7 @@ import okhttp3.Response;
  * 主程序.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.4.14, May 29, 2023
+ * @version 1.0.4.15, Jun 6, 2023
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -103,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         Log.i("boot", "create main activity");
         super.onCreate(savedInstanceState);
         AppUtils.registerAppStatusChangedListener(this);
+        WebView.setWebContentsDebuggingEnabled(true);
 
         setContentView(R.layout.activity_main);
 
@@ -200,10 +202,14 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
         final JSAndroid JSAndroid = new JSAndroid(this);
         webView.addJavascriptInterface(JSAndroid, "JSAndroid");
+        CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
         final WebSettings ws = webView.getSettings();
         ws.setJavaScriptEnabled(true);
         ws.setDomStorageEnabled(true);
         ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ws.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        }
         ws.setTextZoom(100);
         ws.setUseWideViewPort(true);
         ws.setLoadWithOverviewMode(true);
@@ -416,7 +422,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         return ret;
     }
 
-
     @Override
     protected void onDestroy() {
         Log.i("boot", "destroy main activity");
@@ -432,6 +437,9 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     @Override
     public void onForeground(Activity activity) {
         startSyncData();
+        if (null != webView) {
+            webView.evaluateJavascript("javascript:window.reconnectWebSocket()", null);
+        }
     }
 
     @Override
