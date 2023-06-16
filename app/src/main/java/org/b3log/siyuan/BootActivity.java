@@ -39,7 +39,7 @@ import java.io.File;
  * 引导启动.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.2, Feb 9, 2023
+ * @version 1.1.0.3, Jun 16, 2023
  * @since 1.0.0
  */
 public class BootActivity extends AppCompatActivity {
@@ -48,10 +48,9 @@ public class BootActivity extends AppCompatActivity {
     protected void onCreate(final Bundle savedInstanceState) {
         Log.i("boot", "create boot activity");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_agreement);
-
         if (isFirstRun()) {
             // 首次运行弹窗提示用户隐私条款和使用授权
+            setContentView(R.layout.activity_agreement);
             showAgreements();
             return;
         }

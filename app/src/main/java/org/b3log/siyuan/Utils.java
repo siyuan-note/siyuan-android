@@ -44,10 +44,15 @@ import java.util.zip.ZipInputStream;
  * 工具类.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.4, Mar 12, 2023
+ * @version 1.1.0.5, Jun 16, 2023
  * @since 1.0.0
  */
 public final class Utils {
+
+    /**
+     * App version.
+     */
+    public static final String version = BuildConfig.VERSION_NAME;
 
     public static void registerSoftKeyboardToolbar(final Activity activity, final WebView webView) {
         KeyboardUtils.registerSoftInputChangedListener(activity, height -> {

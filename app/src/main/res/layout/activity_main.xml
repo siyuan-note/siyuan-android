@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#1e1f22"
     tools:context=".MainActivity">
 
     <WebView
@@ -22,32 +23,35 @@
 
         <ImageView
             android:id="@+id/bootLogo"
-            android:layout_width="148dp"
-            android:layout_height="148dp"
+            android:layout_width="296dp"
+            android:layout_height="296dp"
             android:contentDescription="Boot logo"
+            android:translationY="16dp"
             android:visibility="invisible"
             app:srcCompat="@drawable/icon" />
 
         <ProgressBar
             android:id="@+id/progressBar"
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-            android:layout_width="256dp"
+            android:layout_width="300dp"
             android:layout_height="2dp"
             android:layout_marginLeft="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginRight="16dp"
-            android:progressTint="#3b3e43"
+            android:progressTint="#d23f31"
+            android:translationY="16dp"
             android:visibility="invisible" />
 
         <TextView
             android:id="@+id/bootDetails"
-            android:layout_width="256dp"
+            android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
             android:layout_marginTop="2dp"
             android:layout_marginRight="16dp"
             android:ellipsize="end"
             android:textSize="8sp"
+            android:translationY="16dp"
             android:visibility="invisible" />
     </LinearLayout>
 
