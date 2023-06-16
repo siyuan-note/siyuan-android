@@ -74,7 +74,7 @@ import okhttp3.Response;
  * 主程序.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.4.15, Jun 6, 2023
+ * @version 1.0.4.16, Jun 16, 2023
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         UltimateBarX.statusBarOnly(this).
                 transparent().
                 light(false).
-                color(Color.parseColor("#212224")).
+                color(Color.parseColor("#1e1f22")).
                 apply();
         ((ViewGroup) webView.getParent()).setPadding(0, UltimateBarX.getStatusBarHeight(), 0, 0);
 
