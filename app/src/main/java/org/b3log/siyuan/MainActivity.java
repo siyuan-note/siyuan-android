@@ -223,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         ws.setUserAgentString("SiYuan/" + Utils.version + " https://b3log.org/siyuan Android " + ws.getUserAgentString());
 
         waitFotKernelHttpServing();
-        webView.loadUrl("http://127.0.0.1:6806/appearance/boot/index.html");
+        webView.loadUrl("http://127.0.0.1:6806/appearance/boot/index.html?v=" + Utils.version);
 
         new Thread(this::keepLive).start();
     }
