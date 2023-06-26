@@ -74,7 +74,7 @@ import okhttp3.Response;
  * 主程序.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.4.16, Jun 16, 2023
+ * @version 1.0.4.17, Jun 26, 2023
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         Utils.registerSoftKeyboardToolbar(this, webView);
 
         // 沉浸式状态栏设置
-        UltimateBarX.statusBarOnly(this).transparent().light(false).color(Color.parseColor("#1e1f22")).apply();
+        UltimateBarX.statusBarOnly(this).transparent().light(false).color(Color.parseColor("#1e1e1e")).apply();
         ((ViewGroup) webView.getParent()).setPadding(0, UltimateBarX.getStatusBarHeight(), 0, 0);
 
         KeyboardUtils.fixAndroidBug5497(this);
@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         bootProgressBar = findViewById(R.id.progressBar);
         bootDetailsText = findViewById(R.id.bootDetails);
         webView = findViewById(R.id.webView);
-        webView.setBackgroundColor(Color.parseColor("#1e1f22"));
+        webView.setBackgroundColor(Color.parseColor("#1e1e1e"));
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(final WebView mWebView, final ValueCallback<Uri[]> filePathCallback, final FileChooserParams fileChooserParams) {
