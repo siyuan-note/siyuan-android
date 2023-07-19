@@ -83,7 +83,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private ImageView bootLogo;
     private ProgressBar bootProgressBar;
     private TextView bootDetailsText;
-
     private String webViewVer;
     private ValueCallback<Uri[]> uploadMessage;
     private static final int REQUEST_SELECT_FILE = 100;
