@@ -10,8 +10,8 @@ android {
         applicationId "org.b3log.siyuan"
         minSdkVersion 24
         targetSdkVersion 33
-        versionCode 163
-        versionName "2.9.6"
+        versionCode 164
+        versionName "2.9.7"
     }
 
     buildTypes {
