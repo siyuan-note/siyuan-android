@@ -11,6 +11,8 @@
     <uses-permission
         android:name="android.permission.POST_NOTIFICATIONS"
         android:minSdkVersion="33" />
+    <!-- Foreground KeepLiveService Crash on Android 14 https://github.com/siyuan-note/siyuan/issues/9212 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
         android:name=".App"
@@ -53,7 +55,13 @@
             android:launchMode="singleInstance"
             android:theme="@style/Theme.SiYuan"></activity>
 
-        <service android:name=".KeepLiveService" />
+        <service
+            android:name=".KeepLiveService"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="hosting" />
+        </service>
     </application>
 
 </manifest>
