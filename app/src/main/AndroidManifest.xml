@@ -29,7 +29,6 @@
             android:configChanges="orientation|screenSize"
             android:exported="true"
             android:hardwareAccelerated="true"
-            android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@style/Theme.SiYuan.Boot">
             <intent-filter>
@@ -52,8 +51,12 @@
             android:autoRemoveFromRecents="true"
             android:configChanges="keyboard|keyboardHidden|screenLayout|uiMode|orientation|screenSize|smallestScreenSize"
             android:hardwareAccelerated="true"
-            android:launchMode="singleInstance"
-            android:theme="@style/Theme.SiYuan"></activity>
+            android:theme="@style/Theme.SiYuan">
+            <!--
+            不要添加 android:launchMode="singleInstance" 否则无法从相册中选择上传
+            Supports inserting pictures from photo gallery on the Android https://github.com/siyuan-note/siyuan/issues/9455
+            -->
+        </activity>
 
         <service
             android:name=".KeepLiveService"
