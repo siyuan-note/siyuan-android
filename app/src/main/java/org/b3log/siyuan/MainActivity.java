@@ -116,16 +116,20 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         initAppearance();
 
         AppUtils.registerAppStatusChangedListener(this);
-//        WebView.setWebContentsDebuggingEnabled(true);
+
+        // 使用 Chromium 调试 WebView
+        // WebView.setWebContentsDebuggingEnabled(true);
 
         // 注册软键盘顶部跟随工具栏
-        Utils.registerSoftKeyboardToolbar(this, webView);
+        // Utils.registerSoftKeyboardToolbar(this, webView);
 
         // 沉浸式状态栏设置
         UltimateBarX.statusBarOnly(this).transparent().light(false).color(Color.parseColor("#1e1e1e")).apply();
         ((ViewGroup) webView.getParent()).setPadding(0, UltimateBarX.getStatusBarHeight(), 0, 0);
 
-        KeyboardUtils.fixAndroidBug5497(this);
+        // Fix https://github.com/siyuan-note/siyuan/issues/9726
+        // KeyboardUtils.fixAndroidBug5497(this);
+        AndroidBug5497Workaround.assistActivity(this);
     }
 
     private void initUIElements() {
@@ -455,6 +459,12 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     @Override
     public void onBackground(Activity activity) {
         startSyncData();
+    }
+
+    @Override
+    public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
+        super.onMultiWindowModeChanged(isInMultiWindowMode);
+        AndroidBug5497Workaround.isInMultiWindowMode = isInMultiWindowMode;
     }
 
     private void exit() {
