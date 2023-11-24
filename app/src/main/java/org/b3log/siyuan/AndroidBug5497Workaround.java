@@ -8,24 +8,19 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 
 import com.blankj.utilcode.util.BarUtils;
 
-import java.util.concurrent.Callable;
-
 /**
- * Android small window mode soft keyboard black occlusion https://github.com/siyuan-note/siyuan-android/pull/7
+ * Android small window mode soft keyboard black occlusion <a href="https://github.com/siyuan-note/siyuan-android/pull/7">siyuan-note/siyuan-android#7</a>
  *
  * @author <a href="https://issuetracker.google.com/issues/36911528#comment100">al...@tutanota.com</a>
- * @author <a href="https://github.com/Zuoqiu-Yingyi>Yingyi</a>
+ * @author <a href="https://github.com/Zuoqiu-Yingyi">Yingyi</a>
  * @version 1.0.0.0, Nov 24, 2023
  * @since 2.11.0
  */
 public class AndroidBug5497Workaround {
-
-    public static boolean isInMultiWindowMode = false;
 
     public static void assistActivity(Activity activity) {
         new AndroidBug5497Workaround(activity);
@@ -44,22 +39,16 @@ public class AndroidBug5497Workaround {
         this.activity = activity;
         this.frameLayout = (FrameLayout) this.activity.findViewById(android.R.id.content);
         this.view = this.frameLayout.getChildAt(0);
-        this.frameLayout.getViewTreeObserver().addOnGlobalLayoutListener(() -> this.possiblyResizeChildOfContent());
-        this.frameLayoutParams = (FrameLayout.LayoutParams) (view.getLayoutParams());
+        this.frameLayout.getViewTreeObserver().addOnGlobalLayoutListener(this::possiblyResizeChildOfContent);
+        this.frameLayoutParams = (FrameLayout.LayoutParams) (this.view.getLayoutParams());
     }
 
-    private final void possiblyResizeChildOfContent() {
+    private void possiblyResizeChildOfContent() {
         final int usableHeight = this.computeUsableHeight();
         final int rootViewHeight = this.getRootViewHeight();
-        final int rootViewWidth = this.getRootViewWidth();
-        final Rect rect = this.getVisibleRect();
         // logInfo();
         if (usableHeight != this.usableHeight || rootViewHeight != this.rootViewHeight) {
             this.resize = false;
-            final DisplayMetrics displayMetrics = this.getDisplayMetrics();
-            final int frameHeight = this.frameLayoutParams.height;
-            final int statusBarHeight = BarUtils.getStatusBarHeight();
-            final int navBarHeight = this.getNavigationBarHeight();
 
             if (this.activity.isInMultiWindowMode()) {
                 // Mult-window
@@ -71,11 +60,11 @@ public class AndroidBug5497Workaround {
                 this.windowMode = 000;
                 this.frameLayoutParams.height = -1;
             }
+
             this.view.requestLayout();
             this.usableHeight = usableHeight;
             this.rootViewHeight = rootViewHeight;
         } else if (this.resize) {
-            // Log.d("5497-status", "windowMode: " + this.windowMode);
             switch (this.windowMode) {
                 case 100:
                     if (this.frameLayoutParams.height != -1) {
@@ -89,7 +78,7 @@ public class AndroidBug5497Workaround {
         }
     }
 
-    private final void logInfo() {
+    private void logInfo() {
         final Rect rect = this.getVisibleRect();
         Log.d("5497", "rect.top: " + rect.top + ", rect.bottom: " + rect.bottom + ", rect.height(): " + rect.height() + ", rect.width(): " + rect.width());
 
@@ -111,33 +100,33 @@ public class AndroidBug5497Workaround {
         Log.d("5497", "NavBarHeight: " + BarUtils.getNavBarHeight());
     }
 
-    private final int computeUsableHeight() {
+    private int computeUsableHeight() {
         final Rect rect = getVisibleRect();
         return rect.height();
     }
 
-    private final Rect getVisibleRect() {
+    private Rect getVisibleRect() {
         final Rect rect = new Rect();
         this.view.getWindowVisibleDisplayFrame(rect);
         return rect;
     }
 
-    private final int getRootViewHeight() {
+    private int getRootViewHeight() {
         return this.view.getRootView().getHeight();
     }
 
-    private final int getRootViewWidth() {
+    private int getRootViewWidth() {
         return this.view.getRootView().getWidth();
     }
 
-    private final DisplayMetrics getDisplayMetrics() {
+    private DisplayMetrics getDisplayMetrics() {
         final DisplayMetrics displayMetrics = new DisplayMetrics();
         this.activity.getWindowManager().getDefaultDisplay().getRealMetrics(displayMetrics);
         return displayMetrics;
     }
 
     @SuppressLint({"DiscouragedApi", "InternalInsetResource"})
-    private final int getNavigationBarHeight() {
+    private int getNavigationBarHeight() {
         final Context context = this.view.getContext();
         final boolean hasMenuKey = ViewConfiguration.get(context).hasPermanentMenuKey();
         if (!hasMenuKey) {
