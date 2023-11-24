@@ -61,47 +61,15 @@ public class AndroidBug5497Workaround {
             final int statusBarHeight = BarUtils.getStatusBarHeight();
             final int navBarHeight = this.getNavigationBarHeight();
 
-            if (!this.activity.isInMultiWindowMode()) {
+            if (this.activity.isInMultiWindowMode()) {
+                // Mult-window
+                this.resize = true;
+                this.windowMode = 100;
+                this.frameLayoutParams.height = -1;
+            } else {
                 // Full-window
                 this.windowMode = 000;
                 this.frameLayoutParams.height = -1;
-                if (rect.bottom != rootViewHeight) {
-                    // Keyboard-on
-                    // Log.d("5497-status", "Full-window Keyboard-on");
-                } else {
-                    // Keyboard-off
-                    // Log.d("5497-status", "Full-window Keyboard-off");
-                }
-            } else {
-                // Mult-window
-                this.windowMode = 100;
-                if (statusBarHeight < rect.top && rootViewHeight != this.view.getHeight() && rootViewHeight == rect.height() + statusBarHeight) {
-                    // Small-window
-                    // Log.d("5497-status", "Mult-window Small-window");
-                    this.resize = true;
-                    this.windowMode += 00;
-                    this.frameLayoutParams.height = -1;
-                } else if (statusBarHeight == rect.top) {
-                    // Split-screen-portrait-top & Split-screen-landscape
-                    this.windowMode += 10;
-                    if (rootViewWidth == displayMetrics.widthPixels) {
-                        // Split-screen-portrait
-                        // Log.d("5497-status", "Mult-window Split-screen-portrait-top");
-                    } else {
-                        // Split-screen-landscape
-                        // Log.d("5497-status", "Mult-window Split-screen-landscape");
-                    }
-                    if (rect.bottom < this.view.getBottom()) {
-                        this.frameLayoutParams.height = rect.bottom;
-                    } else {
-                        this.frameLayoutParams.height = -1;
-                    }
-                } else {
-                    // Split-screen-portrait-bottom
-                    // Log.d("5497-status", "Mult-window Split-screen-portrait-bottom");
-                    this.windowMode += 20;
-                    this.frameLayoutParams.height = rect.height();
-                }
             }
             this.view.requestLayout();
             this.usableHeight = usableHeight;
