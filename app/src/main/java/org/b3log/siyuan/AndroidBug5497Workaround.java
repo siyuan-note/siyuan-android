@@ -16,11 +16,16 @@ import com.blankj.utilcode.util.BarUtils;
 import java.util.concurrent.Callable;
 
 /**
+ * Android small window mode soft keyboard black occlusion https://github.com/siyuan-note/siyuan-android/pull/7
+ *
  * @author <a href="https://issuetracker.google.com/issues/36911528#comment100">al...@tutanota.com</a>
- * @version 1.0.0, May 26, 2022
- * @since 1.0.0
+ * @author <a href="https://github.com/Zuoqiu-Yingyi>Yingyi</a>
+ * @version 1.0.0.0, Nov 24, 2023
+ * @since 2.11.0
  */
 public class AndroidBug5497Workaround {
+
+    public static boolean isInMultiWindowMode = false;
 
     public static void assistActivity(Activity activity) {
         new AndroidBug5497Workaround(activity);
@@ -48,7 +53,7 @@ public class AndroidBug5497Workaround {
         final int rootViewHeight = this.getRootViewHeight();
         final int rootViewWidth = this.getRootViewWidth();
         final Rect rect = this.getVisibleRect();
-        logInfo();
+        // logInfo();
         if (usableHeight != this.usableHeight || rootViewHeight != this.rootViewHeight) {
             this.resize = false;
             final DisplayMetrics displayMetrics = this.getDisplayMetrics();
@@ -57,36 +62,34 @@ public class AndroidBug5497Workaround {
             final int navBarHeight = this.getNavigationBarHeight();
 
             if (!this.activity.isInMultiWindowMode()) {
-                // Full window
+                // Full-window
                 this.windowMode = 000;
                 this.frameLayoutParams.height = -1;
                 if (rect.bottom != rootViewHeight) {
-                    // Keyboard on
-                    this.windowMode += 1;
-                    Log.d("5497-status", "Full-window Keyboard-on");
+                    // Keyboard-on
+                    // Log.d("5497-status", "Full-window Keyboard-on");
                 } else {
-                    // Keyboard off
-                    this.windowMode += 0;
-                    Log.d("5497-status", "Full-window Keyboard-off");
+                    // Keyboard-off
+                    // Log.d("5497-status", "Full-window Keyboard-off");
                 }
             } else {
-                // Mult window
+                // Mult-window
                 this.windowMode = 100;
                 if (statusBarHeight < rect.top && rootViewHeight != this.view.getHeight() && rootViewHeight == rect.height() + statusBarHeight) {
-                    // Small window
+                    // Small-window
+                    // Log.d("5497-status", "Mult-window Small-window");
                     this.resize = true;
                     this.windowMode += 00;
                     this.frameLayoutParams.height = -1;
-                    Log.d("5497-status", "Mult-window Small-window");
                 } else if (statusBarHeight == rect.top) {
                     // Split-screen-portrait-top & Split-screen-landscape
                     this.windowMode += 10;
                     if (rootViewWidth == displayMetrics.widthPixels) {
                         // Split-screen-portrait
-                        Log.d("5497-status", "Mult-window Split-screen-portrait-top");
+                        // Log.d("5497-status", "Mult-window Split-screen-portrait-top");
                     } else {
                         // Split-screen-landscape
-                        Log.d("5497-status", "Mult-window Split-screen-landscape");
+                        // Log.d("5497-status", "Mult-window Split-screen-landscape");
                     }
                     if (rect.bottom < this.view.getBottom()) {
                         this.frameLayoutParams.height = rect.bottom;
@@ -95,8 +98,8 @@ public class AndroidBug5497Workaround {
                     }
                 } else {
                     // Split-screen-portrait-bottom
+                    // Log.d("5497-status", "Mult-window Split-screen-portrait-bottom");
                     this.windowMode += 20;
-                    Log.d("5497-status", "Mult-window Split-screen-portrait-bottom");
                     this.frameLayoutParams.height = rect.height();
                 }
             }
@@ -104,7 +107,7 @@ public class AndroidBug5497Workaround {
             this.usableHeight = usableHeight;
             this.rootViewHeight = rootViewHeight;
         } else if (this.resize) {
-            Log.d("5497-status", "windowMode: " + this.windowMode);
+            // Log.d("5497-status", "windowMode: " + this.windowMode);
             switch (this.windowMode) {
                 case 100:
                     if (this.frameLayoutParams.height != -1) {
