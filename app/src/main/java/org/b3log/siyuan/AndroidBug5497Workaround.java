@@ -50,7 +50,8 @@ public class AndroidBug5497Workaround {
         final int rootViewHeight = this.getRootViewHeight();
         final Rect rect = this.getVisibleRect();
         // logInfo();
-        if (this.resize || usableHeight != this.usableHeight || rootViewHeight != this.rootViewHeight) {
+        if (usableHeight != this.usableHeight || rootViewHeight != this.rootViewHeight) {
+            this.resize = false;
             final int frameHeight = this.frameLayoutParams.height;
             final int statusBarHeight = BarUtils.getStatusBarHeight();
             final int navBarHeight = this.getNavigationBarHeight();
@@ -74,7 +75,7 @@ public class AndroidBug5497Workaround {
                     }
                 } else if (rootViewHeight == rect.height() + statusBarHeight) {
                     // Small window
-                    this.resize = !this.resize;
+                    this.resize = true;
                     this.windowMode += 30;
                     this.frameLayoutParams.height = -1;
                     // Log.d("5497-status", "Mult-window Small-window");
@@ -88,8 +89,9 @@ public class AndroidBug5497Workaround {
                         // Log.d("5497-status", "Mult-window Bottom-split-screen Keyboard-on");
                     } else {
                         // Keyboard off
+                        this.resize = true;
                         this.windowMode += 0;
-                        this.frameLayoutParams.height = rootViewHeight;
+                        this.frameLayoutParams.height = rect.height();
                         // Log.d("5497-status", "Mult-window Bottom-split-screen Keyboard-off");
                     }
                 }
@@ -110,6 +112,18 @@ public class AndroidBug5497Workaround {
             this.view.requestLayout();
             this.usableHeight = usableHeight;
             this.rootViewHeight = rootViewHeight;
+        } else if (this.resize) {
+            this.resize = false;
+            // Log.d("5497-status", "windowMode: " + this.windowMode);
+            switch (this.windowMode) {
+                case 120:
+                    this.frameLayoutParams.height = rect.height();
+                    break;
+                case 130:
+                    this.frameLayoutParams.height = -1;
+                    break;
+            }
+            this.view.requestLayout();
         }
     }
 
