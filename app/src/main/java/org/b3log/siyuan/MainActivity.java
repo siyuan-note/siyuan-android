@@ -464,7 +464,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     @Override
     public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
         super.onMultiWindowModeChanged(isInMultiWindowMode);
-        AndroidBug5497Workaround.isInMultiWindowMode = isInMultiWindowMode;
     }
 
     private void exit() {

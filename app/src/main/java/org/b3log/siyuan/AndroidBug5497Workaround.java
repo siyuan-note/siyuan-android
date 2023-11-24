@@ -19,7 +19,7 @@ import java.util.concurrent.Callable;
  * Android small window mode soft keyboard black occlusion https://github.com/siyuan-note/siyuan-android/pull/7
  *
  * @author <a href="https://issuetracker.google.com/issues/36911528#comment100">al...@tutanota.com</a>
- * @author <a href="https://ld246.com/member/shuoying>Yingyi</a>
+ * @author <a href="https://github.com/Zuoqiu-Yingyi>Yingyi</a>
  * @version 1.0.0.0, Nov 24, 2023
  * @since 2.11.0
  */
@@ -51,68 +51,41 @@ public class AndroidBug5497Workaround {
     private final void possiblyResizeChildOfContent() {
         final int usableHeight = this.computeUsableHeight();
         final int rootViewHeight = this.getRootViewHeight();
+        final int rootViewWidth = this.getRootViewWidth();
         final Rect rect = this.getVisibleRect();
         // logInfo();
-        if (this.resize || usableHeight != this.usableHeight || rootViewHeight != this.rootViewHeight) {
+        if (usableHeight != this.usableHeight || rootViewHeight != this.rootViewHeight) {
+            this.resize = false;
+            final DisplayMetrics displayMetrics = this.getDisplayMetrics();
             final int frameHeight = this.frameLayoutParams.height;
             final int statusBarHeight = BarUtils.getStatusBarHeight();
             final int navBarHeight = this.getNavigationBarHeight();
 
-            if (AndroidBug5497Workaround.isInMultiWindowMode) {
-                // Mult window
+            if (this.activity.isInMultiWindowMode()) {
+                // Mult-window
+                this.resize = true;
                 this.windowMode = 100;
-                if (statusBarHeight == rect.top) {
-                    // Top split screen
-                    this.windowMode += 10;
-                    if (rect.bottom < rootViewHeight) {
-                        // Keyboard on
-                        this.windowMode += 1;
-                        this.frameLayoutParams.height = rect.bottom;
-                        // Log.d("5497-status", "Mult-window Top-split-screen Keyboard-on");
-                    } else {
-                        // Keyboard off
-                        this.windowMode += 0;
-                        this.frameLayoutParams.height = rootViewHeight;
-                        // Log.d("5497-status", "Mult-window Top-split-screen Keyboard-off");
-                    }
-                } else if (rootViewHeight == rect.height() + statusBarHeight) {
-                    // Small window
-                    this.resize = !this.resize;
-                    this.windowMode += 30;
-                    this.frameLayoutParams.height = -1;
-                    // Log.d("5497-status", "Mult-window Small-window");
-                } else {
-                    // Bottom split screen
-                    this.windowMode += 20;
-                    if (rect.height() != rootViewHeight) {
-                        // Keyboard on
-                        this.windowMode += 1;
-                        this.frameLayoutParams.height = rect.height();
-                        // Log.d("5497-status", "Mult-window Bottom-split-screen Keyboard-on");
-                    } else {
-                        // Keyboard off
-                        this.windowMode += 0;
-                        this.frameLayoutParams.height = rootViewHeight;
-                        // Log.d("5497-status", "Mult-window Bottom-split-screen Keyboard-off");
-                    }
-                }
+                this.frameLayoutParams.height = -1;
             } else {
-                // Full window
+                // Full-window
                 this.windowMode = 000;
                 this.frameLayoutParams.height = -1;
-                if (rect.bottom != rootViewHeight) {
-                    // Keyboard on
-                    this.windowMode += 1;
-                    // Log.d("5497-status", "Full-window Keyboard-on");
-                } else {
-                    // Keyboard off
-                    this.windowMode += 0;
-                    // Log.d("5497-status", "Full-window Keyboard-off");
-                }
             }
             this.view.requestLayout();
             this.usableHeight = usableHeight;
             this.rootViewHeight = rootViewHeight;
+        } else if (this.resize) {
+            // Log.d("5497-status", "windowMode: " + this.windowMode);
+            switch (this.windowMode) {
+                case 100:
+                    if (this.frameLayoutParams.height != -1) {
+                        this.frameLayoutParams.height = -1;
+                        this.view.requestLayout();
+                    } else {
+                        this.resize = false;
+                    }
+                    break;
+            }
         }
     }
 
@@ -122,8 +95,12 @@ public class AndroidBug5497Workaround {
 
         Log.d("5497", "view.top: " + this.view.getTop() + ", view.bottom: " + this.view.getBottom() + ", view.height(): " + this.view.getHeight() + ", view.width(): " + this.view.getWidth());
 
-        final int rootViewHeight = this.view.getRootView().getHeight();
-        Log.d("5497", "rootViewHeight: " + rootViewHeight);
+        final int rootViewHeight = this.getRootViewHeight();
+        final int rootViewWidth = this.getRootViewWidth();
+        Log.d("5497", "rootViewHeight: " + rootViewHeight + ", rootViewWidth: " + rootViewWidth);
+
+        final DisplayMetrics display = this.getDisplayMetrics();
+        Log.d("5497", "display.heightPixels: " + display.heightPixels + ", display.widthPixels: " + display.widthPixels);
 
         Log.d("5497", "frameLayoutParams.height: " + frameLayoutParams.height);
 
@@ -147,6 +124,16 @@ public class AndroidBug5497Workaround {
 
     private final int getRootViewHeight() {
         return this.view.getRootView().getHeight();
+    }
+
+    private final int getRootViewWidth() {
+        return this.view.getRootView().getWidth();
+    }
+
+    private final DisplayMetrics getDisplayMetrics() {
+        final DisplayMetrics displayMetrics = new DisplayMetrics();
+        this.activity.getWindowManager().getDefaultDisplay().getRealMetrics(displayMetrics);
+        return displayMetrics;
     }
 
     @SuppressLint({"DiscouragedApi", "InternalInsetResource"})
