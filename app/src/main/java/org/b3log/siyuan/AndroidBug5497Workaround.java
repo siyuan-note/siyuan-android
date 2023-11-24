@@ -22,8 +22,6 @@ import java.util.concurrent.Callable;
  */
 public class AndroidBug5497Workaround {
 
-    public static boolean isInMultiWindowMode = false;
-
     public static void assistActivity(Activity activity) {
         new AndroidBug5497Workaround(activity);
     }
@@ -48,82 +46,75 @@ public class AndroidBug5497Workaround {
     private final void possiblyResizeChildOfContent() {
         final int usableHeight = this.computeUsableHeight();
         final int rootViewHeight = this.getRootViewHeight();
+        final int rootViewWidth = this.getRootViewWidth();
         final Rect rect = this.getVisibleRect();
-        // logInfo();
+        logInfo();
         if (usableHeight != this.usableHeight || rootViewHeight != this.rootViewHeight) {
             this.resize = false;
+            final DisplayMetrics displayMetrics = this.getDisplayMetrics();
             final int frameHeight = this.frameLayoutParams.height;
             final int statusBarHeight = BarUtils.getStatusBarHeight();
             final int navBarHeight = this.getNavigationBarHeight();
 
-            if (AndroidBug5497Workaround.isInMultiWindowMode) {
-                // Mult window
-                this.windowMode = 100;
-                if (statusBarHeight == rect.top) {
-                    // Top split screen
-                    this.windowMode += 10;
-                    if (rect.bottom < rootViewHeight) {
-                        // Keyboard on
-                        this.windowMode += 1;
-                        this.frameLayoutParams.height = rect.bottom;
-                        // Log.d("5497-status", "Mult-window Top-split-screen Keyboard-on");
-                    } else {
-                        // Keyboard off
-                        this.windowMode += 0;
-                        this.frameLayoutParams.height = rootViewHeight;
-                        // Log.d("5497-status", "Mult-window Top-split-screen Keyboard-off");
-                    }
-                } else if (rootViewHeight == rect.height() + statusBarHeight) {
-                    // Small window
-                    this.resize = true;
-                    this.windowMode += 30;
-                    this.frameLayoutParams.height = -1;
-                    // Log.d("5497-status", "Mult-window Small-window");
-                } else {
-                    // Bottom split screen
-                    this.windowMode += 20;
-                    if (rect.height() != rootViewHeight) {
-                        // Keyboard on
-                        this.windowMode += 1;
-                        this.frameLayoutParams.height = rect.height();
-                        // Log.d("5497-status", "Mult-window Bottom-split-screen Keyboard-on");
-                    } else {
-                        // Keyboard off
-                        this.resize = true;
-                        this.windowMode += 0;
-                        this.frameLayoutParams.height = rect.height();
-                        // Log.d("5497-status", "Mult-window Bottom-split-screen Keyboard-off");
-                    }
-                }
-            } else {
+            if (!this.activity.isInMultiWindowMode()) {
                 // Full window
                 this.windowMode = 000;
                 this.frameLayoutParams.height = -1;
                 if (rect.bottom != rootViewHeight) {
                     // Keyboard on
                     this.windowMode += 1;
-                    // Log.d("5497-status", "Full-window Keyboard-on");
+                    Log.d("5497-status", "Full-window Keyboard-on");
                 } else {
                     // Keyboard off
                     this.windowMode += 0;
-                    // Log.d("5497-status", "Full-window Keyboard-off");
+                    Log.d("5497-status", "Full-window Keyboard-off");
+                }
+            } else {
+                // Mult window
+                this.windowMode = 100;
+                if (statusBarHeight < rect.top && rootViewHeight != this.view.getHeight() && rootViewHeight == rect.height() + statusBarHeight) {
+                    // Small window
+                    this.resize = true;
+                    this.windowMode += 00;
+                    this.frameLayoutParams.height = -1;
+                    Log.d("5497-status", "Mult-window Small-window");
+                } else if (statusBarHeight == rect.top) {
+                    // Split-screen-portrait-top & Split-screen-landscape
+                    this.windowMode += 10;
+                    if (rootViewWidth == displayMetrics.widthPixels) {
+                        // Split-screen-portrait
+                        Log.d("5497-status", "Mult-window Split-screen-portrait-top");
+                    } else {
+                        // Split-screen-landscape
+                        Log.d("5497-status", "Mult-window Split-screen-landscape");
+                    }
+                    if (rect.bottom < this.view.getBottom()) {
+                        this.frameLayoutParams.height = rect.bottom;
+                    } else {
+                        this.frameLayoutParams.height = -1;
+                    }
+                } else {
+                    // Split-screen-portrait-bottom
+                    this.windowMode += 20;
+                    Log.d("5497-status", "Mult-window Split-screen-portrait-bottom");
+                    this.frameLayoutParams.height = rect.height();
                 }
             }
             this.view.requestLayout();
             this.usableHeight = usableHeight;
             this.rootViewHeight = rootViewHeight;
         } else if (this.resize) {
-            this.resize = false;
-            // Log.d("5497-status", "windowMode: " + this.windowMode);
+            Log.d("5497-status", "windowMode: " + this.windowMode);
             switch (this.windowMode) {
-                case 120:
-                    this.frameLayoutParams.height = rect.height();
-                    break;
-                case 130:
-                    this.frameLayoutParams.height = -1;
+                case 100:
+                    if (this.frameLayoutParams.height != -1) {
+                        this.frameLayoutParams.height = -1;
+                        this.view.requestLayout();
+                    } else {
+                        this.resize = false;
+                    }
                     break;
             }
-            this.view.requestLayout();
         }
     }
 
@@ -133,8 +124,12 @@ public class AndroidBug5497Workaround {
 
         Log.d("5497", "view.top: " + this.view.getTop() + ", view.bottom: " + this.view.getBottom() + ", view.height(): " + this.view.getHeight() + ", view.width(): " + this.view.getWidth());
 
-        final int rootViewHeight = this.view.getRootView().getHeight();
-        Log.d("5497", "rootViewHeight: " + rootViewHeight);
+        final int rootViewHeight = this.getRootViewHeight();
+        final int rootViewWidth = this.getRootViewWidth();
+        Log.d("5497", "rootViewHeight: " + rootViewHeight + ", rootViewWidth: " + rootViewWidth);
+
+        final DisplayMetrics display = this.getDisplayMetrics();
+        Log.d("5497", "display.heightPixels: " + display.heightPixels + ", display.widthPixels: " + display.widthPixels);
 
         Log.d("5497", "frameLayoutParams.height: " + frameLayoutParams.height);
 
@@ -158,6 +153,16 @@ public class AndroidBug5497Workaround {
 
     private final int getRootViewHeight() {
         return this.view.getRootView().getHeight();
+    }
+
+    private final int getRootViewWidth() {
+        return this.view.getRootView().getWidth();
+    }
+
+    private final DisplayMetrics getDisplayMetrics() {
+        final DisplayMetrics displayMetrics = new DisplayMetrics();
+        this.activity.getWindowManager().getDefaultDisplay().getRealMetrics(displayMetrics);
+        return displayMetrics;
     }
 
     @SuppressLint({"DiscouragedApi", "InternalInsetResource"})
