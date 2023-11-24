@@ -16,9 +16,12 @@ import com.blankj.utilcode.util.BarUtils;
 import java.util.concurrent.Callable;
 
 /**
+ * Android small window mode soft keyboard black occlusion https://github.com/siyuan-note/siyuan-android/pull/7
+ *
  * @author <a href="https://issuetracker.google.com/issues/36911528#comment100">al...@tutanota.com</a>
- * @version 1.0.0, May 26, 2022
- * @since 1.0.0
+ * @author <a href="https://ld246.com/member/shuoying>Yingyi</a>
+ * @version 1.0.0.0, Nov 24, 2023
+ * @since 2.11.0
  */
 public class AndroidBug5497Workaround {
 
