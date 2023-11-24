@@ -51,8 +51,12 @@
             android:autoRemoveFromRecents="true"
             android:configChanges="keyboard|keyboardHidden|screenLayout|uiMode|orientation|screenSize|smallestScreenSize"
             android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.SiYuan">
             <!--
+            android:windowSoftInputMode="adjustResize"
+            是为了解决软键盘遮挡 https://github.com/siyuan-note/siyuan-android/pull/7
+
             不要添加 android:launchMode="singleInstance" 否则无法从相册中选择上传
             Supports inserting pictures from photo gallery on the Android https://github.com/siyuan-note/siyuan/issues/9455
             -->
