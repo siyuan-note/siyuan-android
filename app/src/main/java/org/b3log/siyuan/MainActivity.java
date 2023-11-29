@@ -120,8 +120,9 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         // 使用 Chromium 调试 WebView
         // WebView.setWebContentsDebuggingEnabled(true);
 
-        // 注册软键盘顶部跟随工具栏
-        // Utils.registerSoftKeyboardToolbar(this, webView);
+        // 注册工具栏显示/隐藏跟随软键盘状态
+        // Fix https://github.com/siyuan-note/siyuan/issues/9765
+        Utils.registerSoftKeyboardToolbar(this, webView);
 
         // 沉浸式状态栏设置
         UltimateBarX.statusBarOnly(this).transparent().light(false).color(Color.parseColor("#1e1e1e")).apply();

@@ -56,15 +56,12 @@ public final class Utils {
 
     public static void registerSoftKeyboardToolbar(final Activity activity, final WebView webView) {
         KeyboardUtils.registerSoftInputChangedListener(activity, height -> {
-            float density = activity.getResources().getDisplayMetrics().density;
-            if (0 == density) {
-                density = 2.75f;
-            }
-            height = (int) ((float) height / density);
-            if (KeyboardUtils.isSoftInputVisible(activity)) {
-                webView.evaluateJavascript("javascript:showKeyboardToolbar(" + height + ")", null);
-            } else {
-                webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
+            if (!activity.isInMultiWindowMode()) {
+                if (KeyboardUtils.isSoftInputVisible(activity)) {
+                    webView.evaluateJavascript("javascript:showKeyboardToolbar()", null);
+                } else {
+                    webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
+                }
             }
         });
     }
