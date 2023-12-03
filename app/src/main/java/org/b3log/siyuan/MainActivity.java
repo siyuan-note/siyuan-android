@@ -367,7 +367,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
     @Override
     public void onBackPressed() {
-        webView.evaluateJavascript("javascript:window.goBack()", null);
+        webView.evaluateJavascript("javascript:window.goBack ? window.goBack() : window.history.back()", null);
     }
 
     @Override
