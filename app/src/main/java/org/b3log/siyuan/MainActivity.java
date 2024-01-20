@@ -54,9 +54,13 @@ import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.StringUtils;
 import com.koushikdutta.async.http.AsyncHttpClient;
+import com.koushikdutta.async.http.AsyncHttpPost;
+import com.koushikdutta.async.http.body.JSONObjectBody;
+import com.koushikdutta.async.http.server.AsyncHttpServer;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import org.apache.commons.io.FileUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -102,6 +106,9 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // 启动 HTTP Server
+        startHttpServer();
 
         // 初始化 UI 元素
         initUIElements();
@@ -242,6 +249,8 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             }
         }
     };
+
+
 
     private void startKernel() {
         final Bundle b = new Bundle();
@@ -504,8 +513,9 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             }
             syncing = true;
 
-            AsyncHttpClient.getDefaultInstance().executeJSONObject(
-                    new com.koushikdutta.async.http.AsyncHttpPost("http://127.0.0.1:6806/api/sync/performSync"),
+            final AsyncHttpPost req = new com.koushikdutta.async.http.AsyncHttpPost("http://127.0.0.1:6806/api/sync/performSync");
+            req.setBody(new JSONObjectBody(new JSONObject().put("mobileSwitch", true)));
+            AsyncHttpClient.getDefaultInstance().executeJSONObject(req,
                     new com.koushikdutta.async.http.AsyncHttpClient.JSONObjectCallback() {
                         @Override
                         public void onCompleted(Exception e, com.koushikdutta.async.http.AsyncHttpResponse source, JSONObject result) {
