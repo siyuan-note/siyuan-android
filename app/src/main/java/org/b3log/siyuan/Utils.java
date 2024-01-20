@@ -19,7 +19,6 @@ package org.b3log.siyuan;
 
 import android.app.Activity;
 import android.content.res.AssetManager;
-import android.content.res.Resources;
 import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.WebView;

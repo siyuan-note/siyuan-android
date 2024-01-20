@@ -53,6 +53,7 @@ import androidx.core.content.ContextCompat;
 import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.StringUtils;
+import com.koushikdutta.async.http.AsyncHttpClient;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import org.apache.commons.io.FileUtils;
@@ -65,16 +66,12 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import mobile.Mobile;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 /**
  * 主程序.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.4.18, Nov 20, 2023
+ * @version 1.0.4.19, Jan 20, 2024
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -506,12 +503,17 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 return;
             }
             syncing = true;
-            final OkHttpClient client = new OkHttpClient();
-            final RequestBody body = RequestBody.create(null, new JSONObject().
-                    put("mobileSwitch", true).toString());
-            final Request request = new Request.Builder().url("http://127.0.0.1:6806/api/sync/performSync").method("POST", body).build();
-            final Response response = client.newCall(request).execute();
-            response.close();
+
+            AsyncHttpClient.getDefaultInstance().executeJSONObject(
+                    new com.koushikdutta.async.http.AsyncHttpPost("http://127.0.0.1:6806/api/sync/performSync"),
+                    new com.koushikdutta.async.http.AsyncHttpClient.JSONObjectCallback() {
+                        @Override
+                        public void onCompleted(Exception e, com.koushikdutta.async.http.AsyncHttpResponse source, JSONObject result) {
+                            if (null != e) {
+                                Log.e("sync", "data sync failed", e);
+                            }
+                        }
+                    });
         } catch (final Throwable e) {
             Log.e("sync", "data sync failed", e);
         } finally {
