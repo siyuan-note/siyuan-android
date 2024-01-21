@@ -66,6 +66,7 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
@@ -297,8 +298,10 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
         serverPort = getAvailablePort();
         final AsyncServer s = AsyncServer.getDefault();
-//        s.listen(InetAddress.getLoopbackAddress(), serverPort, server.getListenCallback());
-        s.listen(null, serverPort, server.getListenCallback());
+        // 生产环境绑定 ipv6 回环地址 [::1] 以防止被远程访问
+        s.listen(InetAddress.getLoopbackAddress(), serverPort, server.getListenCallback());
+        // 开发环境绑定所有网卡以便调试
+        //s.listen(null, serverPort, server.getListenCallback());
         Log.i("http", "HTTP server is listening on port [" + serverPort + "]");
     }
 
