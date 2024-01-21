@@ -53,6 +53,7 @@ import androidx.core.content.ContextCompat;
 import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.StringUtils;
+import com.koushikdutta.async.AsyncServer;
 import com.koushikdutta.async.http.AsyncHttpClient;
 import com.koushikdutta.async.http.AsyncHttpPost;
 import com.koushikdutta.async.http.body.JSONObjectBody;
@@ -65,6 +66,7 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -75,11 +77,13 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.4.19, Jan 20, 2024
+ * @version 1.0.5.0, Jan 21, 2024
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
 
+    private AsyncHttpServer server;
+    private int serverPort = 6906;
     private WebView webView;
     private ImageView bootLogo;
     private ProgressBar bootProgressBar;
@@ -250,7 +254,65 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         }
     };
 
+    private void startHttpServer() {
+        if (null != server) {
+            server.stop();
+        }
 
+        server = new AsyncHttpServer();
+        server.post("/api/walkDir", (request, response) -> {
+            try {
+                final long start = System.currentTimeMillis();
+                final JSONObject requestJSON = (JSONObject) request.getBody().get();
+                final String dir = requestJSON.optString("dir");
+                final JSONObject data = new JSONObject();
+                final JSONArray files = new JSONArray();
+                FileUtils.listFiles(new File(dir), null, true).forEach(file -> {
+                    final String path = file.getAbsolutePath();
+                    final JSONObject info = new JSONObject();
+                    try {
+                        info.put("path", path);
+                        info.put("name", file.getName());
+                        info.put("size", file.length());
+                        info.put("updated", file.lastModified());
+                        info.put("isDir", file.isDirectory());
+                    } catch (final Exception e) {
+                        Log.e("http", "walk dir failed", e);
+                    }
+                    files.put(info);
+                });
+                data.put("files", files);
+                final JSONObject responseJSON = new JSONObject().put("code", 0).put("msg", "").put("data", data);
+                response.send(responseJSON);
+                Log.i("http", "walk dir [" + dir + "] in [" + (System.currentTimeMillis() - start) + "] ms");
+            } catch (final Exception e) {
+                Log.e("http", "walk dir failed", e);
+                try {
+                    response.send(new JSONObject().put("code", -1).put("msg", e.getMessage()));
+                } catch (final Exception e2) {
+                    Log.e("http", "walk dir failed", e2);
+                }
+            }
+        });
+
+        serverPort = getAvailablePort();
+        final AsyncServer s = AsyncServer.getDefault();
+//        s.listen(InetAddress.getLoopbackAddress(), serverPort, server.getListenCallback());
+        s.listen(null, serverPort, server.getListenCallback());
+        Log.i("http", "HTTP server is listening on port [" + serverPort + "]");
+    }
+
+    private int getAvailablePort() {
+        int ret = 6906;
+        try {
+            ServerSocket s = new ServerSocket(0);
+            ret = s.getLocalPort();
+            s.close();
+        } catch (final Exception e) {
+            Log.e("http", "get available port failed", e);
+        }
+        return ret;
+    }
 
     private void startKernel() {
         final Bundle b = new Bundle();
@@ -261,6 +323,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     }
 
     private void bootKernel() {
+        Mobile.setHttpServerPort(serverPort);
         if (Mobile.isHttpServing()) {
             Log.i("boot", "kernel HTTP server is running");
             showBootIndex();
@@ -452,6 +515,9 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         if (null != webView) {
             webView.removeAllViews();
             webView.destroy();
+        }
+        if (null != server) {
+            server.stop();
         }
     }
 
