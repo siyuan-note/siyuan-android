@@ -61,6 +61,8 @@ import com.koushikdutta.async.http.server.AsyncHttpServer;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -78,7 +80,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.5.0, Jan 21, 2024
+ * @version 1.0.6.0, Jan 26, 2024
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -268,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 final String dir = requestJSON.optString("dir");
                 final JSONObject data = new JSONObject();
                 final JSONArray files = new JSONArray();
-                FileUtils.listFiles(new File(dir), null, true).forEach(file -> {
+                FileUtils.listFilesAndDirs(new File(dir), TrueFileFilter.INSTANCE, DirectoryFileFilter.DIRECTORY).forEach(file -> {
                     final String path = file.getAbsolutePath();
                     final JSONObject info = new JSONObject();
                     try {
