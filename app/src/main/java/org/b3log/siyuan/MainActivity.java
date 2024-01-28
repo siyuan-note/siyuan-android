@@ -58,6 +58,7 @@ import com.koushikdutta.async.http.AsyncHttpClient;
 import com.koushikdutta.async.http.AsyncHttpPost;
 import com.koushikdutta.async.http.body.JSONObjectBody;
 import com.koushikdutta.async.http.server.AsyncHttpServer;
+import com.koushikdutta.async.util.Charsets;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import org.apache.commons.io.FileUtils;
@@ -68,6 +69,7 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
@@ -260,6 +262,16 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private void startHttpServer() {
         if (null != server) {
             server.stop();
+        }
+
+        try {
+            // 解决乱码问题 https://github.com/koush/AndroidAsync/issues/656#issuecomment-523325452
+            final Class<Charsets> charsetClass = Charsets.class;
+            Field usAscii = charsetClass.getDeclaredField("US_ASCII");
+            usAscii.setAccessible(true);
+            usAscii.set(Charsets.class, Charsets.UTF_8);
+        } catch (final Exception e) {
+            Utils.LogError("http", "init charset failed", e);
         }
 
         server = new AsyncHttpServer();
