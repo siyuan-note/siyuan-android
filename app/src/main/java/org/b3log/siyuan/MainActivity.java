@@ -80,7 +80,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.6.0, Jan 26, 2024
+ * @version 1.0.6.1, Jan 28, 2024
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -280,20 +280,20 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                         info.put("updated", file.lastModified());
                         info.put("isDir", file.isDirectory());
                     } catch (final Exception e) {
-                        Log.e("http", "walk dir failed", e);
+                        Utils.LogError("http", "walk dir failed", e);
                     }
                     files.put(info);
                 });
                 data.put("files", files);
                 final JSONObject responseJSON = new JSONObject().put("code", 0).put("msg", "").put("data", data);
                 response.send(responseJSON);
-                Log.i("http", "walk dir [" + dir + "] in [" + (System.currentTimeMillis() - start) + "] ms");
+                Utils.LogInfo("http", "walk dir [" + dir + "] in [" + (System.currentTimeMillis() - start) + "] ms");
             } catch (final Exception e) {
-                Log.e("http", "walk dir failed", e);
+                Utils.LogError("http", "walk dir failed", e);
                 try {
                     response.send(new JSONObject().put("code", -1).put("msg", e.getMessage()));
                 } catch (final Exception e2) {
-                    Log.e("http", "walk dir failed", e2);
+                    Utils.LogError("http", "walk dir failed", e2);
                 }
             }
         });
@@ -304,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         s.listen(InetAddress.getLoopbackAddress(), serverPort, server.getListenCallback());
         // 开发环境绑定所有网卡以便调试
         //s.listen(null, serverPort, server.getListenCallback());
-        Log.i("http", "HTTP server is listening on port [" + serverPort + "]");
+        Utils.LogInfo("http", "HTTP server is listening on port [" + serverPort + "]");
     }
 
     private int getAvailablePort() {
@@ -314,7 +314,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             ret = s.getLocalPort();
             s.close();
         } catch (final Exception e) {
-            Log.e("http", "get available port failed", e);
+            Utils.LogError("http", "get available port failed", e);
         }
         return ret;
     }
@@ -330,7 +330,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private void bootKernel() {
         Mobile.setHttpServerPort(serverPort);
         if (Mobile.isHttpServing()) {
-            Log.i("boot", "kernel HTTP server is running");
+            Utils.LogInfo("boot", "kernel HTTP server is running");
             showBootIndex();
             return;
         }
@@ -406,7 +406,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             try {
                 FileUtils.deleteDirectory(new File(appDir));
             } catch (final Exception e) {
-                Log.wtf("boot", "delete dir [" + appDir + "] failed, exit application", e);
+                Utils.LogError("boot", "delete dir [" + appDir + "] failed, exit application", e);
                 exit();
                 return;
             }
@@ -417,7 +417,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             try {
                 FileUtils.writeStringToFile(appVerFile, Utils.version, StandardCharsets.UTF_8);
             } catch (final Exception e) {
-                Log.w("boot", "write version failed", e);
+                Utils.LogError("boot", "write version failed", e);
             }
 
             setBootProgress("Booting kernel...", 80);
@@ -435,7 +435,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         try {
             Thread.sleep(time);
         } catch (final Exception e) {
-            Log.e("runtime", e.getMessage());
+            Utils.LogError("runtime", "sleep failed", e);
         }
     }
 
@@ -505,7 +505,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 final String ver = FileUtils.readFileToString(appVerFile, StandardCharsets.UTF_8);
                 ret = !ver.equals(Utils.version);
             } catch (final Exception e) {
-                Log.w("boot", "check version failed", e);
+                Utils.LogError("boot", "check version failed", e);
             }
         }
         return ret;
@@ -564,7 +564,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                     }
                 }
             } catch (final Exception e) {
-                Log.e("boot", "check webview version failed", e);
+                Utils.LogError("boot", "check webview version failed", e);
                 Toast.makeText(this, "Check WebView version failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
@@ -591,12 +591,12 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                         @Override
                         public void onCompleted(Exception e, com.koushikdutta.async.http.AsyncHttpResponse source, JSONObject result) {
                             if (null != e) {
-                                Log.e("sync", "data sync failed", e);
+                                Utils.LogError("sync", "data sync failed", e);
                             }
                         }
                     });
         } catch (final Throwable e) {
-            Log.e("sync", "data sync failed", e);
+            Utils.LogError("sync", "data sync failed", e);
         } finally {
             syncing = false;
         }
