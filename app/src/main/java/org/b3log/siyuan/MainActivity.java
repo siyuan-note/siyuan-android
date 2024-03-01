@@ -20,12 +20,15 @@ package org.b3log.siyuan;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -48,6 +51,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.blankj.utilcode.util.AppUtils;
@@ -82,7 +86,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.6.1, Jan 28, 2024
+ * @version 1.1.0.0, Mar 1, 2024
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -97,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private String userAgent;
     private ValueCallback<Uri[]> uploadMessage;
     private static final int REQUEST_SELECT_FILE = 100;
+    private static final int REQUEST_CAMERA = 101;
 
     @Override
     public void onNewIntent(final Intent intent) {
@@ -158,7 +163,28 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 if (uploadMessage != null) {
                     uploadMessage.onReceiveValue(null);
                 }
+
                 uploadMessage = filePathCallback;
+
+                if (fileChooserParams.isCaptureEnabled()) {
+                    if (Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) {
+                        // 不支持 Android 10 以下
+                        Toast.makeText(getApplicationContext(), "Capture is not supported on your device (Android 10+ required)", Toast.LENGTH_LONG).show();
+                        uploadMessage = null;
+                        return false;
+                    }
+
+                    final String[] permissions = {android.Manifest.permission.CAMERA};
+                    if (!hasPermissions(permissions)) {
+                        ActivityCompat.requestPermissions(MainActivity.this, permissions, REQUEST_CAMERA);
+                        uploadMessage = null;
+                        return false;
+                    }
+
+                    openCamera();
+                    return true;
+                }
+
                 final Intent intent = fileChooserParams.createIntent();
                 intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                 try {
@@ -456,6 +482,45 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         webView.evaluateJavascript("javascript:window.goBack ? window.goBack() : window.history.back()", null);
     }
 
+    // 用于保存拍照图片的 uri
+    private Uri mCameraUri;
+
+    private boolean hasPermissions(String[] permissions) {
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == REQUEST_CAMERA) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openCamera();
+                return;
+            }
+
+            Toast.makeText(this, "Permission denied", Toast.LENGTH_LONG).show();
+        }
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    private void openCamera() {
+        final Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (captureIntent.resolveActivity(getPackageManager()) != null) {
+            final Uri photoUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new ContentValues());
+            mCameraUri = photoUri;
+            if (photoUri != null) {
+                captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                captureIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                startActivityForResult(captureIntent, REQUEST_CAMERA);
+            }
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         if (null == uploadMessage) {
@@ -463,12 +528,20 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             return;
         }
 
-        // 以下代码参考自 https://github.com/mgks/os-fileup/blob/master/app/src/main/java/mgks/os/fileup/MainActivity.java MIT license
-        if (requestCode == REQUEST_SELECT_FILE) {
+        if (requestCode == REQUEST_CAMERA) {
+            if (RESULT_OK != resultCode) {
+                uploadMessage.onReceiveValue(null);
+                uploadMessage = null;
+                return;
+            }
+
+            uploadMessage.onReceiveValue(new Uri[]{mCameraUri});
+        } else if (requestCode == REQUEST_SELECT_FILE) {
+            // 以下代码参考自 https://github.com/mgks/os-fileup/blob/master/app/src/main/java/mgks/os/fileup/MainActivity.java MIT license
+
             Uri[] results = null;
             ClipData clipData;
             String stringData;
-
             try {
                 clipData = intent.getClipData();
                 stringData = intent.getDataString();
@@ -498,9 +571,9 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             }
 
             uploadMessage.onReceiveValue(results);
-            uploadMessage = null;
         }
 
+        uploadMessage = null;
         super.onActivityResult(requestCode, resultCode, intent);
     }
 

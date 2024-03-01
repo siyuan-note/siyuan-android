@@ -14,6 +14,12 @@
     <!-- Foreground KeepLiveService Crash on Android 14 https://github.com/siyuan-note/siyuan/issues/9212 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
+    <!-- 支持拍照 Support taking photos for inserting on Android https://github.com/siyuan-note/siyuan/issues/10479 -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
     <application
         android:name=".App"
         android:icon="@drawable/icon"
@@ -51,8 +57,8 @@
             android:autoRemoveFromRecents="true"
             android:configChanges="keyboard|keyboardHidden|screenLayout|uiMode|orientation|screenSize|smallestScreenSize"
             android:hardwareAccelerated="true"
-            android:windowSoftInputMode="adjustResize"
-            android:theme="@style/Theme.SiYuan">
+            android:theme="@style/Theme.SiYuan"
+            android:windowSoftInputMode="adjustResize">
             <!--
             android:windowSoftInputMode="adjustResize"
             是为了解决软键盘遮挡 https://github.com/siyuan-note/siyuan-android/pull/7
