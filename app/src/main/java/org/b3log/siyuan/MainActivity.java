@@ -86,7 +86,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.0, Mar 1, 2024
+ * @version 1.1.0.1, Mar 3, 2024
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -177,8 +177,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                     final String[] permissions = {android.Manifest.permission.CAMERA};
                     if (!hasPermissions(permissions)) {
                         ActivityCompat.requestPermissions(MainActivity.this, permissions, REQUEST_CAMERA);
-                        uploadMessage = null;
-                        return false;
+                        return true;
                     }
 
                     openCamera();
