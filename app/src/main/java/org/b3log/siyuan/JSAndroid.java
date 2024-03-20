@@ -25,9 +25,16 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.webkit.JavascriptInterface;
 
+import androidx.core.app.ShareCompat;
+import androidx.core.content.FileProvider;
+
 import com.blankj.utilcode.util.BarUtils;
 import com.blankj.utilcode.util.StringUtils;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
+
+import java.io.File;
+
+import mobile.Mobile;
 
 /**
  * JavaScript 接口.
@@ -111,8 +118,22 @@ public final class JSAndroid {
         }
 
         if (url.startsWith("assets/")) {
-            url = "http://127.0.0.1:6806/" + url;
+            // Support opening assets through other apps on the Android https://github.com/siyuan-note/siyuan/issues/10657
+            final String workspacePath = Mobile.getCurrentWorkspacePath();
+            final File asset = new File(workspacePath, "data/" + url);
+            Uri uri = FileProvider.getUriForFile(activity.getApplicationContext(), "org.b3log.siyuan", asset);
+            final String type = Utils.getMimeType(url);
+            Intent intent = new ShareCompat.IntentBuilder(activity.getApplicationContext())
+                    .setStream(uri)
+                    .setType(type)
+                    .getIntent()
+                    .setAction(Intent.ACTION_VIEW)
+                    .setDataAndType(uri, type)
+                    .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+            activity.startActivity(intent);
+            return;
         }
+
         if (url.startsWith("/")) {
             url = "http://127.0.0.1:6806" + url;
         }
