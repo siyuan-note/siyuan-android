@@ -120,9 +120,15 @@ public final class JSAndroid {
         if (url.startsWith("assets/")) {
             // Support opening assets through other apps on the Android https://github.com/siyuan-note/siyuan/issues/10657
             final String workspacePath = Mobile.getCurrentWorkspacePath();
-            final File asset = new File(workspacePath, "data/" + url);
-            Uri uri = FileProvider.getUriForFile(activity.getApplicationContext(), "org.b3log.siyuan", asset);
-            final String type = Utils.getMimeType(url);
+            final String assetAbsPath = Mobile.getAssetAbsPath(url);
+            File asset;
+            if (assetAbsPath.contains(workspacePath)) {
+                asset = new File(workspacePath, assetAbsPath.substring(workspacePath.length() + 1));
+            } else {
+                asset = new File(workspacePath, "data/" + url);
+            }
+            final Uri uri = FileProvider.getUriForFile(activity.getApplicationContext(), "org.b3log.siyuan", asset);
+            final String type = Mobile.getMimeTypeByExt(asset.getAbsolutePath());
             Intent intent = new ShareCompat.IntentBuilder(activity.getApplicationContext())
                     .setStream(uri)
                     .setType(type)
