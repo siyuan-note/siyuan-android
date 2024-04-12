@@ -28,8 +28,8 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
+import android.os.LocaleList;
 import android.os.Looper;
 import android.os.Message;
 import android.provider.MediaStore;
@@ -373,7 +373,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         }
 
         final String appDir = getFilesDir().getAbsolutePath() + "/app";
-        final Locale locale = getResources().getConfiguration().locale;
+        final Locale locale = LocaleList.getDefault().get(0);
         final String workspaceBaseDir = getExternalFilesDir(null).getAbsolutePath();
         final String timezone = TimeZone.getDefault().getID();
         new Thread(() -> {
@@ -381,6 +381,10 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             String lang = locale.getLanguage() + "_" + locale.getCountry();
             if (lang.toLowerCase().contains("cn")) {
                 lang = "zh_CN";
+            } else if (lang.toLowerCase().contains("es")) {
+                lang = "es_ES";
+            } else if (lang.toLowerCase().contains("fr")) {
+                lang = "fr_FR";
             } else {
                 lang = "en_US";
             }
