@@ -91,7 +91,7 @@ public class KeepLiveService extends Service {
             resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         }
 
-        final String NOTIFICATION_CHANNEL_ID = "org.b3log.siyuan";
+        final String NOTIFICATION_CHANNEL_ID = BuildConfig.APPLICATION_ID;
         final String channelName = "SiYuan Kernel Service";
         final NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
         chan.setLightColor(Color.BLUE);

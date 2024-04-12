@@ -127,7 +127,7 @@ public final class JSAndroid {
             } else {
                 asset = new File(workspacePath, "data/" + url);
             }
-            final Uri uri = FileProvider.getUriForFile(activity.getApplicationContext(), "org.b3log.siyuan", asset);
+            final Uri uri = FileProvider.getUriForFile(activity.getApplicationContext(), BuildConfig.APPLICATION_ID, asset);
             final String type = Mobile.getMimeTypeByExt(asset.getAbsolutePath());
             Intent intent = new ShareCompat.IntentBuilder(activity.getApplicationContext())
                     .setStream(uri)
