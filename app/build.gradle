@@ -2,6 +2,20 @@ plugins {
     id 'com.android.application'
 }
 
+// By appending the version name, build type, and a timestamp to the APK filename,
+// it becomes very easy for testers and developers to identify exactly which version of the application they are testing.
+// This is particularly useful when multiple versions or builds are being tested simultaneously.
+// Testers don’t need to manually rename APKs to keep track of different builds or worry about which version is the latest.
+android.applicationVariants.configureEach { variant ->
+    variant.outputs.configureEach { output ->
+        def formattedDate = new Date().format('yyyyMMddHHmmss')
+        def versionName = variant.versionName
+        def buildType = variant.buildType.name
+        def newApkName = "siyuan-${versionName}-${buildType}-${formattedDate}.apk"
+        output.outputFileName = newApkName
+    }
+}
+
 android {
     compileSdkVersion 34
     buildToolsVersion "34"
@@ -18,6 +32,15 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
+            resValue "string", "app_name", "SiYuan"
+            resValue "string", "app_package_name", "org.b3log.siyuan"
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            applicationIdSuffix ".debug"
+            minifyEnabled false
+            resValue "string", "app_name", "SiYuan-Debug"
+            resValue "string", "app_package_name", "org.b3log.siyuan.debug"
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -56,10 +79,10 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.0'
-    implementation 'com.google.android.material:material:1.8.0'
-    implementation 'androidx.lifecycle:lifecycle-process:2.5.1'
-    implementation 'androidx.work:work-runtime:2.7.1'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.10.0'
+    implementation 'androidx.lifecycle:lifecycle-process:2.6.1'
+    implementation 'androidx.work:work-runtime:2.8.1'
 
     implementation(name: 'kernel', ext: 'aar')
     implementation("commons-io:commons-io:2.5") // 不要升级，否则无法兼容 Android 7

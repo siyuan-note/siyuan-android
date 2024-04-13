@@ -136,7 +136,9 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         AppUtils.registerAppStatusChangedListener(this);
 
         // 使用 Chromium 调试 WebView
-        // WebView.setWebContentsDebuggingEnabled(true);
+        if (DebugModeChecker.isDebugPackageAndMode(this)) {
+            WebView.setWebContentsDebuggingEnabled(true);
+        }
 
         // 注册工具栏显示/隐藏跟随软键盘状态
         // Fix https://github.com/siyuan-note/siyuan/issues/9765
@@ -340,7 +342,9 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         // 生产环境绑定 ipv6 回环地址 [::1] 以防止被远程访问
         s.listen(InetAddress.getLoopbackAddress(), serverPort, server.getListenCallback());
         // 开发环境绑定所有网卡以便调试
-        //s.listen(null, serverPort, server.getListenCallback());
+        if (DebugModeChecker.isDebugPackageAndMode(this)) {
+            s.listen(null, serverPort, server.getListenCallback());
+        }
         Utils.LogInfo("http", "HTTP server is listening on port [" + serverPort + "]");
     }
 

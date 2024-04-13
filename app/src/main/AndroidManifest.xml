@@ -83,7 +83,7 @@
         <!-- Support opening assets through other apps on the Android https://github.com/siyuan-note/siyuan/issues/10657 -->
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="org.b3log.siyuan"
+            android:authorities="@string/app_package_name"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
