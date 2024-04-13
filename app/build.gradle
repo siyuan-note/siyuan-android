@@ -8,10 +8,13 @@ plugins {
 // Testers don’t need to manually rename APKs to keep track of different builds or worry about which version is the latest.
 android.applicationVariants.configureEach { variant ->
     variant.outputs.configureEach { output ->
-        def formattedDate = new Date().format('yyyyMMddHHmmss')
         def versionName = variant.versionName
         def buildType = variant.buildType.name
-        def newApkName = "siyuan-${versionName}-${buildType}-${formattedDate}.apk"
+        def newApkName = "siyuan-${versionName}.apk"
+        if (buildType != "release") {
+            def formattedDate = new Date().format('yyyyMMddHHmmss')
+            newApkName = "siyuan-${versionName}-${buildType}-${formattedDate}.apk"
+        }
         output.outputFileName = newApkName
     }
 }
