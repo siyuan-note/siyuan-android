@@ -11,7 +11,7 @@ android.applicationVariants.configureEach { variant ->
         def formattedDate = new Date().format('yyyyMMddHHmmss')
         def versionName = variant.versionName
         def buildType = variant.buildType.name
-        def newApkName = "Siyuan-${versionName}-${buildType}-${formattedDate}.apk"
+        def newApkName = "siyuan-${versionName}-${buildType}-${formattedDate}.apk"
         output.outputFileName = newApkName
     }
 }
