@@ -86,7 +86,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.1, Mar 3, 2024
+ * @version 1.1.0.2, Apr 13, 2024
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         AppUtils.registerAppStatusChangedListener(this);
 
         // 使用 Chromium 调试 WebView
-        if (DebugModeChecker.isDebugPackageAndMode(this)) {
+        if (Utils.isDebugPackageAndMode(this)) {
             WebView.setWebContentsDebuggingEnabled(true);
         }
 
@@ -339,11 +339,12 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
         serverPort = getAvailablePort();
         final AsyncServer s = AsyncServer.getDefault();
-        // 生产环境绑定 ipv6 回环地址 [::1] 以防止被远程访问
-        s.listen(InetAddress.getLoopbackAddress(), serverPort, server.getListenCallback());
-        // 开发环境绑定所有网卡以便调试
-        if (DebugModeChecker.isDebugPackageAndMode(this)) {
+        if (Utils.isDebugPackageAndMode(this)) {
+            // 开发环境绑定所有网卡以便调试
             s.listen(null, serverPort, server.getListenCallback());
+        } else {
+            // 生产环境绑定 ipv6 回环地址 [::1] 以防止被远程访问
+            s.listen(InetAddress.getLoopbackAddress(), serverPort, server.getListenCallback());
         }
         Utils.LogInfo("http", "HTTP server is listening on port [" + serverPort + "]");
     }
