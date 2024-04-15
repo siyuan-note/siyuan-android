@@ -65,6 +65,8 @@ import com.koushikdutta.async.http.server.AsyncHttpServer;
 import com.koushikdutta.async.util.Charsets;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -378,23 +380,45 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         }
 
         final String appDir = getFilesDir().getAbsolutePath() + "/app";
-        final Locale locale = LocaleList.getDefault().get(0);
+        final Locale locale = LocaleList.getDefault().get(0); // 获取用户的设备首选语言
+        final String language = locale.getLanguage().toLowerCase(); // 获取语言代码
+        final String script = locale.getScript().toLowerCase(); // 获取脚本代码
+        final String country = locale.getCountry().toLowerCase(); // 获取国家代码
         final String workspaceBaseDir = getExternalFilesDir(null).getAbsolutePath();
         final String timezone = TimeZone.getDefault().getID();
         new Thread(() -> {
             final String localIPs = Utils.getIPAddressList();
-            String lang = locale.getLanguage() + "_" + locale.getCountry();
-            if (lang.toLowerCase().contains("cn")) {
-                lang = "zh_CN";
-            } else if (lang.toLowerCase().contains("es")) {
-                lang = "es_ES";
-            } else if (lang.toLowerCase().contains("fr")) {
-                lang = "fr_FR";
+
+            String langCode;
+            if ("zh".equals(language)) {
+                // 检查是否为简体字脚本
+                if ("hans".equals(script)) {
+                    langCode = "zh_CN"; // 简体中文，使用 zh_CN
+
+                } else if ("hant".equals(script)) {
+                    // 对于繁体字脚本，需要进一步检查国家代码
+                    if ("tw".equals(country)) {
+                        langCode = "zh_CHT"; // 繁体中文对应台湾
+                    } else if ("hk".equals(country)) {
+                        langCode = "zh_CHT"; // 繁体中文对应香港
+                    } else {
+                        langCode = "zh_CHT"; // 其他繁体中文情况也使用 zh_CHT
+                    }
+                } else {
+                    langCode = "zh_CN"; // 如果脚本不是简体或繁体，默认为简体中文
+                }
+
             } else {
-                lang = "en_US";
+                // 对于非中文语言，创建一个映射来定义其他语言代码的对应关系
+                Map<String, String> otherLangMap = new HashMap<>();
+                otherLangMap.put("es", "es_ES"); // 西班牙语使用 es_ES
+                otherLangMap.put("fr", "fr_FR"); // 法语使用 fr_FR
+
+                // 使用 getOrDefault 方法从映射中获取语言代码，如果语言不存在则默认为 en_US
+                langCode = otherLangMap.getOrDefault(language, "en_US");
             }
 
-            Mobile.startKernel("android", appDir, workspaceBaseDir, timezone, localIPs, lang,
+            Mobile.startKernel("android", appDir, workspaceBaseDir, timezone, localIPs, langCode,
                     Build.VERSION.RELEASE +
                             "/SDK " + Build.VERSION.SDK_INT +
                             "/WebView " + webViewVer +
