@@ -1,0 +1,48 @@
+
+// It accepts an optional parameter `abiList`, which is a list containing ABI (Application Binary Interface) types.
+// If the `abiList` parameter is not provided, it defaults to using `armeabi-v7a`.
+def profileLqr(abiList = null) {
+  return {
+    ndk {
+      abiFilters = abiList == null ? ['armeabi-v7a'] : abiList
+    }
+  }
+}
+
+android {
+  // Specifies the flavor dimensions you want to use. The order in which you
+  // list the dimensions determines their priority, from highest to lowest,
+  // when Gradle merges variant sources and configurations. You must assign
+  // each product flavor you configure to one of the flavor dimensions.
+  flavorDimensions "version"
+
+  // 多渠道打包配置
+  productFlavors {
+
+    // 小米
+    xiaomi profileLqr(['armeabi-v7a']) >> {
+      buildConfigField "String", "CHANNEL", '"xiaomi"'
+    }
+
+    // Google Play
+    googleplay profileLqr(['armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64']) >> {
+      buildConfigField "String", "CHANNEL", '"google-play"'
+    }
+
+    // 华为
+    huawei profileLqr(['armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64']) >> {
+      buildConfigField "String", "CHANNEL", '"huawei"'
+    }
+
+    // 官方
+    official profileLqr(['armeabi-v7a']) >> {
+      buildConfigField "String", "CHANNEL", '"official"'
+    }
+
+    // 遍历 productFlavors 多渠道，设置渠道号
+    productFlavors.all {
+      flavor -> flavor.manifestPlaceholders.put("CHANNEL", name)
+    }
+  }
+
+}

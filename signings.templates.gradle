@@ -1,0 +1,14 @@
+android {
+  // 签名配置
+  signingConfigs {
+    siyuanConfig {
+      // 如果使用 android studio 生成则无需配置
+      // 如果使用命令行的方式则需要将密钥文件复制到 app 文件夹下
+      // app/Android.jks
+      storeFile file("Android.jks") // 密钥文件
+      storePassword "android"      // 密码
+      keyAlias "androiddebugkey"   // Alias
+      keyPassword "android"        // Alias 密码
+    }
+  }
+}
