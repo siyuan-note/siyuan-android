@@ -20,13 +20,13 @@ android.applicationVariants.configureEach { variant ->
 }
 
 android {
-    compileSdkVersion 34
-    buildToolsVersion "34"
+    namespace 'org.b3log.siyuan'
+    compileSdk 34
 
     defaultConfig {
         applicationId "org.b3log.siyuan"
-        minSdkVersion 24
-        targetSdkVersion 34
+        minSdk 24
+        targetSdk 34
         versionCode 230
         versionName "3.0.10"
     }
@@ -78,7 +78,7 @@ android {
     lint {
         abortOnError false
     }
-    namespace 'org.b3log.siyuan'
+
 }
 
 dependencies {
