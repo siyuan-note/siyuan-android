@@ -4,6 +4,7 @@
 def profileLqr(abiList = null) {
   return {
     ndk {
+      //noinspection ChromeOsAbiSupport
       abiFilters = abiList == null ? ['armeabi-v7a'] : abiList
     }
   }
@@ -20,25 +21,25 @@ android {
   productFlavors {
 
     // 小米
-    xiaomi profileLqr(['armeabi-v7a']) >> {
+    xiaomi profileLqr() >> {
       buildConfigField "String", "CHANNEL", '"xiaomi"'
       resValue "string", "app_name", "思源笔记"
     }
 
     // Google Play
-    googleplay profileLqr(['armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64']) >> {
+    googleplay profileLqr() >> {
       buildConfigField "String", "CHANNEL", '"google-play"'
       resValue "string", "app_name", "SiYuan"
     }
 
     // 华为
-    huawei profileLqr(['armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64']) >> {
+    huawei profileLqr() >> {
       buildConfigField "String", "CHANNEL", '"huawei"'
       resValue "string", "app_name", "SiYuan"
     }
 
     // 官方
-    official profileLqr(['armeabi-v7a']) >> {
+    official profileLqr() >> {
       buildConfigField "String", "CHANNEL", '"official"'
       resValue "string", "app_name", "SiYuan"
     }
