@@ -75,3 +75,4 @@ lint/tmp/
 # lint/reports/
 
 app/src/main/assets/app.zip
+signings.gradle

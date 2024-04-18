@@ -2,6 +2,10 @@ plugins {
     id 'com.android.application'
 }
 
+// 多渠道打包配置已引用的方式传递
+apply from: rootProject.file('flavors.gradle')
+apply from: rootProject.file('signings.gradle')
+
 // By appending the version name, build type, and a timestamp to the APK filename,
 // it becomes very easy for testers and developers to identify exactly which version of the application they are testing.
 // This is particularly useful when multiple versions or builds are being tested simultaneously.
@@ -10,32 +14,37 @@ android.applicationVariants.configureEach { variant ->
     variant.outputs.configureEach { output ->
         def versionName = variant.versionName
         def buildType = variant.buildType.name
-        def newApkName = "siyuan-${versionName}.apk"
+        def flavorName = variant.flavorName
+        def newApkName = "siyuan-${flavorName}-${versionName}.apk"
         if (buildType != "release") {
             def formattedDate = new Date().format('yyyyMMddHHmmss')
-            newApkName = "siyuan-${versionName}-${buildType}-${formattedDate}.apk"
+            newApkName = "siyuan-${versionName}-${flavorName}-${buildType}-${formattedDate}.apk"
         }
         output.outputFileName = newApkName
     }
 }
 
 android {
-    compileSdkVersion 34
-    buildToolsVersion "34"
+    namespace 'org.b3log.siyuan'
+    compileSdk 34
 
     defaultConfig {
         applicationId "org.b3log.siyuan"
-        minSdkVersion 24
-        targetSdkVersion 34
+        minSdk 24
+        targetSdk 34
         versionCode 230
         versionName "3.0.10"
     }
 
     buildTypes {
         release {
+            // 正式版打包时指定签名证书
+            signingConfig signingConfigs.siyuanConfig
+
             minifyEnabled true
             shrinkResources true
-            resValue "string", "app_name", "SiYuan"
+            // 此处优先级太高，渠道处配置 resValue 不会生效，故放到了 productFlavors 多渠道打包处处理
+            // resValue "string", "app_name", "SiYuan"
             resValue "string", "app_package_name", "org.b3log.siyuan"
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -78,7 +87,7 @@ android {
     lint {
         abortOnError false
     }
-    namespace 'org.b3log.siyuan'
+
 }
 
 dependencies {
