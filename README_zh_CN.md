@@ -25,9 +25,13 @@
 
 ## 关于多渠道软件分发
 
-如果你使用的是 Android Studio 的【Build】【Generate Signed Bundle APK...】的方式构建程序，请忽略以下内容。
+如果你使用的是 Android Studio 的【Build】【Generate Signed Bundle APK...】的方式构建程序，只需要修改项目级的 build.gradle 文件内的
+siyuanVersionName 和 siyuanVersionCode 两个版本号即可，修改完毕后直接打包，可忽略以下内容。
+
 
 **以下内容仅仅是在控制台命令行执行时才需要配置**：
+
+需要使用控制台命令行构建，不仅仅需要修改项目级的 build.gradle 文件内的 siyuanVersionName 和 siyuanVersionCode 版本号，还需要进行以下操作：
 
 ### 步骤
 
@@ -36,10 +40,10 @@
 3. 使用控制台进入项目根目录并执行以下内容：
 ```shell
 # windows
-.\gradlew clean assembleXiaomiRelease bundleGoogleplayRelease bundleHuaweiRelease assembleOfficialRelease
+.\gradlew clean buildReleaseTask
 
 # linux
-gradle clean assembleXiaomiRelease bundleGoogleplayRelease bundleHuaweiRelease assembleOfficialRelease
+gradle clean buildReleaseTask
 ```
 这里的命名规则是：
 ```txt
@@ -52,6 +56,5 @@ Debug/Release 测试版/正式版
 
 4. 执行完成之后，你可以在以下位置找到生成好的程序：
 ```txt
-siyuan-android\app\build\outputs\apk\*     // apk 位置
-siyuan-android\app\build\outputs\bundle\*  // aab 位置
+siyuan-android\app\build-release\siyuan-${versionName}-all
 ```

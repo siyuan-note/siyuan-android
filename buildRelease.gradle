@@ -1,0 +1,38 @@
+tasks.register('buildReleaseTask', Copy) {
+  group = 'build'
+  description = 'Building release version ${rootProject.siyuanVersionName}'
+
+  def versionName = siyuanVersionName
+  def releaseDirPath = "$rootDir/build-release/siyuan-${versionName}-all"
+
+  // 配置源目录和包含模式
+  from("$buildDir/outputs/apk/") {
+    include '**/*.apk' // 包括所有嵌套文件夹中的 apk 文件
+  }
+
+  from("$buildDir/outputs/bundle/") {
+    include '**/*.aab' // 包括所有嵌套文件夹中的 aab 文件
+  }
+
+  // 修改每个文件的相对路径，使其不包括原始的文件夹结构
+  eachFile { FileCopyDetails fcd ->
+    fcd.relativePath = new RelativePath(true, fcd.file.name)
+  }
+  // 配置目标目录
+  into releaseDirPath
+
+  // 在复制完成后执行删除文件夹的操作
+  doLast {
+    // 获取目标目录的所有内容
+    fileTree(releaseDirPath).visit { fileVisitDetails ->
+      // 如果是目录，则删除它
+      if (fileVisitDetails.file.isDirectory()) {
+        fileVisitDetails.file.deleteDir()
+      }
+    }
+  }
+
+  // 依赖于构建任务
+  dependsOn 'assembleXiaomiRelease', 'bundleGoogleplayRelease', 'bundleHuaweiRelease', 'assembleOfficialRelease'
+}
+
