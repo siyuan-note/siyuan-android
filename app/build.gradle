@@ -5,6 +5,7 @@ plugins {
 // 多渠道打包配置已引用的方式传递
 apply from: rootProject.file('flavors.gradle')
 apply from: rootProject.file('signings.gradle')
+apply from: rootProject.file('buildRelease.gradle')
 
 // By appending the version name, build type, and a timestamp to the APK filename,
 // it becomes very easy for testers and developers to identify exactly which version of the application they are testing.
