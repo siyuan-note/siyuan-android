@@ -26,6 +26,12 @@ android {
       resValue "string", "app_name", "思源笔记"
     }
 
+    // Vivo/OPPO
+    vo profileLqr() >> {
+      buildConfigField "String", "CHANNEL", '"vo"'
+      resValue "string", "app_name", "SiYuan"
+    }
+
     // Google Play
     googleplay profileLqr() >> {
       buildConfigField "String", "CHANNEL", '"google-play"'

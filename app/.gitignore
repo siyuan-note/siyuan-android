@@ -1,7 +1,3 @@
 /build
-Android.keystore
-Android.jks
-xiaomi
-huawei
-googleplay
-official
+*.keystore
+*.jks

@@ -27,31 +27,36 @@ Directory structure reference:
 
 If you are using Android Studio's **Build** -> **Generate Signed Bundle APK...** method to build your program, please ignore the following content.
 
-**The following content is only necessary when executing in the command line console**:
+**The following content is only necessary when executing in the command line console**.
 
 ### Steps
 
 1. Copy `signings.templates.gradle` and rename it as `signings.gradle`.
 2. Configure information in `signings.gradle`.
-3. Navigate to the project root directory using the console and execute the following commands:
-```shell
-# For Windows
-.\gradlew clean assembleXiaomiRelease bundleGoogleplayRelease bundleHuaweiRelease assembleOfficialRelease
+3. Navigate to the project root directory using the console and execute the following commands
 
-# For Linux
-gradle clean assembleXiaomiRelease bundleGoogleplayRelease bundleHuaweiRelease assembleOfficialRelease
-```
-The naming convention here is:
-```txt
-assemble/bundle Xiaomi Debug/Release
-```
-`assemble` generates APK.
-`bundle` generates AAB.
-`Xiaomi` is the channel package name; refer to the location specified in `flavors.gradle productFlavors {}` configuration.
-`Debug/Release`: Testing version/Official version.
+   ```shell
+   # For Windows
+   .\gradlew clean assembleXiaomiRelease assembleVoRelease bundleGoogleplayRelease bundleHuaweiRelease assembleOfficialRelease
+   
+   # For Linux
+   gradle clean assembleXiaomiRelease assembleVoRelease bundleGoogleplayRelease bundleHuaweiRelease assembleOfficialRelease
+   ```
+
+   The naming convention here is:
+
+   ```txt
+   assemble/bundle Xiaomi Debug/Release
+   ```
+   
+   `assemble` generates APK.
+   `bundle` generates AAB.
+   `Xiaomi` is the channel package name; refer to the location specified in `flavors.gradle productFlavors {}` configuration.
+   `Debug/Release`: Testing version/Official version.
 
 4. After execution, you can find the generated program at these locations:
-```txt
-siyuan-android\app\build\outputs\apk\*     // APK location
-siyuan-android\app\build\outputs\bundle\*  // AAB location
-```
+
+   ```txt
+   siyuan-android\app\build\outputs\apk\*     // APK location
+   siyuan-android\app\build\outputs\bundle\*  // AAB location
+   ```
