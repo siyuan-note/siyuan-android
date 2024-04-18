@@ -5,7 +5,7 @@ def profileLqr(abiList = null) {
   return {
     ndk {
       //noinspection ChromeOsAbiSupport
-      abiFilters = abiList == null ? ['armeabi-v7a'] : abiList
+      abiFilters = abiList == null ? ['arm64-v8a'] : abiList
     }
   }
 }
