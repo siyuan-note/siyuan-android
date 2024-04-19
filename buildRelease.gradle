@@ -5,6 +5,8 @@ tasks.register('buildReleaseTask', Copy) {
   def versionName = siyuanVersionName
   def releaseDirPath = "$rootDir/app/build-release/siyuan-${versionName}-all"
 
+  delete releaseDirPath
+
   // 配置源目录和包含模式
   from("$buildDir/outputs/apk/") {
     include '**/*.apk' // 包括所有嵌套文件夹中的 apk 文件
@@ -35,4 +37,3 @@ tasks.register('buildReleaseTask', Copy) {
   // 依赖于构建任务
   dependsOn 'assembleXiaomiRelease', 'assembleVoRelease', 'bundleGoogleplayRelease', 'bundleHuaweiRelease', 'assembleOfficialRelease'
 }
-
