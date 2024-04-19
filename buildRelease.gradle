@@ -3,7 +3,7 @@ tasks.register('buildReleaseTask', Copy) {
   description = 'Building release version ${rootProject.siyuanVersionName}'
 
   def versionName = siyuanVersionName
-  def releaseDirPath = "$rootDir/build-release/siyuan-${versionName}-all"
+  def releaseDirPath = "$rootDir/app/build-release/siyuan-${versionName}-all"
 
   // 配置源目录和包含模式
   from("$buildDir/outputs/apk/") {
@@ -33,6 +33,6 @@ tasks.register('buildReleaseTask', Copy) {
   }
 
   // 依赖于构建任务
-  dependsOn 'assembleXiaomiRelease', 'bundleGoogleplayRelease', 'bundleHuaweiRelease', 'assembleOfficialRelease'
+  dependsOn 'assembleXiaomiRelease', 'assembleVoRelease', 'bundleGoogleplayRelease', 'bundleHuaweiRelease', 'assembleOfficialRelease'
 }
 

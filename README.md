@@ -25,32 +25,35 @@ Directory structure reference:
 
 ## About Multi-Channel Software Distribution
 
-
 If you are building your program using the Android Studio method of going to 【Build】,【Generate Signed Bundle APK...】, you only need to modify the `siyuanVersionName` and `siyuanVersionCode` within the build.gradle file at the project level. After making the changes, you can directly package the app and ignore the following content.
+
+### Steps
 
 **The following content is only necessary when building via the command line console**:
 
 When building using the command line console, you not only need to modify the `siyuanVersionName` and `siyuanVersionCode` within the build.gradle file at the project level, but you also need to perform the following steps:
 
-### Steps
 1. Copy the `signings.templates.gradle` file and rename it to `signings.gradle`.
 2. Configure the related information in `signings.gradle`.
-3. Use the command line to navigate to the root directory of the project and execute the following:
-```shell
-# windows
-.\gradlew clean buildReleaseTask
-# linux
-gradle clean buildReleaseTask
-```
-The naming convention is as follows:
-```txt
-assemble/bundle  Xiaomi  Debug/Release
-```
-`assemble` generates APKs,
-`bundle` generates AABs,
-`Xiaomi` is the name of the channel package; refer to the `productFlavors {}` configuration in flavors.gradle for the specified location,
-`Debug/Release` stands for Test version/Official version.
-4. After the execution is complete, you can find the generated program at the following location:
-```txt
-siyuan-android\app\build-release\siyuan-${versionName}-all
-```
+3. Use the command line to navigate to the root directory of the project and execute the following
+   ```shell
+   # windows
+   .\gradlew clean buildReleaseTask
+   # linux
+   gradle clean buildReleaseTask
+   ```
+   
+   The naming convention is as follows:
+
+   ```txt
+   assemble/bundle  Xiaomi  Debug/Release
+   ```
+   
+   `assemble` generates APKs
+   `bundle` generates AABs
+   `Xiaomi` is the name of the channel package; refer to the `productFlavors {}` configuration in flavors.gradle for the specified location
+   `Debug/Release` stands for Test version/Official version
+4. After the execution is complete, you can find the generated program at the following location
+   ```txt
+   siyuan-android\app\build-release\siyuan-${versionName}-all
+   ```
