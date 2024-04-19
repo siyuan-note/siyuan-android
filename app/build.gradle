@@ -5,6 +5,7 @@ plugins {
 // 多渠道打包配置已引用的方式传递
 apply from: rootProject.file('flavors.gradle')
 apply from: rootProject.file('signings.gradle')
+apply from: rootProject.file('buildRelease.gradle')
 
 // By appending the version name, build type, and a timestamp to the APK filename,
 // it becomes very easy for testers and developers to identify exactly which version of the application they are testing.
@@ -15,12 +16,16 @@ android.applicationVariants.configureEach { variant ->
         def versionName = variant.versionName
         def buildType = variant.buildType.name
         def flavorName = variant.flavorName
-        def newApkName = "siyuan-${flavorName}-${versionName}.apk"
+
+        // Set the archivesBaseName property
+        // https://stackoverflow.com/questions/52508720/how-to-change-the-generated-filename-for-app-bundles-with-gradle
+        project.setProperty("archivesBaseName", "siyuan-v${versionName}")
+
+        // 根据构建类型调整文件名
         if (buildType != "release") {
             def formattedDate = new Date().format('yyyyMMddHHmmss')
-            newApkName = "siyuan-${versionName}-${flavorName}-${buildType}-${formattedDate}.apk"
+            project.setProperty("archivesBaseName", "siyuan-v${versionName}-${buildType}-${formattedDate}")
         }
-        output.outputFileName = newApkName
     }
 }
 
@@ -32,8 +37,8 @@ android {
         applicationId "org.b3log.siyuan"
         minSdk 24
         targetSdk 34
-        versionCode 230
-        versionName "3.0.10"
+        versionCode siyuanVersionCode
+        versionName siyuanVersionName
     }
 
     buildTypes {
