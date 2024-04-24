@@ -30,11 +30,14 @@ import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
+
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
-import org.apache.commons.io.FileUtils;
 
 /**
  * 引导启动.
@@ -45,7 +48,8 @@ import org.apache.commons.io.FileUtils;
  */
 public class BootActivity extends AppCompatActivity {
 
-    @Override protected void onCreate(final Bundle savedInstanceState) {
+    @Override
+    protected void onCreate(final Bundle savedInstanceState) {
         Log.i("boot", "create boot activity");
         super.onCreate(savedInstanceState);
 
@@ -59,15 +63,15 @@ public class BootActivity extends AppCompatActivity {
         }
 
         // 从配置清单获取 CHANNEL 的值，用于判断是哪个渠道包
-        String channel = applicationInfo.metaData.getString("CHANNEL");
+        final String channel = applicationInfo.metaData.getString("CHANNEL");
 
         // 渠道集合
-        Set<String> requiredChannels = new HashSet<>();
-        requiredChannels.add("google-play");
+        final Set<String> requiredChannels = new HashSet<>();
+        requiredChannels.add("googleplay");
         requiredChannels.add("official");
 
         // 判断 CHANNEL 值是否在 requiredChannels 集合中
-        boolean isChannelVersion = requiredChannels.contains(channel);
+        final boolean isChannelVersion = requiredChannels.contains(channel);
 
         // 不存在且第一次运行
         if (!isChannelVersion && isFirstRun()) {
@@ -83,7 +87,8 @@ public class BootActivity extends AppCompatActivity {
         startMainActivity(blockURL);
     }
 
-    @Override protected void onDestroy() {
+    @Override
+    protected void onDestroy() {
         Log.i("boot", "destroy boot activity");
         super.onDestroy();
     }
@@ -119,7 +124,9 @@ public class BootActivity extends AppCompatActivity {
 
     private AlertDialog agreementDialog;
     private final Handler handler = new Handler(Looper.getMainLooper()) {
-        @Override public void handleMessage(final Message msg) {
+
+        @Override
+        public void handleMessage(final Message msg) {
             final String cmd = msg.getData().getString("cmd");
             if ("agreement-y".equals(cmd)) {
                 agreementDialog.dismiss();

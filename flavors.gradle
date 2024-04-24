@@ -34,7 +34,7 @@ android {
 
     // Google Play
     googleplay profileLqr() >> {
-      buildConfigField "String", "CHANNEL", '"google-play"'
+      buildConfigField "String", "CHANNEL", '"googleplay"'
       resValue "string", "app_name", "SiYuan"
     }
 
