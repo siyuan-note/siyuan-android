@@ -88,7 +88,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.2, Apr 13, 2024
+ * @version 1.1.0.3, Apr 24, 2024
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -616,6 +616,11 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         appDirFile.mkdirs();
 
         boolean ret = true;
+        if (Utils.isDebugPackageAndMode(this)) {
+            Log.i("boot", "always unzip assets in debug mode");
+            return ret;
+        }
+
         final File appVerFile = new File(appDir, "VERSION");
         if (appVerFile.exists()) {
             try {
