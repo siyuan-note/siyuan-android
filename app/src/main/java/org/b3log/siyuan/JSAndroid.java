@@ -109,9 +109,11 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void openExternal(String url) {
+        Log.d("JSAndroid", "openExternal() invoked");
         if (StringUtils.isEmpty(url)) {
             return;
         }
+        Log.d("JSAndroid.openExternal", url);
 
         if (url.startsWith("#")) {
             return;
@@ -122,31 +124,74 @@ public final class JSAndroid {
             final String workspacePath = Mobile.getCurrentWorkspacePath();
             final String assetAbsPath = Mobile.getAssetAbsPath(url);
             File asset;
-            if (assetAbsPath.contains(workspacePath)) {
-                asset = new File(workspacePath, assetAbsPath.substring(workspacePath.length() + 1));
-            } else {
-                asset = new File(workspacePath, "data/" + url);
+            String decodedUrl = url;
+            try {
+                if (assetAbsPath.contains(workspacePath)) {
+                    asset = new File(workspacePath, assetAbsPath.substring(workspacePath.length() + 1));
+                } else {
+                    decodedUrl = URLDecoder.decode(url, "UTF-8");
+                    asset = new File(workspacePath, "data/" + decodedUrl);
+                }
+                // 添加判断文件是否存在
+                if (!asset.exists()) {
+                    Log.e("File Not Found", "File does not exist: " + asset.getAbsolutePath());
+                    url = "http://127.0.0.1:6806/" + url;
+                } else {
+                    Log.d("if (url.startsWith(\"assets/\"))", asset.getAbsolutePath());
+                    final Uri uri = FileProvider.getUriForFile(activity.getApplicationContext(), BuildConfig.APPLICATION_ID, asset);
+                    final String type = Mobile.getMimeTypeByExt(asset.getAbsolutePath());
+                    Intent intent = new ShareCompat.IntentBuilder(activity.getApplicationContext())
+                            .setStream(uri)
+                            .setType(type)
+                            .getIntent()
+                            .setAction(Intent.ACTION_VIEW)
+                            .setDataAndType(uri, type)
+                            .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                    activity.startActivity(intent);
+                    return;
+                }
+            } catch (Exception e) {
+                Log.e("JSAndroid", String.valueOf(e));
             }
-            final Uri uri = FileProvider.getUriForFile(activity.getApplicationContext(), BuildConfig.APPLICATION_ID, asset);
-            final String type = Mobile.getMimeTypeByExt(asset.getAbsolutePath());
-            Intent intent = new ShareCompat.IntentBuilder(activity.getApplicationContext())
-                    .setStream(uri)
-                    .setType(type)
-                    .getIntent()
-                    .setAction(Intent.ACTION_VIEW)
-                    .setDataAndType(uri, type)
-                    .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-            activity.startActivity(intent);
-            return;
+        }
+
+        if (url.endsWith(".zip") && url.startsWith("/export/")) {
+            final String workspacePath = Mobile.getCurrentWorkspacePath();
+            String decodedUrl = url;
+            try {
+                decodedUrl = URLDecoder.decode(url, "UTF-8");
+                final File asset = new File(workspacePath, "temp" + decodedUrl);
+                // 添加判断文件是否存在
+                if (!asset.exists()) {
+                    Log.e("File Not Found", "File does not exist: " + asset.getAbsolutePath());
+                } else {
+                    Log.d("if (url.endsWith(\".zip\") && url.startsWith(\"/export/\"))", asset.getAbsolutePath());
+                    Uri uri = FileProvider.getUriForFile(activity.getApplicationContext(), BuildConfig.APPLICATION_ID, asset);
+                    final String type = Mobile.getMimeTypeByExt(asset.getAbsolutePath());
+                    Intent intent = new ShareCompat.IntentBuilder(activity.getApplicationContext())
+                            .setStream(uri)
+                            .setType(type)
+                            .getIntent()
+                            .setAction(Intent.ACTION_VIEW)
+                            .setDataAndType(uri, type)
+                            .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                    activity.startActivity(intent);
+                    return;
+                }
+            } catch (Exception e) {
+                Log.e("JSAndroid", String.valueOf(e));
+            }
         }
 
         if (url.startsWith("/")) {
             url = "http://127.0.0.1:6806" + url;
         }
+        Log.d("openExternal final url ", url);
 
         final Uri uri = Uri.parse(url);
         final Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
-        activity.startActivity(browserIntent);
+        activity.startActivity(browserIntent); // https://developer.android.google.cn/training/app-links/verify-android-applinks?hl=zh-cn
+        // 从 Android 12 开始，经过验证的链接现在会自动在相应的应用中打开，以获得更简化、更快速的用户体验。谷歌还更改了未经Android应用链接验证或用户手动批准的链接的默认处理方式。谷歌表示，Android 12将始终在默认浏览器中打开此类未经验证的链接，而不是向您显示应用程序选择对话框。
     }
 
     @JavascriptInterface
