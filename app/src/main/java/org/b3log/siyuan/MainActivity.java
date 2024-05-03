@@ -87,7 +87,7 @@ import mobile.Mobile;
 /**
  * 主程序.
  *
- * @author <a href="http://88250.b3log.org">Liang Ding</a>
+ * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @version 1.1.0.3, Apr 24, 2024
  * @since 1.0.0
  */

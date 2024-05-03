@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * 引导启动.
  *
- * @author <a href="http://88250.b3log.org">Liang Ding</a>
+ * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @version 1.1.0.4, Feb 13, 2024
  * @since 1.0.0
  */

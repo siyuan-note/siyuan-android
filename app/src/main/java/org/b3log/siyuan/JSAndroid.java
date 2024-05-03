@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import androidx.core.app.ShareCompat;
@@ -33,14 +34,16 @@ import com.blankj.utilcode.util.StringUtils;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import java.io.File;
+import java.net.URLDecoder;
 
 import mobile.Mobile;
 
 /**
  * JavaScript 接口.
  *
- * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.3.0, Feb 3, 2024
+ * @author <a href="https://88250.b3log.org">Liang Ding</a>
+ * @author <a href="https://github.com/Soltus">绛亽</a>
+ * @version 1.1.3.1, May 3, 2024
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -109,11 +112,9 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void openExternal(String url) {
-        Log.d("JSAndroid", "openExternal() invoked");
         if (StringUtils.isEmpty(url)) {
             return;
         }
-        Log.d("JSAndroid.openExternal", url);
 
         if (url.startsWith("#")) {
             return;
@@ -124,12 +125,11 @@ public final class JSAndroid {
             final String workspacePath = Mobile.getCurrentWorkspacePath();
             final String assetAbsPath = Mobile.getAssetAbsPath(url);
             File asset;
-            String decodedUrl = url;
             try {
                 if (assetAbsPath.contains(workspacePath)) {
                     asset = new File(workspacePath, assetAbsPath.substring(workspacePath.length() + 1));
                 } else {
-                    decodedUrl = URLDecoder.decode(url, "UTF-8");
+                    final String decodedUrl = URLDecoder.decode(url, "UTF-8");
                     asset = new File(workspacePath, "data/" + decodedUrl);
                 }
                 // 添加判断文件是否存在
@@ -151,21 +151,19 @@ public final class JSAndroid {
                     return;
                 }
             } catch (Exception e) {
-                Log.e("JSAndroid", String.valueOf(e));
+                Utils.LogError("JSAndroid", "openExternal failed", e);
             }
         }
 
         if (url.endsWith(".zip") && url.startsWith("/export/")) {
             final String workspacePath = Mobile.getCurrentWorkspacePath();
-            String decodedUrl = url;
             try {
-                decodedUrl = URLDecoder.decode(url, "UTF-8");
+                final String decodedUrl = URLDecoder.decode(url, "UTF-8");
                 final File asset = new File(workspacePath, "temp" + decodedUrl);
                 // 添加判断文件是否存在
                 if (!asset.exists()) {
                     Log.e("File Not Found", "File does not exist: " + asset.getAbsolutePath());
                 } else {
-                    Log.d("if (url.endsWith(\".zip\") && url.startsWith(\"/export/\"))", asset.getAbsolutePath());
                     Uri uri = FileProvider.getUriForFile(activity.getApplicationContext(), BuildConfig.APPLICATION_ID, asset);
                     final String type = Mobile.getMimeTypeByExt(asset.getAbsolutePath());
                     Intent intent = new ShareCompat.IntentBuilder(activity.getApplicationContext())
@@ -179,7 +177,7 @@ public final class JSAndroid {
                     return;
                 }
             } catch (Exception e) {
-                Log.e("JSAndroid", String.valueOf(e));
+                Utils.LogError("JSAndroid", "openExternal failed", e);
             }
         }
 

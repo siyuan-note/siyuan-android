@@ -36,7 +36,7 @@ import java.util.Random;
 /**
  * 保活服务.
  *
- * @author <a href="http://88250.b3log.org">Liang Ding</a>
+ * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @version 1.0.1.2, Feb 7, 2024
  * @since 1.0.0
  */

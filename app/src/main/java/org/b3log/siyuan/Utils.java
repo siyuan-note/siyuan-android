@@ -52,7 +52,7 @@ import mobile.Mobile;
 /**
  * 工具类.
  *
- * @author <a href="http://88250.b3log.org">Liang Ding</a>
+ * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/wwxiaoqi">Jane Haring</a>
  * @version 1.1.0.7, Mar 20, 2024
  * @since 1.0.0
