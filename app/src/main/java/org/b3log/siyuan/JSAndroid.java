@@ -184,7 +184,6 @@ public final class JSAndroid {
         if (url.startsWith("/")) {
             url = "http://127.0.0.1:6806" + url;
         }
-        Log.d("openExternal final url ", url);
 
         final Uri uri = Uri.parse(url);
         final Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
