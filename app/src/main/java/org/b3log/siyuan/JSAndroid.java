@@ -155,32 +155,6 @@ public final class JSAndroid {
             }
         }
 
-        if (url.endsWith(".zip") && url.startsWith("/export/")) {
-            final String workspacePath = Mobile.getCurrentWorkspacePath();
-            try {
-                final String decodedUrl = URLDecoder.decode(url, "UTF-8");
-                final File asset = new File(workspacePath, "temp" + decodedUrl);
-                // 添加判断文件是否存在
-                if (!asset.exists()) {
-                    Log.e("File Not Found", "File does not exist: " + asset.getAbsolutePath());
-                } else {
-                    Uri uri = FileProvider.getUriForFile(activity.getApplicationContext(), BuildConfig.APPLICATION_ID, asset);
-                    final String type = Mobile.getMimeTypeByExt(asset.getAbsolutePath());
-                    Intent intent = new ShareCompat.IntentBuilder(activity.getApplicationContext())
-                            .setStream(uri)
-                            .setType(type)
-                            .getIntent()
-                            .setAction(Intent.ACTION_VIEW)
-                            .setDataAndType(uri, type)
-                            .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-                    activity.startActivity(intent);
-                    return;
-                }
-            } catch (Exception e) {
-                Utils.LogError("JSAndroid", "openExternal failed", e);
-            }
-        }
-
         if (url.startsWith("/")) {
             url = "http://127.0.0.1:6806" + url;
         }
