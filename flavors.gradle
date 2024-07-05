@@ -26,9 +26,9 @@ android {
       resValue "string", "app_name", "思源笔记"
     }
 
-    // Vivo/OPPO
+    // Vivo/OPPO/荣耀
     vo profileLqr() >> {
-      buildConfigField "String", "CHANNEL", '"vo"'
+      buildConfigField "String", "CHANNEL", '"voh"'
       resValue "string", "app_name", "思源笔记"
     }
 
