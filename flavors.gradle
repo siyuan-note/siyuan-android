@@ -41,7 +41,7 @@ android {
     // 华为
     huawei profileLqr() >> {
       buildConfigField "String", "CHANNEL", '"huawei"'
-      resValue "string", "app_name", "SiYuan"
+      resValue "string", "app_name", "思源笔记"
     }
 
     // 官方
