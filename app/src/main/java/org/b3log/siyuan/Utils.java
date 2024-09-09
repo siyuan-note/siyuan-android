@@ -54,7 +54,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/wwxiaoqi">Jane Haring</a>
- * @version 1.1.0.8, Aug 7, 2024
+ * @version 1.2.0.0, Sep 9, 2024
  * @since 1.0.0
  */
 public final class Utils {
@@ -236,5 +236,20 @@ public final class Utils {
         boolean isDebugPackage = context.getPackageName() != null && context.getPackageName().contains(".debug");
         boolean isDebugMode = appInfo != null && (appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
         return isDebugPackage && isDebugMode;
+    }
+
+    /**
+     * Checks if the given string is a URL.
+     *
+     * @param str the string to check
+     * @return <code>true</code> if the string is a URL, <code>false</code> otherwise
+     */
+    public static boolean isURL(String str) {
+        try {
+            new java.net.URL(str).toURI();
+            return true;
+        } catch (final Exception e) {
+            return false;
+        }
     }
 }
