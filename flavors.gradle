@@ -20,15 +20,9 @@ android {
   // 多渠道打包配置
   productFlavors {
 
-    // 小米
-    xiaomi profileLqr() >> {
-      buildConfigField "String", "CHANNEL", '"xiaomi"'
-      resValue "string", "app_name", "思源笔记"
-    }
-
-    // Vivo/OPPO/荣耀
-    vo profileLqr() >> {
-      buildConfigField "String", "CHANNEL", '"voh"'
+    // 小米/Vivo/OPPO/荣耀
+    cn profileLqr() >> {
+      buildConfigField "String", "CHANNEL", '"cn"'
       resValue "string", "app_name", "思源笔记"
     }
 

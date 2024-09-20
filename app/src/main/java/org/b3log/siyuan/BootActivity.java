@@ -46,7 +46,7 @@ import java.util.Set;
  * 引导启动.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.5, Sep 9, 2024
+ * @version 1.1.0.6, Sep 20, 2024
  * @since 1.0.0
  */
 public class BootActivity extends AppCompatActivity {
@@ -68,16 +68,12 @@ public class BootActivity extends AppCompatActivity {
         // 从配置清单获取 CHANNEL 的值，用于判断是哪个渠道包
         final String channel = applicationInfo.metaData.getString("CHANNEL");
 
-        // 渠道集合
-        final Set<String> requiredChannels = new HashSet<>();
-        requiredChannels.add("googleplay");
-        requiredChannels.add("official");
-
-        // 判断 CHANNEL 值是否在 requiredChannels 集合中
-        final boolean isChannelVersion = requiredChannels.contains(channel);
-
-        // 不存在且第一次运行
-        if (!isChannelVersion && isFirstRun()) {
+        // 首次运行需要弹出用户协议的渠道集合
+        final Set<String> showAgreementChannels = new HashSet<>();
+        showAgreementChannels.add("cn");
+        showAgreementChannels.add("huawei");
+        final boolean needShowAgreement = showAgreementChannels.contains(channel);
+        if (needShowAgreement && isFirstRun()) {
             // 首次运行弹窗提示用户隐私条款和使用授权
             setContentView(R.layout.activity_agreement);
             showAgreements();

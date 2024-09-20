@@ -48,12 +48,12 @@ siyuanVersionName 和 siyuanVersionCode 两个版本号即可，修改完毕后�
    这里的命名规则是：
    
    ```txt
-   assemble/bundle  Xiaomi  Debug/Release
+   assemble/bundle  Googleplay  Debug/Release
    ```
    
    `assemble` 生成 APK
    `bundle` 生成 AAB
-   `Xiaomi` 为渠道包名称，指定位置请看 flavors.gradle productFlavors {} 配置
+   `Googleplay` 为渠道包名称，指定位置请看 flavors.gradle productFlavors {} 配置
    `Debug/Release` 测试版/正式版
 4. 执行完成之后，你可以在以下位置找到生成好的程序
    ```txt

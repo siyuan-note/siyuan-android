@@ -46,12 +46,12 @@ When building using the command line console, you not only need to modify the `s
    The naming convention is as follows:
 
    ```txt
-   assemble/bundle  Xiaomi  Debug/Release
+   assemble/bundle  Googleplay  Debug/Release
    ```
    
    `assemble` generates APKs
    `bundle` generates AABs
-   `Xiaomi` is the name of the channel package; refer to the `productFlavors {}` configuration in flavors.gradle for the specified location
+   `Googleplay` is the name of the channel package; refer to the `productFlavors {}` configuration in flavors.gradle for the specified location
    `Debug/Release` stands for Test version/Official version
 4. After the execution is complete, you can find the generated program at the following location
    ```txt
