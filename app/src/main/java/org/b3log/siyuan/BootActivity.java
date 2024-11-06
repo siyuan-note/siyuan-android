@@ -46,7 +46,7 @@ import java.util.Set;
  * 引导启动.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.6, Sep 20, 2024
+ * @version 1.1.0.7, Nov 6, 2024
  * @since 1.0.0
  */
 public class BootActivity extends AppCompatActivity {
@@ -56,18 +56,7 @@ public class BootActivity extends AppCompatActivity {
         Log.i("boot", "create boot activity");
         super.onCreate(savedInstanceState);
 
-        // Privacy policy solicitation will no longer pop up when Android starts for the first time
-        // https://github.com/siyuan-note/siyuan/issues/10348
-        ApplicationInfo applicationInfo;
-        try {
-            applicationInfo = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
-        } catch (PackageManager.NameNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-
-        // 从配置清单获取 CHANNEL 的值，用于判断是哪个渠道包
-        final String channel = applicationInfo.metaData.getString("CHANNEL");
-
+        final String channel = Utils.getChannel(this);
         // 首次运行需要弹出用户协议的渠道集合
         final Set<String> showAgreementChannels = new HashSet<>();
         showAgreementChannels.add("cn");

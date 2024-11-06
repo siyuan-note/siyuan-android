@@ -54,7 +54,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/wwxiaoqi">Jane Haring</a>
- * @version 1.2.0.0, Sep 9, 2024
+ * @version 1.2.0.1, Nov 6, 2024
  * @since 1.0.0
  */
 public final class Utils {
@@ -65,6 +65,25 @@ public final class Utils {
     public static final String version = BuildConfig.VERSION_NAME;
 
     private static long lastShowKeyboard = 0;
+
+    public static boolean isCnChannel(final Activity activity) {
+        final String channel = getChannel(activity);
+        return channel.contains("cn") || channel.equals("huawei");
+    }
+
+    public static String getChannel(final Activity activity) {
+        // Privacy policy solicitation will no longer pop up when Android starts for the first time
+        // https://github.com/siyuan-note/siyuan/issues/10348
+        ApplicationInfo applicationInfo;
+        try {
+            applicationInfo = activity.getPackageManager().getApplicationInfo(activity.getPackageName(), PackageManager.GET_META_DATA);
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        // 从配置清单获取 CHANNEL 的值，用于判断是哪个渠道包
+        return applicationInfo.metaData.getString("CHANNEL");
+    }
 
     public static void registerSoftKeyboardToolbar(final Activity activity, final WebView webView) {
         KeyboardUtils.registerSoftInputChangedListener(activity, height -> {

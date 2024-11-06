@@ -88,7 +88,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.3, Apr 24, 2024
+ * @version 1.1.0.4, Nov 6, 2024
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -416,6 +416,11 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
                 // 使用 getOrDefault 方法从映射中获取语言代码，如果语言不存在则默认为 en_US
                 langCode = otherLangMap.getOrDefault(language, "en_US");
+            }
+
+            if (Utils.isCnChannel(this)) {
+                // Apps in Chinese mainland app stores no longer provide AI access settings https://github.com/siyuan-note/siyuan/issues/13051
+                Mobile.disableFeature("ai");
             }
 
             Mobile.startKernel("android", appDir, workspaceBaseDir, timezone, localIPs, langCode,
