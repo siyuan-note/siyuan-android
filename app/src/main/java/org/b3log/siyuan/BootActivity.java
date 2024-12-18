@@ -46,7 +46,7 @@ import java.util.Set;
  * 引导启动.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.7, Nov 6, 2024
+ * @version 1.1.0.8, Dec 18, 2024
  * @since 1.0.0
  */
 public class BootActivity extends AppCompatActivity {
@@ -193,7 +193,7 @@ public class BootActivity extends AppCompatActivity {
     private final String agreement = "<h2 id=\"隐私政策\" updated=\"20220212224529\">隐私政策</h2>\n" +
         "<ul>\n" +
         "    <li><p>发布日期：2022 年 2 月 11 日</p></li>\n" +
-        "    <li><p>最近更新：2022 年 10 月 27 日</p></li>\n" +
+        "    <li><p>最近更新：2024 年 12 月 18 日</p></li>\n" +
         "</ul>\n" +
         "<p><strong>SiYuan（思源笔记）</strong>是云南链滴科技有限公司（以下简称“我们”）通过合法拥有并运营的、包括且不限于思源笔记桌面端软件、移动端应用、<strong>思源笔记云端服务</strong>。思源笔记云端服务以及该服务所包括的各种业务功能统称为“我们的产品和服务”。\n" +
         "</p>\n" +
@@ -471,12 +471,6 @@ public class BootActivity extends AppCompatActivity {
         "           href=\"https://open.weixin.qq.com/cgi-bin/frame?t=news/protocol_developer_tmpl\">https://open.weixin.qq.com/cgi-bin/frame?t=news/protocol_developer_tmpl</a>\n" +
         "    </p></blockquote>\n" +
         "<p>开发类服务 SDK：</p>\n" +
-        "<blockquote><p>SDK 名称：Sentry</p>\n" +
-        "    <p>公司名称：FUNCTIONAL SOFTWARE, INC.</p>\n" +
-        "    <p>SDK 官网：<a href=\"https://sentry.io/\">https://sentry.io</a></p>\n" +
-        "    <p>使用目的：用于收集报错信息和诊断数据，进而改善用户体验</p>\n" +
-        "    <p>收集的个人信息类型/字段：设备标识信息和报错日志、诊断数据等不涉及个人隐私的数据\n" +
-        "        <a href=\"https://sentry.io/privacy/\">https://sentry.io/privacy/</a></p></blockquote>\n" +
         "<blockquote><p>SDK 名称：Google Analytics</p>\n" +
         "    <p>公司名称：Google</p>\n" +
         "    <p>SDK 官网：<a href=\"https://analytics.google.com\">https://analytics.google.com</a></p>\n" +
