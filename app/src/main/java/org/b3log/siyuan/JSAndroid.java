@@ -60,6 +60,11 @@ public final class JSAndroid {
     }
 
     @JavascriptInterface
+    public void setWebViewDebuggingEnabled(final boolean debuggable) {
+        activity.setWebViewDebuggable(debuggable);
+    }
+
+    @JavascriptInterface
     public String readClipboard() {
         final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
         final ClipData clipData = clipboard.getPrimaryClip();
