@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
         // 使用 Chromium 调试 WebView
         if (Utils.isDebugPackageAndMode(this)) {
-            WebView.setWebContentsDebuggingEnabled(true);
+            this.setWebViewDebuggable(true);
         }
 
         // 注册工具栏显示/隐藏跟随软键盘状态
@@ -707,6 +707,10 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 Toast.makeText(this, "Check WebView version failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    public void setWebViewDebuggable(final boolean debuggable) {
+        WebView.setWebContentsDebuggingEnabled(debuggable);
     }
 
     private static boolean syncing;
