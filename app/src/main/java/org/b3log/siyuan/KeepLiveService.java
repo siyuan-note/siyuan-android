@@ -31,13 +31,21 @@ import android.os.IBinder;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+
+import mobile.Mobile;
 
 /**
  * 保活服务.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.0.1.2, Feb 7, 2024
+ * @version 1.0.2.0, Jan 14, 2025
  * @since 1.0.0
  */
 public class KeepLiveService extends Service {
@@ -61,23 +69,6 @@ public class KeepLiveService extends Service {
         }
     }
 
-    private final String[] words = new String[]{
-            "We are programmed to receive",
-            "Then the piper will lead us to reason",
-            "You're not the only one",
-            "Sometimes I need some time all alone",
-            "We still can find a way",
-            "You gotta make it your own way",
-            "Everybody needs somebody",
-            "原谅我这一生不羁放纵爱自由",
-            "我要再次找那旧日的足迹",
-            "心中一股冲劲勇闯，抛开那现实没有顾虑",
-            "愿望是努力走向那一方",
-            "其实怕被忘记至放大来演吧",
-            "荣耀的背后刻着一道孤独",
-            "动机也只有一种名字那叫做欲望",
-    };
-
     private Random random = new Random();
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -99,14 +90,61 @@ public class KeepLiveService extends Service {
         final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         manager.createNotificationChannel(chan);
         final NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
+        final String[] texts = getNotificationTexts();
         final Notification notification = notificationBuilder.setOngoing(true).
                 setSmallIcon(R.drawable.icon).
-                setContentTitle(words[random.nextInt(words.length)]).
+                setContentTitle(texts[random.nextInt(texts.length)]).
                 setPriority(NotificationManager.IMPORTANCE_MIN).
                 setCategory(Notification.CATEGORY_SERVICE).
                 setContentIntent(resultPendingIntent).
                 build();
         startForeground(2, notification);
     }
+
+    private String[] getNotificationTexts() {
+        final String workspacePath = Mobile.getCurrentWorkspacePath();
+        final String notificationTxtPath = workspacePath + "/data/assets/android-notification-texts.txt";
+        try {
+            final File notificationTxtFile = new File(notificationTxtPath);
+            if (!notificationTxtFile.exists()) {
+                return words;
+            }
+
+            final List<String> tmp = FileUtils.readLines(notificationTxtFile, StandardCharsets.UTF_8);
+            final List<String> lines = new ArrayList<>();
+            for (final String line : tmp) {
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
+                lines.add(line);
+            }
+            if (lines.isEmpty()) {
+                return words;
+            }
+
+            final String[] ret = new String[lines.size()];
+            return lines.toArray(ret);
+        } catch (final Exception e) {
+            Utils.LogError("boot", "check version failed", e);
+            return words;
+        }
+    }
+
+    private final String[] words = new String[]{
+            "We are programmed to receive",
+            "Then the piper will lead us to reason",
+            "You're not the only one",
+            "Sometimes I need some time all alone",
+            "We still can find a way",
+            "You gotta make it your own way",
+            "Everybody needs somebody",
+            "原谅我这一生不羁放纵爱自由",
+            "我要再次找那旧日的足迹",
+            "心中一股冲劲勇闯，抛开那现实没有顾虑",
+            "愿望是努力走向那一方",
+            "其实怕被忘记至放大来演吧",
+            "荣耀的背后刻着一道孤独",
+            "动机也只有一种名字那叫做欲望",
+    };
 }
 
