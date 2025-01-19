@@ -23,17 +23,21 @@ import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.LocaleList;
 import android.os.Looper;
 import android.os.Message;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.View;
@@ -105,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private ValueCallback<Uri[]> uploadMessage;
     private static final int REQUEST_SELECT_FILE = 100;
     private static final int REQUEST_CAMERA = 101;
+    private static final int LOCAL_SYNC_FOLDER_CODE = 200;
 
     @Override
     public void onNewIntent(final Intent intent) {
@@ -154,6 +159,32 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         // Fix https://github.com/siyuan-note/siyuan/issues/9726
         // KeyboardUtils.fixAndroidBug5497(this);
         AndroidBug5497Workaround.assistActivity(this);
+    }
+
+    public String getLocalSyncPath() {
+        SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+        return prefs.getString("localSyncPath", null);
+    }
+
+    public void getStoragePermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+            Uri uri = Uri.fromParts("package", getPackageName(), null);
+            intent.setData(uri);
+            startActivity(intent);
+        }
+    }
+
+    public void pickLocalFileSystemFolder() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        startActivityForResult(intent, LOCAL_SYNC_FOLDER_CODE);
+    }
+
+    private void saveLocalSyncPath(String path) {
+        SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("localSyncPath", path);
+        editor.apply();
     }
 
     private void initUIElements() {
@@ -573,8 +604,22 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+        if (requestCode == LOCAL_SYNC_FOLDER_CODE && resultCode == RESULT_OK) {
+            if (intent != null) {
+                Uri treeUri = intent.getData();
+                Uri docUri = DocumentsContract.buildDocumentUriUsingTree(treeUri,
+                        DocumentsContract.getTreeDocumentId(treeUri));
+                String path = AndroidFileUtils.getPath(this, docUri);
+                if (path == null || path.isEmpty())
+                    Toast.makeText(this, "Error with selected directory",
+                            Toast.LENGTH_LONG).show();
+                else
+                    saveLocalSyncPath(path);
+            }
+        }
+
         if (null == uploadMessage) {
-            super.onActivityResult(requestCode, resultCode, intent);
             return;
         }
 
