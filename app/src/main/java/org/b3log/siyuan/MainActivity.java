@@ -89,7 +89,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.6, Jan 3, 2025
+ * @version 1.1.0.7, Feb 5, 2025
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -178,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                         uploadMessage = null;
                         return false;
                     }
-                    
+
                     if (ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                         builder.setTitle("权限申请 / Permission Request");
@@ -222,6 +222,12 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 request.grant(request.getResources());
             }
 
+        });
+
+        webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
+            final Uri uri = Uri.parse(url);
+            final Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            startActivity(intent);
         });
 
         webView.setOnDragListener((v, event) -> {
