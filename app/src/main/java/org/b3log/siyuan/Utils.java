@@ -66,7 +66,7 @@ public final class Utils {
 
     private static long lastShowKeyboard = 0;
 
-    public static boolean isCnChannel(final  PackageManager pm) {
+    public static boolean isCnChannel(final PackageManager pm) {
         final String channel = getChannel(pm);
         return channel.contains("cn") || channel.equals("huawei");
     }
