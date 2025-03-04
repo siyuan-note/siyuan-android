@@ -158,10 +158,10 @@ public final class JSAndroid {
                 }
                 // 添加判断文件是否存在
                 if (!asset.exists()) {
-                    Log.e("File Not Found", "File does not exist: " + asset.getAbsolutePath());
+                    Log.e("js", "File does not exist: " + asset.getAbsolutePath());
                     url = "http://127.0.0.1:6806/" + url;
                 } else {
-                    Log.d("if (url.startsWith(\"assets/\"))", asset.getAbsolutePath());
+                    Log.d("js", asset.getAbsolutePath());
                     final Uri uri = FileProvider.getUriForFile(activity.getApplicationContext(), BuildConfig.APPLICATION_ID, asset);
                     final String type = Mobile.getMimeTypeByExt(asset.getAbsolutePath());
                     Intent intent = new ShareCompat.IntentBuilder(activity.getApplicationContext())
