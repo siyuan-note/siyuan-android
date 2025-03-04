@@ -19,9 +19,11 @@ package org.b3log.siyuan;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.WebView;
@@ -54,7 +56,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/wwxiaoqi">Jane Haring</a>
- * @version 1.2.0.2, Mar 4, 2025
+ * @version 1.3.0.0, Mar 5, 2025
  * @since 1.0.0
  */
 public final class Utils {
@@ -270,5 +272,25 @@ public final class Utils {
         } catch (final Exception e) {
             return false;
         }
+    }
+
+    public static void openByDefault(String url, final Activity activity) {
+        if (StringUtils.isEmpty(url)) {
+            return;
+        }
+
+        if (url.startsWith("#")) {
+            return;
+        }
+
+        if (url.startsWith("/")) {
+            url = "http://127.0.0.1:6806" + url;
+        }
+
+        // https://developer.android.google.cn/training/app-links/verify-android-applinks?hl=zh-cn
+        // 从 Android 12 开始，经过验证的链接现在会自动在相应的应用中打开，以获得更简化、更快速的用户体验。谷歌还更改了未经Android应用链接验证或用户手动批准的链接的默认处理方式。谷歌表示，Android 12将始终在默认浏览器中打开此类未经验证的链接，而不是向您显示应用程序选择对话框。
+        final Uri uri = Uri.parse(url);
+        final Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
+        activity.startActivity(browserIntent);
     }
 }

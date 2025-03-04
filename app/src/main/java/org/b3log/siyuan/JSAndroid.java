@@ -43,7 +43,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/Soltus">绛亽</a>
- * @version 1.1.4.0, Aug 9, 2024
+ * @version 1.2.0.0, Mar 5, 2025
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -135,58 +135,79 @@ public final class JSAndroid {
     }
 
     @JavascriptInterface
-    public void openExternal(String url) {
-        if (StringUtils.isEmpty(url)) {
-            return;
+    public void exportByDefault(String url) {
+        if (!url.startsWith("assets/")) {
+            Utils.openByDefault(url, activity);
         }
 
-        if (url.startsWith("#")) {
-            return;
-        }
-
-        if (url.startsWith("assets/")) {
-            // Support opening assets through other apps on the Android https://github.com/siyuan-note/siyuan/issues/10657
+        // The `Export` in the asset menu on the mobile is changed to calling the browser to download https://github.com/siyuan-note/siyuan/issues/14280
+        try {
             final String workspacePath = Mobile.getCurrentWorkspacePath();
             final String assetAbsPath = Mobile.getAssetAbsPath(url);
             File asset;
-            try {
-                if (assetAbsPath.contains(workspacePath)) {
-                    asset = new File(workspacePath, assetAbsPath.substring(workspacePath.length() + 1));
-                } else {
-                    final String decodedUrl = URLDecoder.decode(url, "UTF-8");
-                    asset = new File(workspacePath, "data/" + decodedUrl);
-                }
-                // 添加判断文件是否存在
-                if (!asset.exists()) {
-                    Log.e("js", "File does not exist: " + asset.getAbsolutePath());
-                    url = "http://127.0.0.1:6806/" + url;
-                } else {
-                    Log.d("js", asset.getAbsolutePath());
-                    final Uri uri = FileProvider.getUriForFile(activity.getApplicationContext(), BuildConfig.APPLICATION_ID, asset);
-                    final String type = Mobile.getMimeTypeByExt(asset.getAbsolutePath());
-                    Intent intent = new ShareCompat.IntentBuilder(activity.getApplicationContext())
-                            .setStream(uri)
-                            .setType(type)
-                            .getIntent()
-                            .setAction(Intent.ACTION_VIEW)
-                            .setDataAndType(uri, type)
-                            .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-                    activity.startActivity(intent);
-                    return;
-                }
-            } catch (Exception e) {
-                Utils.LogError("JSAndroid", "openExternal failed", e);
+            if (assetAbsPath.contains(workspacePath)) {
+                asset = new File(workspacePath, assetAbsPath.substring(workspacePath.length() + 1));
+            } else {
+                final String decodedUrl = URLDecoder.decode(url, "UTF-8");
+                asset = new File(workspacePath, "data/" + decodedUrl);
             }
+
+            if (!asset.exists()) {
+                Log.e("js", "File does not exist: " + asset.getAbsolutePath());
+                url = "http://127.0.0.1:6806/" + url;
+                Utils.openByDefault(url, activity);
+                return;
+            }
+
+            Log.d("js", asset.getAbsolutePath());
+            final Uri uri = FileProvider.getUriForFile(activity.getApplicationContext(), BuildConfig.APPLICATION_ID, asset);
+            final Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
+            activity.startActivity(browserIntent);
+        } catch (Exception e) {
+            Utils.LogError("JSAndroid", "exportByDefault failed", e);
+        }
+    }
+
+    @JavascriptInterface
+    public void openExternal(String url) {
+        if (!url.startsWith("assets/")) {
+            Utils.openByDefault(url, activity);
         }
 
-        if (url.startsWith("/")) {
-            url = "http://127.0.0.1:6806" + url;
-        }
+        // Support opening assets through other apps on the Android https://github.com/siyuan-note/siyuan/issues/10657
+        try {
+            final String workspacePath = Mobile.getCurrentWorkspacePath();
+            final String assetAbsPath = Mobile.getAssetAbsPath(url);
+            File asset;
+            if (assetAbsPath.contains(workspacePath)) {
+                asset = new File(workspacePath, assetAbsPath.substring(workspacePath.length() + 1));
+            } else {
+                final String decodedUrl = URLDecoder.decode(url, "UTF-8");
+                asset = new File(workspacePath, "data/" + decodedUrl);
+            }
 
-        final Uri uri = Uri.parse(url);
-        final Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
-        activity.startActivity(browserIntent); // https://developer.android.google.cn/training/app-links/verify-android-applinks?hl=zh-cn
-        // 从 Android 12 开始，经过验证的链接现在会自动在相应的应用中打开，以获得更简化、更快速的用户体验。谷歌还更改了未经Android应用链接验证或用户手动批准的链接的默认处理方式。谷歌表示，Android 12将始终在默认浏览器中打开此类未经验证的链接，而不是向您显示应用程序选择对话框。
+            if (!asset.exists()) {
+                Log.e("js", "File does not exist: " + asset.getAbsolutePath());
+                url = "http://127.0.0.1:6806/" + url;
+                Utils.openByDefault(url, activity);
+                return;
+            }
+
+            Log.d("js", asset.getAbsolutePath());
+            final Uri uri = FileProvider.getUriForFile(activity.getApplicationContext(), BuildConfig.APPLICATION_ID, asset);
+            final String type = Mobile.getMimeTypeByExt(asset.getAbsolutePath());
+            Intent intent = new ShareCompat.IntentBuilder(activity.getApplicationContext())
+                    .setStream(uri)
+                    .setType(type)
+                    .getIntent()
+                    .setAction(Intent.ACTION_VIEW)
+                    .setDataAndType(uri, type)
+                    .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+            activity.startActivity(intent);
+            return;
+        } catch (Exception e) {
+            Utils.LogError("JSAndroid", "openExternal failed", e);
+        }
     }
 
     @JavascriptInterface
