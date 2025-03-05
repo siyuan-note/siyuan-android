@@ -137,7 +137,8 @@ public final class JSAndroid {
     @JavascriptInterface
     public void exportByDefault(String url) {
         if (!url.startsWith("assets/")) {
-            Utils.openByDefault(url, activity);
+            Utils.openByDefaultBrowser(url, activity);
+            return;
         }
 
         // The `Export` in the asset menu on the mobile is changed to calling the browser to download https://github.com/siyuan-note/siyuan/issues/14280
@@ -155,7 +156,7 @@ public final class JSAndroid {
             if (!asset.exists()) {
                 Log.e("js", "File does not exist: " + asset.getAbsolutePath());
                 url = "http://127.0.0.1:6806/" + url;
-                Utils.openByDefault(url, activity);
+                Utils.openByDefaultBrowser(url, activity);
                 return;
             }
 
@@ -171,7 +172,8 @@ public final class JSAndroid {
     @JavascriptInterface
     public void openExternal(String url) {
         if (!url.startsWith("assets/")) {
-            Utils.openByDefault(url, activity);
+            Utils.openByDefaultBrowser(url, activity);
+            return;
         }
 
         // Support opening assets through other apps on the Android https://github.com/siyuan-note/siyuan/issues/10657
@@ -189,7 +191,7 @@ public final class JSAndroid {
             if (!asset.exists()) {
                 Log.e("js", "File does not exist: " + asset.getAbsolutePath());
                 url = "http://127.0.0.1:6806/" + url;
-                Utils.openByDefault(url, activity);
+                Utils.openByDefaultBrowser(url, activity);
                 return;
             }
 

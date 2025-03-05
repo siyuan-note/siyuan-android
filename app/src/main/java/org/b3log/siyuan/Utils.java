@@ -274,7 +274,7 @@ public final class Utils {
         }
     }
 
-    public static void openByDefault(String url, final Activity activity) {
+    public static void openByDefaultBrowser(String url, final Activity activity) {
         if (StringUtils.isEmpty(url)) {
             return;
         }
