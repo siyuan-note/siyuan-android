@@ -43,7 +43,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/Soltus">绛亽</a>
- * @version 1.2.0.0, Mar 5, 2025
+ * @version 1.2.1.0, Mar 5, 2025
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -102,7 +102,11 @@ public final class JSAndroid {
         }
 
         final ClipData.Item item = clipData.getItemAt(0);
-        return item.getHtmlText();
+        String ret = item.getHtmlText();
+        if (null == ret) {
+            ret = item.getText().toString();
+        }
+        return ret;
     }
 
     @JavascriptInterface
