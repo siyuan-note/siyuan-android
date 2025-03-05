@@ -30,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:text="思源笔记"
                 android:textSize="24sp"
-                android:textColor="@android:color/black" />
+                android:textColor="#ddd" />
 
             <TextView
                 android:id="@+id/slogan"
@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:text="重构你的思维"
                 android:textSize="14sp"
-                android:textColor="@android:color/darker_gray" />
+                android:textColor="#aaa" />
         </LinearLayout>
 
         <!-- 添加一个空白的 View，使前面的图标文字整体靠左一些 -->
