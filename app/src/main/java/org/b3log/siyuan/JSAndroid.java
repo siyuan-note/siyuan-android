@@ -136,37 +136,7 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void exportByDefault(String url) {
-        if (!url.startsWith("assets/")) {
-            Utils.openByDefaultBrowser(url, activity);
-            return;
-        }
-
-        // The `Export` in the asset menu on the mobile is changed to calling the browser to download https://github.com/siyuan-note/siyuan/issues/14280
-        try {
-            final String workspacePath = Mobile.getCurrentWorkspacePath();
-            final String assetAbsPath = Mobile.getAssetAbsPath(url);
-            File asset;
-            if (assetAbsPath.contains(workspacePath)) {
-                asset = new File(workspacePath, assetAbsPath.substring(workspacePath.length() + 1));
-            } else {
-                final String decodedUrl = URLDecoder.decode(url, "UTF-8");
-                asset = new File(workspacePath, "data/" + decodedUrl);
-            }
-
-            if (!asset.exists()) {
-                Log.e("js", "File does not exist: " + asset.getAbsolutePath());
-                url = "http://127.0.0.1:6806/" + url;
-                Utils.openByDefaultBrowser(url, activity);
-                return;
-            }
-
-            Log.d("js", asset.getAbsolutePath());
-            final Uri uri = FileProvider.getUriForFile(activity.getApplicationContext(), BuildConfig.APPLICATION_ID, asset);
-            final Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
-            activity.startActivity(browserIntent);
-        } catch (Exception e) {
-            Utils.LogError("JSAndroid", "exportByDefault failed", e);
-        }
+        Utils.openByDefaultBrowser(url, activity);
     }
 
     @JavascriptInterface
@@ -206,7 +176,6 @@ public final class JSAndroid {
                     .setDataAndType(uri, type)
                     .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
             activity.startActivity(intent);
-            return;
         } catch (Exception e) {
             Utils.LogError("JSAndroid", "openExternal failed", e);
         }
