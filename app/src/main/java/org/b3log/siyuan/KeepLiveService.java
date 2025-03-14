@@ -45,7 +45,7 @@ import mobile.Mobile;
  * 保活服务.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.0.2.0, Jan 14, 2025
+ * @version 1.0.2.1, Mar 14, 2025
  * @since 1.0.0
  */
 public class KeepLiveService extends Service {
@@ -59,11 +59,7 @@ public class KeepLiveService extends Service {
     public void onCreate() {
         try {
             super.onCreate();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startMyOwnForeground();
-            } else {
-                startForeground(1, new Notification());
-            }
+            startMyOwnForeground();
         } catch (final Throwable e) {
             Utils.LogError("keeplive", "Start foreground service failed", e);
         }
@@ -71,7 +67,6 @@ public class KeepLiveService extends Service {
 
     private Random random = new Random();
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     private void startMyOwnForeground() {
         final Intent resultIntent = new Intent(this, MainActivity.class).
                 setAction(Intent.ACTION_MAIN).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
