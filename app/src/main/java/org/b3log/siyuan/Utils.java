@@ -66,7 +66,16 @@ public final class Utils {
      */
     public static final String version = BuildConfig.VERSION_NAME;
 
-    private static long lastShowKeyboard = 0;
+    public static boolean isTablet(String userAgent) {
+        if (StringUtils.isEmpty(userAgent)) {
+            return false;
+        }
+
+        userAgent = userAgent.toLowerCase();
+        return userAgent.contains("tablet") || userAgent.contains("pad") ||
+                (userAgent.contains("android") && !userAgent.contains("mobile"));
+    }
+
 
     public static boolean isCnChannel(final PackageManager pm) {
         final String channel = getChannel(pm);
@@ -86,6 +95,9 @@ public final class Utils {
         // 从配置清单获取 CHANNEL 的值，用于判断是哪个渠道包
         return applicationInfo.metaData.getString("CHANNEL");
     }
+
+
+    private static long lastShowKeyboard = 0;
 
     public static void registerSoftKeyboardToolbar(final Activity activity, final WebView webView) {
         KeyboardUtils.registerSoftInputChangedListener(activity, height -> {

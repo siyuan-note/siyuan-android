@@ -101,7 +101,7 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-process:2.6.1'
     implementation 'androidx.work:work-runtime:2.10.0'
     implementation("commons-io:commons-io:2.13.0")
-    implementation 'com.gitee.zackratos:UltimateBarX:0.8.0'
+    implementation 'com.gitee.zackratos:UltimateBarX:0.8.1'
     implementation 'com.blankj:utilcodex:1.31.1'
     implementation 'com.koushikdutta.async:androidasync:2.2.1'
 
