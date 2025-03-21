@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_append_dailynote">Append to Dailynote</string>
+    <string name="enter_your_text">Enter your text</string>
+    <string name="submit">Submit</string>
+</resources>

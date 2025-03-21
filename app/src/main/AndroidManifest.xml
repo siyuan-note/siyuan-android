@@ -87,6 +87,10 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
 
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+
         </activity>
 
         <activity
@@ -105,6 +109,10 @@
                 https://github.com/siyuan-note/siyuan/issues/9455
             -->
         </activity>
+
+        <activity
+            android:name=".ShortcutActivity"
+            android:theme="@style/Theme.AppCompat.DayNight" />
 
         <service
             android:name=".KeepLiveService"

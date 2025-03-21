@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_append_dailynote">追加到日记</string>
+    <string name="enter_your_text">请输入文本</string>
+    <string name="submit">提交</string>
+</resources>

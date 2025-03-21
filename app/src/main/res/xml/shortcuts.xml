@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/dailynote_icon"
+        android:shortcutId="appendDailynote"
+        android:shortcutLongLabel="@string/shortcut_append_dailynote"
+        android:shortcutShortLabel="@string/shortcut_append_dailynote">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="appendDailynote"
+            android:targetClass="org.b3log.siyuan.ShortcutActivity"
+            android:targetPackage="org.b3log.siyuan" />
+    </shortcut>
+</shortcuts>
