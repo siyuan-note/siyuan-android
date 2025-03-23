@@ -43,7 +43,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/Soltus">绛亽</a>
- * @version 1.2.1.1, Mar 20, 2025
+ * @version 1.2.2.0, Mar 23, 2025
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -90,7 +90,12 @@ public final class JSAndroid {
                 return "![" + name + "](" + asset + ")";
             }
         }
-        return item.getText().toString();
+
+        final CharSequence text = item.getText();
+        if (null == text) {
+            return "";
+        }
+        return text.toString();
     }
 
     @JavascriptInterface
@@ -104,7 +109,7 @@ public final class JSAndroid {
         final ClipData.Item item = clipData.getItemAt(0);
         String ret = item.getHtmlText();
         if (null == ret) {
-            ret = item.getText().toString();
+            ret = "";
         }
         return ret;
     }
