@@ -101,19 +101,21 @@ public final class Utils {
 
     public static void registerSoftKeyboardToolbar(final Activity activity, final WebView webView) {
         KeyboardUtils.registerSoftInputChangedListener(activity, height -> {
-            if (!activity.isInMultiWindowMode()) {
-                final long now = System.currentTimeMillis();
-                if (KeyboardUtils.isSoftInputVisible(activity)) {
-                    webView.evaluateJavascript("javascript:showKeyboardToolbar()", null);
-                    lastShowKeyboard = now;
-                } else {
-                    if (now - lastShowKeyboard < 500) {
-                        // 短时间内键盘显示又隐藏，强制再次显示键盘 https://github.com/siyuan-note/siyuan/issues/11098#issuecomment-2273704439
-                        KeyboardUtils.showSoftInput(activity);
-                        return;
-                    }
-                    webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
+            if (activity.isInMultiWindowMode()) {
+                return;
+            }
+
+            final long now = System.currentTimeMillis();
+            if (KeyboardUtils.isSoftInputVisible(activity)) {
+                webView.evaluateJavascript("javascript:showKeyboardToolbar()", null);
+                lastShowKeyboard = now;
+            } else {
+                if (now - lastShowKeyboard < 500) {
+                    // 短时间内键盘显示又隐藏，强制再次显示键盘 https://github.com/siyuan-note/siyuan/issues/11098#issuecomment-2273704439
+                    KeyboardUtils.showSoftInput(activity);
+                    return;
                 }
+                webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
             }
         });
     }
