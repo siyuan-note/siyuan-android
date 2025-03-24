@@ -87,10 +87,12 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
 
+            <!-- TODO: Supports append text by shortcuts to the dailynote doc on Android https://github.com/siyuan-note/siyuan/issues/14414 -->
+            <!--
             <meta-data
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
-
+            -->
         </activity>
 
         <activity
@@ -112,7 +114,7 @@
 
         <activity
             android:name=".ShortcutActivity"
-            android:theme="@style/Theme.AppCompat.DayNight" />
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
 
         <service
             android:name=".KeepLiveService"
