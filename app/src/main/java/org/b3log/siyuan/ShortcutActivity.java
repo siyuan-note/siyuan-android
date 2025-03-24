@@ -27,6 +27,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.StringUtils;
 
 import org.apache.commons.io.FileUtils;
@@ -58,7 +59,6 @@ public class ShortcutActivity extends AppCompatActivity {
     private void handleIntent(final Intent intent) {
         final String data = intent.getDataString();
         if (StringUtils.equals(data, "appendDailynote")) {
-            Log.i("shortcut", "Append to daily note");
             setupFullScreenInput();
             return;
         }
@@ -68,7 +68,10 @@ public class ShortcutActivity extends AppCompatActivity {
 
     private void setupFullScreenInput() {
         final EditText input = findViewById(R.id.full_screen_input);
-        input.requestFocus();
+        this.runOnUiThread(() -> {
+            input.requestFocus();
+            KeyboardUtils.showSoftInput(this);
+        });
 
         final Button submitButton = findViewById(R.id.submit_button);
         submitButton.setOnClickListener(v -> {
@@ -78,7 +81,7 @@ public class ShortcutActivity extends AppCompatActivity {
             }
 
             final long now = System.currentTimeMillis();
-            final String dailynotesDir = getExternalFilesDir(null).getAbsolutePath() + "/home/shortcuts/ailynotes/";
+            final String dailynotesDir = getExternalFilesDir(null).getAbsolutePath() + "/home/.config/siyuan/shortcuts/dailynotes/";
             new File(dailynotesDir).mkdirs();
             final File f = new File(dailynotesDir, now + ".md");
             try {
