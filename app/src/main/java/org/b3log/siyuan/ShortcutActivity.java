@@ -22,11 +22,16 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.blankj.utilcode.util.StringUtils;
+
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
 
 /**
  * 追加到日记的快捷方式.
@@ -65,12 +70,23 @@ public class ShortcutActivity extends AppCompatActivity {
         final EditText input = findViewById(R.id.full_screen_input);
         input.requestFocus();
 
-
         final Button submitButton = findViewById(R.id.submit_button);
         submitButton.setOnClickListener(v -> {
-            String userInput = input.getText().toString();
-            Log.i("shortcut", "User input: " + userInput);
-            // Handle the user input here
+            final String userInput = input.getText().toString().trim();
+            if (StringUtils.isEmpty(userInput)) {
+                return;
+            }
+
+            final long now = System.currentTimeMillis();
+            final String dailynotesDir = getExternalFilesDir(null).getAbsolutePath() + "/home/shortcuts/ailynotes/";
+            new File(dailynotesDir).mkdirs();
+            final File f = new File(dailynotesDir, now + ".md");
+            try {
+                FileUtils.writeStringToFile(f, userInput, "UTF-8");
+            } catch (final Exception e) {
+                Log.e("shortcut", "Failed to write to file", e);
+                Toast.makeText(this, "Failed to write to file [" + e.getMessage() + "]", Toast.LENGTH_LONG).show();
+            }
 
             finish();
         });
