@@ -87,7 +87,7 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
 
-            <!-- TODO: Supports append text by shortcuts to the dailynote doc on Android https://github.com/siyuan-note/siyuan/issues/14414 -->
+            <!-- TODO: Supports local shorthands on Android https://github.com/siyuan-note/siyuan/issues/14414 -->
             <!--
             <meta-data
                 android:name="android.app.shortcuts"

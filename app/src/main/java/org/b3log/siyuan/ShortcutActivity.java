@@ -58,7 +58,7 @@ public class ShortcutActivity extends AppCompatActivity {
 
     private void handleIntent(final Intent intent) {
         final String data = intent.getDataString();
-        if (StringUtils.equals(data, "appendDailynote")) {
+        if (StringUtils.equals(data, "shorthand")) {
             setupFullScreenInput();
             return;
         }
@@ -81,9 +81,9 @@ public class ShortcutActivity extends AppCompatActivity {
             }
 
             final long now = System.currentTimeMillis();
-            final String dailynotesDir = getExternalFilesDir(null).getAbsolutePath() + "/home/.config/siyuan/shortcuts/dailynotes/";
-            new File(dailynotesDir).mkdirs();
-            final File f = new File(dailynotesDir, now + ".md");
+            final String shorthandsDir = getExternalFilesDir(null).getAbsolutePath() + "/home/.config/siyuan/shortcuts/shorthands/";
+            new File(shorthandsDir).mkdirs();
+            final File f = new File(shorthandsDir, now + ".md");
             try {
                 FileUtils.writeStringToFile(f, userInput, "UTF-8");
             } catch (final Exception e) {

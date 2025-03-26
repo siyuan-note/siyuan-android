@@ -2,13 +2,13 @@
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
     <shortcut
         android:enabled="true"
-        android:icon="@drawable/dailynote_icon"
-        android:shortcutId="appendDailynote"
-        android:shortcutLongLabel="@string/shortcut_append_dailynote"
-        android:shortcutShortLabel="@string/shortcut_append_dailynote">
+        android:icon="@drawable/shorthand_icon"
+        android:shortcutId="shorthand"
+        android:shortcutLongLabel="@string/shortcut_shorthand"
+        android:shortcutShortLabel="@string/shortcut_shorthand">
         <intent
             android:action="android.intent.action.VIEW"
-            android:data="appendDailynote"
+            android:data="shorthand"
             android:targetClass="org.b3log.siyuan.ShortcutActivity"
             android:targetPackage="org.b3log.siyuan" />
     </shortcut>
