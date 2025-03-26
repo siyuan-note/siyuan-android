@@ -87,12 +87,10 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
 
-            <!-- TODO: Supports local shorthands on Android https://github.com/siyuan-note/siyuan/issues/14414 -->
-            <!--
             <meta-data
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
-            -->
+
         </activity>
 
         <activity
