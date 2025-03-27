@@ -3,4 +3,7 @@
     <string name="shortcut_shorthand">Shorthand</string>
     <string name="enter_your_text">Enter your text</string>
     <string name="submit">Submit</string>
+    <string name="add_to_home">Add to Home</string>
+    <string name="add_to_home_success">Added to home, if not added successfully, please make sure you have granted the necessary permissions</string>
+    <string name="add_to_home_failed">Failed to add shortcut to home, please make sure you have granted the necessary permissions</string>
 </resources>

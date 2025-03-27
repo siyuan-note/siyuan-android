@@ -17,9 +17,15 @@
  */
 package org.b3log.siyuan;
 
+import android.annotation.SuppressLint;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.pm.ShortcutInfo;
+import android.content.pm.ShortcutManager;
+import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -38,15 +44,33 @@ import java.io.File;
  * 追加到日记的快捷方式.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.0, Mar 21, 2025
+ * @version 1.0.0.0, Mar 27, 2025
  * @since 3.1.26
  */
 public class ShortcutActivity extends AppCompatActivity {
 
+    @SuppressLint("WrongThread")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shortcut);
+
+        final ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
+        final Button addToHomeButton = findViewById(R.id.add_to_home_button);
+        boolean shortcutExists = false;
+        for (ShortcutInfo shortcut : shortcutManager.getPinnedShortcuts()) {
+            if ("shortcut_shorthand".equals(shortcut.getId())) {
+                shortcutExists = true;
+                break;
+            }
+        }
+
+        if (shortcutExists) {
+            addToHomeButton.setVisibility(View.GONE);
+        } else {
+            addToHomeButton.setOnClickListener(v -> addShortcutToHome());
+        }
+
         handleIntent(getIntent());
     }
 
@@ -93,5 +117,27 @@ public class ShortcutActivity extends AppCompatActivity {
 
             finish();
         });
+    }
+
+    private void addShortcutToHome() {
+        final ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
+        if (!shortcutManager.isRequestPinShortcutSupported()) {
+            Toast.makeText(this, R.string.add_to_home_failed, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        final Intent shortcutIntent = new Intent(getApplicationContext(), ShortcutActivity.class);
+        shortcutIntent.setAction(Intent.ACTION_MAIN);
+        final ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(this, "shortcut_shorthand")
+                .setShortLabel(getString(R.string.shortcut_shorthand))
+                .setLongLabel(getString(R.string.shortcut_shorthand))
+                .setIcon(Icon.createWithResource(this, R.drawable.shorthand_icon))
+                .setIntent(shortcutIntent)
+                .build();
+        final Intent pinnedShortcutCallbackIntent = shortcutManager.createShortcutResultIntent(shortcutInfo);
+        final PendingIntent successCallback = PendingIntent.getBroadcast(this, 0,
+                pinnedShortcutCallbackIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        shortcutManager.requestPinShortcut(shortcutInfo, successCallback.getIntentSender());
+        Toast.makeText(this, R.string.add_to_home_success, Toast.LENGTH_SHORT).show();
     }
 }
