@@ -102,7 +102,7 @@ public class ShortcutActivity extends AppCompatActivity {
         input.postDelayed(() -> {
             input.requestFocus();
             KeyboardUtils.showSoftInput(input);
-        }, 200);
+        }, 500);
 
         submitButton.setOnClickListener(v -> {
             final String userInput = input.getText().toString().trim();
