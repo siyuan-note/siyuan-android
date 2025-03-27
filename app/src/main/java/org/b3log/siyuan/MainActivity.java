@@ -190,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 if (fileChooserParams.isCaptureEnabled()) {
                     if (Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) {
                         // 不支持 Android 10 以下
-                        Toast.makeText(getApplicationContext(), "Capture is not supported on your device (Android 10+ required)", Toast.LENGTH_LONG).show();
+                        Utils.showToast(MainActivity.this, "Capture is not supported on your device (Android 10+ required)");
                         uploadMessage = null;
                         return false;
                     }
@@ -203,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                             ActivityCompat.requestPermissions(MainActivity.this, new String[]{android.Manifest.permission.CAMERA}, REQUEST_CAMERA);
                         });
                         builder.setNegativeButton("拒绝/Decline", (dialog, which) -> {
-                            Toast.makeText(MainActivity.this, "权限已被拒绝 / Permission denied", Toast.LENGTH_LONG).show();
+                            Utils.showToast(MainActivity.this, "权限已被拒绝 / Permission denied");
                             uploadMessage = null;
                         });
                         builder.setCancelable(false);
@@ -227,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                     startActivityForResult(intent, REQUEST_SELECT_FILE);
                 } catch (final Exception e) {
                     uploadMessage = null;
-                    Toast.makeText(getApplicationContext(), "Cannot open file chooser", Toast.LENGTH_LONG).show();
+                    Utils.showToast(MainActivity.this, "Cannot open file chooser");
                     return false;
                 }
                 return true;
@@ -578,7 +578,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 return;
             }
 
-            Toast.makeText(this, "权限已被拒绝 / Permission denied", Toast.LENGTH_LONG).show();
+            Utils.showToast(this, "权限已被拒绝 / Permission denied");
         }
 
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -725,12 +725,12 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                     final String[] chromeVersionParts = chromeVersion.split("\\.");
                     webViewVer = chromeVersionParts[0];
                     if (Integer.parseInt(webViewVer) < minVer) {
-                        Toast.makeText(this, "WebView version [" + chromeVersion + "] is too low, please upgrade to " + minVer + "+", Toast.LENGTH_LONG).show();
+                        Utils.showToast(this, "WebView version [" + chromeVersion + "] is too low, please upgrade to ");
                     }
                 }
             } catch (final Exception e) {
                 Utils.LogError("boot", "check webview version failed", e);
-                Toast.makeText(this, "Check WebView version failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                Utils.showToast(this, "Check WebView version failed: " + e.getMessage());
             }
         }
     }

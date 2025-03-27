@@ -19,6 +19,9 @@ package org.b3log.siyuan;
 
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
@@ -28,7 +31,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -55,22 +57,6 @@ public class ShortcutActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shortcut);
 
-        final ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
-        final Button addToHomeButton = findViewById(R.id.add_to_home_button);
-        boolean shortcutExists = false;
-        for (ShortcutInfo shortcut : shortcutManager.getPinnedShortcuts()) {
-            if ("shortcut_shorthand".equals(shortcut.getId())) {
-                shortcutExists = true;
-                break;
-            }
-        }
-
-        if (shortcutExists) {
-            addToHomeButton.setVisibility(View.GONE);
-        } else {
-            addToHomeButton.setOnClickListener(v -> addShortcutToHome());
-        }
-
         handleIntent(getIntent());
     }
 
@@ -91,6 +77,9 @@ public class ShortcutActivity extends AppCompatActivity {
     }
 
     private void setupFullScreenInput() {
+        initAddToHomeButton();
+        initPasteButton();
+
         final EditText input = findViewById(R.id.full_screen_input);
         this.runOnUiThread(() -> {
             input.requestFocus();
@@ -112,7 +101,7 @@ public class ShortcutActivity extends AppCompatActivity {
                 FileUtils.writeStringToFile(f, userInput, "UTF-8");
             } catch (final Exception e) {
                 Log.e("shortcut", "Failed to write to file", e);
-                Toast.makeText(this, "Failed to write to file [" + e.getMessage() + "]", Toast.LENGTH_LONG).show();
+                Utils.showToast(this, "Failed to write to file [" + e.getMessage() + "]");
             }
 
             finish();
@@ -122,7 +111,7 @@ public class ShortcutActivity extends AppCompatActivity {
     private void addShortcutToHome() {
         final ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
         if (!shortcutManager.isRequestPinShortcutSupported()) {
-            Toast.makeText(this, R.string.add_to_home_failed, Toast.LENGTH_LONG).show();
+            Utils.showToast(this, R.string.add_to_home_failed);
             return;
         }
 
@@ -138,6 +127,67 @@ public class ShortcutActivity extends AppCompatActivity {
         final PendingIntent successCallback = PendingIntent.getBroadcast(this, 0,
                 pinnedShortcutCallbackIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         shortcutManager.requestPinShortcut(shortcutInfo, successCallback.getIntentSender());
-        Toast.makeText(this, R.string.add_to_home_success, Toast.LENGTH_SHORT).show();
+        Utils.showToast(this, R.string.adding_to_home);
+
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+            } catch (final Exception e) {
+                Log.e("shortcut", "Failed to sleep", e);
+            }
+
+            if (isShortcutExists("shortcut_shorthand")) {
+                runOnUiThread(() -> {
+                    findViewById(R.id.add_to_home_button).setVisibility(View.GONE);
+                    Utils.showToast(this, R.string.add_to_home_success);
+                });
+
+                return;
+            }
+
+            runOnUiThread(() -> {
+                Utils.showToast(this, R.string.add_to_home_failed);
+            });
+        }).start();
+    }
+
+    private void initPasteButton() {
+        final Button pasteButton = findViewById(R.id.paste_button);
+        final EditText input = findViewById(R.id.full_screen_input);
+        pasteButton.setOnClickListener(v -> {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            if (!clipboard.hasPrimaryClip()) {
+                return;
+            }
+
+            final ClipData clip = clipboard.getPrimaryClip();
+            if (clip != null && clip.getItemCount() > 0) {
+                final CharSequence text = clip.getItemAt(0).getText();
+                if (text == null) {
+                    return;
+                }
+
+                input.setText(text);
+            }
+        });
+    }
+
+    private void initAddToHomeButton() {
+        final Button addToHomeButton = findViewById(R.id.add_to_home_button);
+        if (isShortcutExists("shortcut_shorthand")) {
+            addToHomeButton.setVisibility(View.GONE);
+        } else {
+            addToHomeButton.setOnClickListener(v -> addShortcutToHome());
+        }
+    }
+
+    private boolean isShortcutExists(final String shortcutId) {
+        final ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
+        for (ShortcutInfo shortcut : shortcutManager.getPinnedShortcuts()) {
+            if (shortcutId.equals(shortcut.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

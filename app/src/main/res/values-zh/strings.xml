@@ -4,6 +4,8 @@
     <string name="enter_your_text">请输入文本</string>
     <string name="submit">提交</string>
     <string name="add_to_home">添加到桌面</string>
-    <string name="add_to_home_success">已经执行添加桌面快捷方式，如未添加成功，请确认已经授予相关权限</string>
+    <string name="add_to_home_success">快捷方式添加到桌面成功</string>
     <string name="add_to_home_failed">快捷方式添加到桌面失败，请确认已经授予相关权限</string>
+    <string name="paste">粘贴</string>
+    <string name="adding_to_home">正在添加快捷方式到桌面，请稍等片刻...</string>
 </resources>

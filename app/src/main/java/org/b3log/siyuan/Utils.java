@@ -27,6 +27,9 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.WebView;
+import android.widget.Toast;
+
+import androidx.annotation.StringRes;
 
 import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.StringUtils;
@@ -66,6 +69,24 @@ public final class Utils {
      */
     public static final String version = BuildConfig.VERSION_NAME;
 
+    private static Toast currentToast;
+
+    public static void showToast(final Context context, final String message) {
+        if (currentToast != null) {
+            currentToast.cancel();
+        }
+        currentToast = Toast.makeText(context, message, Toast.LENGTH_LONG);
+        currentToast.show();
+    }
+
+    public static void showToast(final Context context, @StringRes int resId) {
+        if (currentToast != null) {
+            currentToast.cancel();
+        }
+        currentToast = Toast.makeText(context, resId, Toast.LENGTH_LONG);
+        currentToast.show();
+    }
+
     public static boolean isTablet(String userAgent) {
         if (StringUtils.isEmpty(userAgent)) {
             return false;
@@ -95,7 +116,6 @@ public final class Utils {
         // 从配置清单获取 CHANNEL 的值，用于判断是哪个渠道包
         return applicationInfo.metaData.getString("CHANNEL");
     }
-
 
     private static long lastShowKeyboard = 0;
 
