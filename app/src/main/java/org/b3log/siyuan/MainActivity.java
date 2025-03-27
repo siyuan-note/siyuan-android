@@ -91,7 +91,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.3, Mar 26, 2025
+ * @version 1.1.1.4, Mar 27, 2025
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -159,6 +159,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         if (Utils.isTablet(userAgent)) {
             // 平板上隐藏状态栏 Hide the status bar on tablet https://github.com/siyuan-note/siyuan/issues/12204
             BarUtils.setStatusBarVisibility(this, false);
+            BarUtils.setNavBarVisibility(this, false);
             Log.i("boot", "Hide status bar on tablet");
         } else {
             // 沉浸式状态栏设置
