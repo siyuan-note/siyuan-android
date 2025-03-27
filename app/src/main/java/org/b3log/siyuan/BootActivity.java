@@ -62,7 +62,6 @@ public class BootActivity extends AppCompatActivity {
         final Set<String> showAgreementChannels = new HashSet<>();
         showAgreementChannels.add("cn");
         showAgreementChannels.add("huawei");
-        showAgreementChannels.add("official");
         final boolean needShowAgreement = showAgreementChannels.contains(channel);
         if (needShowAgreement && isFirstRun()) {
             showAgreements();
