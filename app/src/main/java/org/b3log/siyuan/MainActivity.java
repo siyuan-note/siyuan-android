@@ -401,24 +401,11 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         return ret;
     }
 
-    private void startKernel() {
-        final Bundle b = new Bundle();
-        b.putString("cmd", "startKernel");
-        final Message msg = new Message();
-        msg.setData(b);
-        bootHandler.sendMessage(msg);
-    }
-
     private void bootKernel() {
         Mobile.setHttpServerPort(MainActivity.serverPort);
         if (Mobile.isHttpServing()) {
             Log.i("kernel", "Kernel HTTP server is running");
-
-            final Bundle b = new Bundle();
-            b.putString("cmd", "bootIndex");
-            final Message msg = new Message();
-            msg.setData(b);
-            bootHandler.sendMessage(msg);
+            bootIndex();
             return;
         }
 
@@ -481,11 +468,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                             "/UA " + userAgent);
         }).start();
 
-        final Bundle b = new Bundle();
-        b.putString("cmd", "bootIndex");
-        final Message msg = new Message();
-        msg.setData(b);
-        bootHandler.sendMessage(msg);
+        bootIndex();
     }
 
     /**
@@ -501,6 +484,22 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             } catch (final Throwable t) {
             }
         }
+    }
+
+    private void startKernel() {
+        final Bundle b = new Bundle();
+        b.putString("cmd", "startKernel");
+        final Message msg = new Message();
+        msg.setData(b);
+        bootHandler.sendMessage(msg);
+    }
+
+    private void bootIndex() {
+        final Bundle b = new Bundle();
+        b.putString("cmd", "bootIndex");
+        final Message msg = new Message();
+        msg.setData(b);
+        bootHandler.sendMessage(msg);
     }
 
     /**
