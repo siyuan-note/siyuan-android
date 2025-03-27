@@ -80,7 +80,6 @@ public class ShortcutActivity extends AppCompatActivity {
 
     private void setupFullScreenInput() {
         initAddToHomeButton();
-        initPasteButton();
 
         final EditText input = findViewById(R.id.full_screen_input);
         final Button submitButton = findViewById(R.id.submit_button);
@@ -167,28 +166,6 @@ public class ShortcutActivity extends AppCompatActivity {
                 Utils.showToast(this, R.string.add_to_home_failed);
             });
         }).start();
-    }
-
-    private void initPasteButton() {
-        final Button pasteButton = findViewById(R.id.paste_button);
-        final EditText input = findViewById(R.id.full_screen_input);
-        pasteButton.setOnClickListener(v -> {
-            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-            if (!clipboard.hasPrimaryClip()) {
-                return;
-            }
-
-            final ClipData clip = clipboard.getPrimaryClip();
-            if (clip != null && clip.getItemCount() > 0) {
-                final CharSequence text = clip.getItemAt(0).getText();
-                if (text == null) {
-                    return;
-                }
-
-                input.append(text);
-                input.setSelection(input.getText().length());
-            }
-        });
     }
 
     private void initAddToHomeButton() {

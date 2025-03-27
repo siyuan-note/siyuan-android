@@ -259,6 +259,10 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
     @SuppressLint("SetJavaScriptEnabled")
     private void showBootIndex() {
+        if (null == webView) {
+            return;
+        }
+
         webView.setVisibility(View.VISIBLE);
         webView.setWebViewClient(new WebViewClient() {
             @Override
