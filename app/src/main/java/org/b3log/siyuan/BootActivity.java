@@ -31,6 +31,8 @@ import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -60,6 +62,7 @@ public class BootActivity extends AppCompatActivity {
         final Set<String> showAgreementChannels = new HashSet<>();
         showAgreementChannels.add("cn");
         showAgreementChannels.add("huawei");
+        showAgreementChannels.add("official");
         final boolean needShowAgreement = showAgreementChannels.contains(channel);
         if (needShowAgreement && isFirstRun()) {
             showAgreements();
@@ -133,6 +136,8 @@ public class BootActivity extends AppCompatActivity {
             final String cmd = msg.getData().getString("cmd");
             if ("agreement-y".equals(cmd)) {
                 agreementDialog.dismiss();
+                final ProgressBar progressBar = findViewById(R.id.progressBar);
+                runOnUiThread(() -> progressBar.setVisibility(View.VISIBLE));
                 startMainActivity();
             } else if ("agreement-n".equals(cmd)) {
                 final String dataDir = getFilesDir().getAbsolutePath();
