@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="shortcut_shorthand">速记</string>
+    <string name="shortcut_shorthand">闪念速记</string>
     <string name="enter_your_text">请输入文本</string>
     <string name="submit">提交</string>
     <string name="add_to_home">添加到桌面</string>
