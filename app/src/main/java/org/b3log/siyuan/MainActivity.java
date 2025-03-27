@@ -413,6 +413,12 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         Mobile.setHttpServerPort(MainActivity.serverPort);
         if (Mobile.isHttpServing()) {
             Log.i("kernel", "Kernel HTTP server is running");
+
+            final Bundle b = new Bundle();
+            b.putString("cmd", "bootIndex");
+            final Message msg = new Message();
+            msg.setData(b);
+            bootHandler.sendMessage(msg);
             return;
         }
 
@@ -683,8 +689,10 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         KeyboardUtils.unregisterSoftInputChangedListener(getWindow());
         AppUtils.unregisterAppStatusChangedListener(this);
         if (null != webView) {
+            ((ViewGroup) webView.getParent()).removeView(webView);
             webView.removeAllViews();
             webView.destroy();
+            webView = null;
         }
         if (null != server) {
             server.stop();
