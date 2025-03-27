@@ -168,6 +168,7 @@ public class ShortcutActivity extends AppCompatActivity {
                 }
 
                 input.setText(text);
+                input.setSelection(input.getText().length());
             }
         });
     }
