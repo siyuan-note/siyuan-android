@@ -12,6 +12,8 @@
         android:layout_weight="1"
         android:hint="@string/enter_your_text"
         android:inputType="textMultiLine"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:gravity="top"/>
 
     <LinearLayout

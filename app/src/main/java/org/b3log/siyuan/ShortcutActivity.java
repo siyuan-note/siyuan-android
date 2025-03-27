@@ -27,6 +27,8 @@ import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.graphics.drawable.Icon;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -81,12 +83,28 @@ public class ShortcutActivity extends AppCompatActivity {
         initPasteButton();
 
         final EditText input = findViewById(R.id.full_screen_input);
-        this.runOnUiThread(() -> {
-            input.requestFocus();
-            KeyboardUtils.showSoftInput(this);
+        final Button submitButton = findViewById(R.id.submit_button);
+        submitButton.setEnabled(false);
+        input.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                submitButton.setEnabled(!StringUtils.isEmpty(s.toString().trim()));
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
         });
 
-        final Button submitButton = findViewById(R.id.submit_button);
+        input.postDelayed(() -> {
+            input.requestFocus();
+            KeyboardUtils.showSoftInput(input);
+        }, 200);
+
         submitButton.setOnClickListener(v -> {
             final String userInput = input.getText().toString().trim();
             if (StringUtils.isEmpty(userInput)) {
@@ -167,7 +185,7 @@ public class ShortcutActivity extends AppCompatActivity {
                     return;
                 }
 
-                input.setText(text);
+                input.append(text);
                 input.setSelection(input.getText().length());
             }
         });

@@ -115,7 +115,8 @@
 
         <activity
             android:name=".ShortcutActivity"
-            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
+            android:windowSoftInputMode="adjustPan" />
 
         <service
             android:name=".KeepLiveService"
