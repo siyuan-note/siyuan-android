@@ -90,6 +90,11 @@ public class ShortcutActivity extends AppCompatActivity {
         if (Intent.ACTION_VIEW.equals(intent.getAction())) { // 来自桌面快捷方式
             final String data = intent.getDataString();
             if (StringUtils.equals(data, "shorthand")) {
+                final EditText input = findViewById(R.id.full_screen_input);
+                input.postDelayed(() -> {
+                    input.requestFocus();
+                    KeyboardUtils.showSoftInput(input);
+                }, 500);
                 return;
             }
 
@@ -189,11 +194,6 @@ public class ShortcutActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
             }
         });
-
-        input.postDelayed(() -> {
-            input.requestFocus();
-            KeyboardUtils.showSoftInput(input);
-        }, 500);
 
         submitButton.setOnClickListener(v -> {
             final String userInput = input.getText().toString().trim();
