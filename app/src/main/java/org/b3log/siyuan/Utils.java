@@ -59,7 +59,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/wwxiaoqi">Jane Haring</a>
- * @version 1.3.0.0, Mar 5, 2025
+ * @version 1.4.0.0, Mar 28, 2025
  * @since 1.0.0
  */
 public final class Utils {
@@ -68,6 +68,11 @@ public final class Utils {
      * App version.
      */
     public static final String version = BuildConfig.VERSION_NAME;
+
+    /**
+     * App version code.
+     */
+    public static final int versionCode = BuildConfig.VERSION_CODE;
 
     private static Toast currentToast;
 

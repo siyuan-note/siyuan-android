@@ -538,7 +538,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             Utils.unzipAsset(getAssets(), "app.zip", appDir + "/app");
 
             try {
-                FileUtils.writeStringToFile(appVerFile, Utils.version, StandardCharsets.UTF_8);
+                FileUtils.writeStringToFile(appVerFile, Utils.versionCode + "", StandardCharsets.UTF_8);
             } catch (final Exception e) {
                 Utils.LogError("boot", "write version failed", e);
             }
@@ -672,15 +672,25 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             return true;
         }
 
-        boolean ret = true;
         final File appVerFile = new File(appDir, "VERSION");
-        if (appVerFile.exists()) {
-            try {
-                final String ver = FileUtils.readFileToString(appVerFile, StandardCharsets.UTF_8);
-                ret = !ver.equals(Utils.version);
-            } catch (final Exception e) {
-                Utils.LogError("boot", "check version failed", e);
+        if (!appVerFile.exists()) {
+            return true;
+        }
+
+        boolean ret = true;
+        try {
+            String ver = FileUtils.readFileToString(appVerFile, StandardCharsets.UTF_8);
+            if (StringUtils.isEmpty(ver)) {
+                return true;
             }
+            ver = ver.trim();
+            try {
+                return Integer.parseInt(ver) != Utils.versionCode;
+            } catch (final NumberFormatException e) {
+                return true;
+            }
+        } catch (final Exception e) {
+            Utils.LogError("boot", "check version failed", e);
         }
         return ret;
     }
