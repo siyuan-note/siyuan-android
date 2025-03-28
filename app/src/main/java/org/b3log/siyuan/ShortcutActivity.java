@@ -205,7 +205,6 @@ public class ShortcutActivity extends AppCompatActivity {
             final File f = new File(shorthandsDir, now + ".md");
             try {
                 FileUtils.writeStringToFile(f, userInput, "UTF-8");
-                Utils.LogInfo("shortcut", "Write [" + userInput + "] to file [" + f.getAbsolutePath() + "]");
             } catch (final Exception e) {
                 Utils.LogError("shortcut", "Failed to write to file", e);
                 Utils.showToast(this, "Failed to write to file [" + e.getMessage() + "]");
