@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="shortcut_shorthand">Flash shorthand</string>
-    <string name="enter_your_text">Enter your text</string>
+    <string name="enter_your_text">Please enter the text, submit it, then open SiYuan, click the lightning button next to the notebook, and all the shorthands will be merged to create a new doc named after the time</string>
     <string name="submit">Submit</string>
     <string name="add_to_home">Add to Home</string>
     <string name="add_to_home_success">Added to home successfully</string>
