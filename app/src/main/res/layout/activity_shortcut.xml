@@ -5,18 +5,6 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <EditText
-        android:id="@+id/full_screen_input"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:gravity="top"
-        android:hint="@string/enter_your_text"
-        android:inputType="textMultiLine"
-        android:padding="16dp" />
-
     <LinearLayout
         style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
@@ -39,4 +27,17 @@
             android:layout_weight="1"
             android:text="@string/add_to_home" />
     </LinearLayout>
+
+    <EditText
+        android:id="@+id/full_screen_input"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:gravity="top"
+        android:hint="@string/enter_your_text"
+        android:inputType="textMultiLine"
+        android:padding="16dp"
+        android:background="@null" />
 </LinearLayout>
