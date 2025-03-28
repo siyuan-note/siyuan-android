@@ -213,6 +213,10 @@ public final class Utils {
         return TextUtils.join(",", list);
     }
 
+    public static void LogError(final String tag, final String msg) {
+        LogError(tag, msg, null);
+    }
+
     public static void LogError(final String tag, final String msg, final Throwable e) {
         synchronized (Utils.class) {
             if (null != e) {

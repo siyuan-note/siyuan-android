@@ -152,7 +152,7 @@ public class BootActivity extends AppCompatActivity {
                 finishAndRemoveTask();
                 Log.i("boot", "User did not accept the agreement, exit");
             } else {
-                Utils.LogError("boot", "unknown agreement command [" + cmd + "]", null);
+                Utils.LogError("boot", "unknown agreement command [" + cmd + "]");
             }
         }
     };
