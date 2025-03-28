@@ -6,14 +6,12 @@
     android:padding="16dp">
 
     <LinearLayout
-        style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <Button
             android:id="@+id/submit_button"
-            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -21,7 +19,6 @@
 
         <Button
             android:id="@+id/add_to_home_button"
-            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -33,11 +30,11 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:background="@null"
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:gravity="top"
         android:hint="@string/enter_your_text"
         android:inputType="textMultiLine"
-        android:padding="16dp"
-        android:background="@null" />
+        android:padding="16dp" />
 </LinearLayout>

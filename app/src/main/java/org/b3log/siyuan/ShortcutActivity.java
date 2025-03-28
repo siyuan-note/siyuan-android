@@ -85,7 +85,14 @@ public class ShortcutActivity extends AppCompatActivity {
     private void handleIntent(final Intent intent) {
         setupFullScreenInput();
 
-        if (Intent.ACTION_VIEW.equals(intent.getAction())) { // 来自桌面快捷方式
+        if (Intent.ACTION_MAIN.equals(intent.getAction())) { // 来自桌面快捷方式
+            final EditText input = findViewById(R.id.full_screen_input);
+            input.postDelayed(() -> {
+                input.requestFocus();
+                KeyboardUtils.showSoftInput(input);
+            }, 500);
+            return;
+        } else if (Intent.ACTION_VIEW.equals(intent.getAction())) { // 来自菜单快捷方式
             final String data = intent.getDataString();
             if (StringUtils.equals(data, "shorthand")) {
                 final EditText input = findViewById(R.id.full_screen_input);
