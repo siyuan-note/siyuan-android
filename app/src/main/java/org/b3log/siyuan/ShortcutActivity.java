@@ -85,10 +85,11 @@ public class ShortcutActivity extends AppCompatActivity {
     }
 
     private void handleIntent(final Intent intent) {
+        setupFullScreenInput();
+
         if (Intent.ACTION_VIEW.equals(intent.getAction())) { // 来自桌面快捷方式
             final String data = intent.getDataString();
             if (StringUtils.equals(data, "shorthand")) {
-                setupFullScreenInput();
                 return;
             }
 
@@ -103,7 +104,6 @@ public class ShortcutActivity extends AppCompatActivity {
             if ("text/plain".equals(type)) {
                 final String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
                 if (sharedText != null) {
-                    setupFullScreenInput();
                     final EditText input = findViewById(R.id.full_screen_input);
                     input.append(sharedText);
                     input.setSelection(sharedText.length());
@@ -115,7 +115,7 @@ public class ShortcutActivity extends AppCompatActivity {
                 }
 
                 final List<Uri> assets = List.of(assetUri);
-                writeAssets(assets);
+                writeAssets(assets, type);
                 return;
             }
 
@@ -129,7 +129,7 @@ public class ShortcutActivity extends AppCompatActivity {
 
             if (type.startsWith("image/") || type.startsWith("video/") || type.startsWith("audio") || type.startsWith("application/")) {
                 final List<Uri> imageUris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-                writeAssets(imageUris);
+                writeAssets(imageUris, type);
                 return;
             }
 
@@ -137,20 +137,31 @@ public class ShortcutActivity extends AppCompatActivity {
         }
     }
 
-    private void writeAssets(final List<Uri> imageUris) {
-        if (null == imageUris || imageUris.isEmpty()) {
+    private void writeAssets(final List<Uri> assetUris, final String type) {
+        if (null == assetUris || assetUris.isEmpty()) {
             return;
         }
 
         final String shorthandsDir = getShorthandsDir();
-        for (final Uri uri : imageUris) {
+        for (final Uri uri : assetUris) {
             final String p = uri.getLastPathSegment();
-            String fileName = Mobile.filepathBase(p);
-            fileName = Mobile.filterUploadFileName(fileName);
-            fileName = Mobile.assetName(fileName);
+            String baseName = Mobile.filepathBase(p);
+            baseName = Mobile.filterUploadFileName(baseName);
+            final String fileName = Mobile.assetName(baseName);
             final File f = new File(shorthandsDir + "assets", fileName);
             try {
                 FileUtils.copyInputStreamToFile(getContentResolver().openInputStream(uri), f);
+
+                final EditText input = findViewById(R.id.full_screen_input);
+                String content = "";
+                if (type.startsWith("image/")) {
+                    content = "![" + baseName + "](assets/" + fileName + ")";
+                } else {
+                    content = "[" + baseName + "](assets/" + fileName + ")";
+                }
+                content += "\n";
+                input.append(content);
+                input.setSelection(input.getText().length());
             } catch (final Exception e) {
                 Log.e("shortcut", "Copy file failed", e);
                 Utils.showToast(this, "Failed to copy file [" + e.getMessage() + "]");
