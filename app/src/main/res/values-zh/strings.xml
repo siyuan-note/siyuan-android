@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="shortcut_shorthand">闪念速记</string>
-    <string name="enter_your_text">请输入文本，提交后打开思源，点击笔记本旁边的闪电按钮，将所有闪念速记合并创建一个以时间命名的新文档</string>
+    <string name="enter_your_text">请输入文本，提交后打开思源，点击笔记本旁边的闪电按钮，将闪念速记创建一个以时间命名的新文档</string>
     <string name="submit">提交</string>
     <string name="add_to_home">添加到桌面</string>
     <string name="add_to_home_success">快捷方式添加到桌面成功</string>
