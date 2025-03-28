@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.graphics.drawable.Icon;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
@@ -45,6 +46,9 @@ import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.util.List;
+
+import mobile.Mobile;
 
 /**
  * 追加到日记的快捷方式.
@@ -81,13 +85,77 @@ public class ShortcutActivity extends AppCompatActivity {
     }
 
     private void handleIntent(final Intent intent) {
-        final String data = intent.getDataString();
-        if (StringUtils.equals(data, "shorthand")) {
-            setupFullScreenInput();
+        if (Intent.ACTION_VIEW.equals(intent.getAction())) { // 来自桌面快捷方式
+            final String data = intent.getDataString();
+            if (StringUtils.equals(data, "shorthand")) {
+                setupFullScreenInput();
+                return;
+            }
+
+            Log.w("shortcut", "Unknown data [" + data + "]");
+        } else if (Intent.ACTION_SEND.equals(intent.getAction())) { // 来自其他应用分享
+            final String type = intent.getType();
+            if (type == null) {
+                Log.w("shortcut", "Unknown type [null]");
+                return;
+            }
+
+            if ("text/plain".equals(type)) {
+                final String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
+                if (sharedText != null) {
+                    setupFullScreenInput();
+                    final EditText input = findViewById(R.id.full_screen_input);
+                    input.append(sharedText);
+                    input.setSelection(sharedText.length());
+                }
+            } else if (type.startsWith("image/") || type.startsWith("video/") || type.startsWith("audio") || type.startsWith("application/")) {
+                final Uri assetUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                if (assetUri == null) {
+                    return;
+                }
+
+                final List<Uri> assets = List.of(assetUri);
+                writeAssets(assets);
+                return;
+            }
+
+            Log.w("shortcut", "Unknown type [" + type + "]");
+        } else if (Intent.ACTION_SEND_MULTIPLE.equals(intent.getAction())) {
+            final String type = intent.getType();
+            if (type == null) {
+                Log.w("shortcut", "Unknown type [null]");
+                return;
+            }
+
+            if (type.startsWith("image/") || type.startsWith("video/") || type.startsWith("audio") || type.startsWith("application/")) {
+                final List<Uri> imageUris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+                writeAssets(imageUris);
+                return;
+            }
+
+            Log.w("shortcut", "Unknown type [" + type + "]");
+        }
+    }
+
+    private void writeAssets(final List<Uri> imageUris) {
+        if (null == imageUris || imageUris.isEmpty()) {
             return;
         }
 
-        Log.i("shortcut", "Unknown data [" + data + "]");
+        final String shorthandsDir = getShorthandsDir();
+        for (final Uri uri : imageUris) {
+            final String p = uri.getLastPathSegment();
+            String fileName = Mobile.filepathBase(p);
+            fileName = Mobile.filterUploadFileName(fileName);
+            fileName = Mobile.assetName(fileName);
+            final File f = new File(shorthandsDir + "assets", fileName);
+            try {
+                FileUtils.copyInputStreamToFile(getContentResolver().openInputStream(uri), f);
+            } catch (final Exception e) {
+                Log.e("shortcut", "Copy file failed", e);
+                Utils.showToast(this, "Failed to copy file [" + e.getMessage() + "]");
+            }
+        }
     }
 
     private void setupFullScreenInput() {
@@ -123,8 +191,7 @@ public class ShortcutActivity extends AppCompatActivity {
             }
 
             final long now = System.currentTimeMillis();
-            final String shorthandsDir = getExternalFilesDir(null).getAbsolutePath() + "/home/.config/siyuan/shortcuts/shorthands/";
-            new File(shorthandsDir).mkdirs();
+            final String shorthandsDir = getShorthandsDir();
             final File f = new File(shorthandsDir, now + ".md");
             try {
                 FileUtils.writeStringToFile(f, userInput, "UTF-8");
@@ -197,5 +264,11 @@ public class ShortcutActivity extends AppCompatActivity {
             }
         }
         return false;
+    }
+
+    private String getShorthandsDir() {
+        final String ret = getExternalFilesDir(null).getAbsolutePath() + "/home/.config/siyuan/shortcuts/shorthands/";
+        new File(ret).mkdirs();
+        return ret;
     }
 }
