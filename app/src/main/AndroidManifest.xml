@@ -168,7 +168,6 @@
                 <data android:mimeType="application/*" />
             </intent-filter>
 
-
         </activity>
 
         <service
