@@ -227,7 +227,7 @@ public final class JSAndroid {
             }
             return Color.parseColor(str);
         } catch (final Exception e) {
-            Utils.LogError("js", "parse color failed", e);
+            Utils.LogError("js", "parse color [" + str + "] failed", e);
             return Color.parseColor("#212224");
         }
     }
