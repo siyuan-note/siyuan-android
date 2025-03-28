@@ -147,6 +147,8 @@ public class ShortcutActivity extends AppCompatActivity {
             return;
         }
 
+        final EditText input = findViewById(R.id.full_screen_input);
+        input.requestFocus();
         final String shorthandsDir = getShorthandsDir();
         for (final Uri uri : assetUris) {
             final String p = uri.getLastPathSegment();
@@ -156,15 +158,13 @@ public class ShortcutActivity extends AppCompatActivity {
             final File f = new File(shorthandsDir + "assets", fileName);
             try {
                 FileUtils.copyInputStreamToFile(getContentResolver().openInputStream(uri), f);
-
-                final EditText input = findViewById(R.id.full_screen_input);
                 String content = "";
                 if (type.startsWith("image/")) {
                     content = "![" + baseName + "](assets/" + fileName + ")";
                 } else {
                     content = "[" + baseName + "](assets/" + fileName + ")";
                 }
-                content += "\n";
+                content += "\n\n";
                 input.append(content);
                 input.setSelection(input.getText().length());
             } catch (final Exception e) {
