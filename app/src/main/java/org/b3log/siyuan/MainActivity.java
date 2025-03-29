@@ -289,13 +289,11 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
             @Override
             public void onPageFinished(WebView view, String url) {
-                new Handler().postDelayed(() -> {
+                runOnUiThread(() -> {
                     bootLogo.setVisibility(View.GONE);
                     bootProgressBar.setVisibility(View.GONE);
                     bootDetailsText.setVisibility(View.GONE);
-                    final ImageView bootLogo = findViewById(R.id.bootLogo);
-                    bootLogo.setVisibility(View.GONE);
-                }, 666);
+                });
             }
         });
 
@@ -520,8 +518,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
     private void initAppearance() {
         if (needUnzipAssets()) {
-            bootLogo.setVisibility(View.VISIBLE);
-
             final String appDir = getFilesDir().getAbsolutePath() + "/app";
             final File appVerFile = new File(appDir, "VERSION");
 
