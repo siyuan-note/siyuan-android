@@ -90,10 +90,11 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
 
+            <!-- TODO Supports local shorthands by shortcut on mobile https://github.com/siyuan-note/siyuan/issues/14414
             <meta-data
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
-
+            -->
         </activity>
 
         <activity
@@ -113,6 +114,7 @@
             -->
         </activity>
 
+        <!-- TODO Supports local shorthands by shortcut on mobile https://github.com/siyuan-note/siyuan/issues/14414
         <activity
             android:name=".ShortcutActivity"
             android:exported="true"
@@ -169,6 +171,7 @@
             </intent-filter>
 
         </activity>
+        -->
 
         <service
             android:name=".KeepLiveService"
