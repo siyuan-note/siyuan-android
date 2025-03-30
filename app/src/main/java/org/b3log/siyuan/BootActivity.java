@@ -114,11 +114,6 @@ public class BootActivity extends AppCompatActivity {
                     final ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                     clipboard.setPrimaryClip(ClipData.newHtmlText("Copied text from shared", text, text));
                 }
-            } else if (type.startsWith("image/") || type.startsWith("video/") || type.startsWith("audio/") || type.startsWith("application/")) {
-                final Uri assetUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
-                if (assetUri != null) {
-                    Log.i("boot", "Received shared asset [" + assetUri + "]");
-                }
             }
         }
 
