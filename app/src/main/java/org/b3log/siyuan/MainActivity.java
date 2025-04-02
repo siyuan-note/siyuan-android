@@ -47,10 +47,10 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -91,7 +91,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.4, Mar 27, 2025
+ * @version 1.1.1.5, Apr 2, 2025
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -294,6 +294,43 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                     bootProgressBar.setVisibility(View.GONE);
                     bootDetailsText.setVisibility(View.GONE);
                 });
+            }
+        });
+
+        webView.setWebChromeClient(new WebChromeClient() {
+            private View mCustomView;
+            private WebChromeClient.CustomViewCallback mCustomViewCallback;
+            private int mOriginalSystemUiVisibility;
+
+            @Override
+            public void onShowCustomView(final View view, final WebChromeClient.CustomViewCallback callback) {
+                if (mCustomView != null) {
+                    callback.onCustomViewHidden();
+                    return;
+                }
+
+                mCustomView = view;
+                mOriginalSystemUiVisibility = getWindow().getDecorView().getSystemUiVisibility();
+                mCustomViewCallback = callback;
+
+                final FrameLayout decor = (FrameLayout) getWindow().getDecorView();
+                decor.addView(mCustomView, new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT));
+                getWindow().getDecorView().setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_FULLSCREEN |
+                                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
+                                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+            }
+
+            @Override
+            public void onHideCustomView() {
+                final FrameLayout decor = (FrameLayout) getWindow().getDecorView();
+                decor.removeView(mCustomView);
+                mCustomView = null;
+                getWindow().getDecorView().setSystemUiVisibility(mOriginalSystemUiVisibility);
+                mCustomViewCallback.onCustomViewHidden();
+                mCustomViewCallback = null;
             }
         });
 
