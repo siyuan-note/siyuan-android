@@ -180,7 +180,7 @@ public final class Utils {
             */
             }
         } catch (final Exception e) {
-            Utils.LogError("boot", "unzip asset [from=" + zipName + ", to=" + targetDirectory + "] failed", e);
+            Utils.logError("boot", "unzip asset [from=" + zipName + ", to=" + targetDirectory + "] failed", e);
         } finally {
             if (null != zis) {
                 try {
@@ -212,17 +212,17 @@ public final class Utils {
                 }
             }
         } catch (final Exception e) {
-            LogError("network", "get IP list failed, returns 127.0.0.1", e);
+            logError("network", "get IP list failed, returns 127.0.0.1", e);
         }
         list.add("127.0.0.1");
         return TextUtils.join(",", list);
     }
 
-    public static void LogError(final String tag, final String msg) {
-        LogError(tag, msg, null);
+    public static void logError(final String tag, final String msg) {
+        logError(tag, msg, null);
     }
 
-    public static void LogError(final String tag, final String msg, final Throwable e) {
+    public static void logError(final String tag, final String msg, final Throwable e) {
         synchronized (Utils.class) {
             if (null != e) {
                 Log.e(tag, msg, e);
@@ -255,7 +255,7 @@ public final class Utils {
         }
     }
 
-    public static void LogInfo(final String tag, final String msg) {
+    public static void logInfo(final String tag, final String msg) {
         synchronized (Utils.class) {
             Log.i(tag, msg);
             try {

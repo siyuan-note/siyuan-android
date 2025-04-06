@@ -173,7 +173,7 @@ public class ShortcutActivity extends AppCompatActivity {
                 input.append(content);
                 input.setSelection(input.getText().length());
             } catch (final Exception e) {
-                Utils.LogError("shortcut", "Copy file failed", e);
+                Utils.logError("shortcut", "Copy file failed", e);
                 Utils.showToast(this, "Failed to copy file [" + e.getMessage() + "]");
             }
         }
@@ -212,7 +212,7 @@ public class ShortcutActivity extends AppCompatActivity {
             try {
                 FileUtils.writeStringToFile(f, userInput, "UTF-8");
             } catch (final Exception e) {
-                Utils.LogError("shortcut", "Failed to write to file", e);
+                Utils.logError("shortcut", "Failed to write to file", e);
                 Utils.showToast(this, "Failed to write to file [" + e.getMessage() + "]");
             }
 
@@ -224,7 +224,7 @@ public class ShortcutActivity extends AppCompatActivity {
         final ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
         if (!shortcutManager.isRequestPinShortcutSupported()) {
             Utils.showToast(this, R.string.add_to_home_failed);
-            Utils.LogError("shortcut", "Request pin shortcut not supported");
+            Utils.logError("shortcut", "Request pin shortcut not supported");
             return;
         }
 

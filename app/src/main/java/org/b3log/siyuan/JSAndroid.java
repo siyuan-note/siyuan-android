@@ -186,7 +186,7 @@ public final class JSAndroid {
                     .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
             activity.startActivity(intent);
         } catch (Exception e) {
-            Utils.LogError("JSAndroid", "openExternal failed", e);
+            Utils.logError("JSAndroid", "openExternal failed", e);
         }
     }
 
@@ -227,7 +227,7 @@ public final class JSAndroid {
             }
             return Color.parseColor(str);
         } catch (final Exception e) {
-            Utils.LogError("js", "parse color [" + str + "] failed", e);
+            Utils.logError("js", "parse color [" + str + "] failed", e);
             return Color.parseColor("#212224");
         }
     }

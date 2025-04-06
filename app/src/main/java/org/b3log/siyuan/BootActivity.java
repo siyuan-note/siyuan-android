@@ -89,7 +89,7 @@ public class BootActivity extends AppCompatActivity {
                 blockURL = blockURLUri.toString();
             }
         } catch (final Exception e) {
-            Utils.LogError("boot", "gets block URL failed", e);
+            Utils.logError("boot", "gets block URL failed", e);
         }
 
         // 获取可能存在的分享数据
@@ -140,14 +140,14 @@ public class BootActivity extends AppCompatActivity {
                 try {
                     FileUtils.deleteQuietly(appDirFile);
                 } catch (final Exception e) {
-                    Utils.LogError("boot", "delete [" + appDirFile.getAbsolutePath() + "] failed", e);
+                    Utils.logError("boot", "delete [" + appDirFile.getAbsolutePath() + "] failed", e);
                 }
 
                 finishAffinity();
                 finishAndRemoveTask();
                 Log.i("boot", "User did not accept the agreement, exit");
             } else {
-                Utils.LogError("boot", "unknown agreement command [" + cmd + "]");
+                Utils.logError("boot", "unknown agreement command [" + cmd + "]");
             }
         }
     };

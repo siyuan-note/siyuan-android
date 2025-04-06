@@ -28,7 +28,6 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.IBinder;
 
-import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
 import org.apache.commons.io.FileUtils;
@@ -61,7 +60,7 @@ public class KeepLiveService extends Service {
             super.onCreate();
             startMyOwnForeground();
         } catch (final Throwable e) {
-            Utils.LogError("keeplive", "Start foreground service failed", e);
+            Utils.logError("keeplive", "Start foreground service failed", e);
         }
     }
 
@@ -120,7 +119,7 @@ public class KeepLiveService extends Service {
             final String[] ret = new String[lines.size()];
             return lines.toArray(ret);
         } catch (final Exception e) {
-            Utils.LogError("boot", "check version failed", e);
+            Utils.logError("boot", "check version failed", e);
             return words;
         }
     }
