@@ -59,7 +59,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/wwxiaoqi">Jane Haring</a>
- * @version 1.4.0.0, Mar 28, 2025
+ * @version 1.4.0.1, Apr 6, 2025
  * @since 1.0.0
  */
 public final class Utils {
@@ -127,6 +127,7 @@ public final class Utils {
     public static void registerSoftKeyboardToolbar(final Activity activity, final WebView webView) {
         KeyboardUtils.registerSoftInputChangedListener(activity, height -> {
             if (activity.isInMultiWindowMode()) {
+                Utils.logInfo("keyboard", "In multi window mode, do not show keyboard toolbar");
                 return;
             }
 
@@ -134,13 +135,16 @@ public final class Utils {
             if (KeyboardUtils.isSoftInputVisible(activity)) {
                 webView.evaluateJavascript("javascript:showKeyboardToolbar()", null);
                 lastShowKeyboard = now;
+                Utils.logInfo("keyboard", "Show keyboard toolbar");
             } else {
                 if (now - lastShowKeyboard < 500) {
                     // 短时间内键盘显示又隐藏，强制再次显示键盘 https://github.com/siyuan-note/siyuan/issues/11098#issuecomment-2273704439
                     KeyboardUtils.showSoftInput(activity);
+                    Utils.logInfo("keyboard", "Force show keyboard");
                     return;
                 }
                 webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
+                Utils.logInfo("keyboard", "Hide keyboard toolbar");
             }
         });
     }
