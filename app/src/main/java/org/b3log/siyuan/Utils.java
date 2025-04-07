@@ -135,7 +135,7 @@ public final class Utils {
             if (KeyboardUtils.isSoftInputVisible(activity)) {
                 webView.evaluateJavascript("javascript:showKeyboardToolbar()", null);
                 lastShowKeyboard = now;
-                Utils.logInfo("keyboard", "Show keyboard toolbar");
+                //Utils.logInfo("keyboard", "Show keyboard toolbar");
             } else {
                 if (now - lastShowKeyboard < 500) {
                     // 短时间内键盘显示又隐藏，强制再次显示键盘 https://github.com/siyuan-note/siyuan/issues/11098#issuecomment-2273704439
@@ -144,7 +144,7 @@ public final class Utils {
                     return;
                 }
                 webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
-                Utils.logInfo("keyboard", "Hide keyboard toolbar");
+                //Utils.logInfo("keyboard", "Hide keyboard toolbar");
             }
         });
     }
