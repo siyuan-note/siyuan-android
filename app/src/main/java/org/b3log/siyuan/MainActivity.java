@@ -91,7 +91,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.5, Apr 2, 2025
+ * @version 1.1.1.6, Apr 9, 2025
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -178,67 +178,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         bootDetailsText = findViewById(R.id.bootDetails);
         webView = findViewById(R.id.webView);
         webView.setBackgroundColor(Color.parseColor("#1e1e1e"));
-        webView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public boolean onShowFileChooser(final WebView mWebView, final ValueCallback<Uri[]> filePathCallback, final FileChooserParams fileChooserParams) {
-                if (uploadMessage != null) {
-                    uploadMessage.onReceiveValue(null);
-                }
-
-                uploadMessage = filePathCallback;
-
-                if (fileChooserParams.isCaptureEnabled()) {
-                    if (Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) {
-                        // 不支持 Android 10 以下
-                        Utils.showToast(MainActivity.this, "Capture is not supported on your device (Android 10+ required)");
-                        uploadMessage = null;
-                        return false;
-                    }
-
-                    if (ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                        builder.setTitle("权限申请 / Permission Request");
-                        builder.setMessage("需要相机权限以拍摄照片并插入到当前文档中 / Camera permission is required to take photos and insert them into the current document");
-                        builder.setPositiveButton("同意/Agree", (dialog, which) -> {
-                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{android.Manifest.permission.CAMERA}, REQUEST_CAMERA);
-                        });
-                        builder.setNegativeButton("拒绝/Decline", (dialog, which) -> {
-                            Utils.showToast(MainActivity.this, "权限已被拒绝 / Permission denied");
-                            uploadMessage = null;
-                        });
-                        builder.setCancelable(false);
-                        builder.create().show();
-                        return true;
-                    }
-
-                    final String[] permissions = {android.Manifest.permission.CAMERA};
-                    if (!hasPermissions(permissions)) {
-                        ActivityCompat.requestPermissions(MainActivity.this, permissions, REQUEST_CAMERA);
-                        return true;
-                    }
-
-                    openCamera();
-                    return true;
-                }
-
-                final Intent intent = fileChooserParams.createIntent();
-                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                try {
-                    startActivityForResult(intent, REQUEST_SELECT_FILE);
-                } catch (final Exception e) {
-                    uploadMessage = null;
-                    Utils.showToast(MainActivity.this, "Cannot open file chooser");
-                    return false;
-                }
-                return true;
-            }
-
-            @Override
-            public void onPermissionRequest(final PermissionRequest request) {
-                request.grant(request.getResources());
-            }
-
-        });
 
         webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
             final Uri uri = Uri.parse(url);
@@ -331,6 +270,65 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 getWindow().getDecorView().setSystemUiVisibility(mOriginalSystemUiVisibility);
                 mCustomViewCallback.onCustomViewHidden();
                 mCustomViewCallback = null;
+            }
+
+            @Override
+            public boolean onShowFileChooser(final WebView mWebView, final ValueCallback<Uri[]> filePathCallback, final FileChooserParams fileChooserParams) {
+                if (uploadMessage != null) {
+                    uploadMessage.onReceiveValue(null);
+                }
+
+                uploadMessage = filePathCallback;
+
+                if (fileChooserParams.isCaptureEnabled()) {
+                    if (Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) {
+                        // 不支持 Android 10 以下
+                        Utils.showToast(MainActivity.this, "Capture is not supported on your device (Android 10+ required)");
+                        uploadMessage = null;
+                        return false;
+                    }
+
+                    if (ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                        builder.setTitle("权限申请 / Permission Request");
+                        builder.setMessage("需要相机权限以拍摄照片并插入到当前文档中 / Camera permission is required to take photos and insert them into the current document");
+                        builder.setPositiveButton("同意/Agree", (dialog, which) -> {
+                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{android.Manifest.permission.CAMERA}, REQUEST_CAMERA);
+                        });
+                        builder.setNegativeButton("拒绝/Decline", (dialog, which) -> {
+                            Utils.showToast(MainActivity.this, "权限已被拒绝 / Permission denied");
+                            uploadMessage = null;
+                        });
+                        builder.setCancelable(false);
+                        builder.create().show();
+                        return true;
+                    }
+
+                    final String[] permissions = {android.Manifest.permission.CAMERA};
+                    if (!hasPermissions(permissions)) {
+                        ActivityCompat.requestPermissions(MainActivity.this, permissions, REQUEST_CAMERA);
+                        return true;
+                    }
+
+                    openCamera();
+                    return true;
+                }
+
+                final Intent intent = fileChooserParams.createIntent();
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                try {
+                    startActivityForResult(intent, REQUEST_SELECT_FILE);
+                } catch (final Exception e) {
+                    uploadMessage = null;
+                    Utils.showToast(MainActivity.this, "Cannot open file chooser");
+                    return false;
+                }
+                return true;
+            }
+
+            @Override
+            public void onPermissionRequest(final PermissionRequest request) {
+                request.grant(request.getResources());
             }
         });
 
