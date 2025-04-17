@@ -123,6 +123,7 @@ public final class Utils {
     }
 
     private static long lastShowKeyboard = 0;
+    public static long lastFrontendForceHideKeyboard = 0;
 
     public static void registerSoftKeyboardToolbar(final Activity activity, final WebView webView) {
         KeyboardUtils.registerSoftInputChangedListener(activity, height -> {
@@ -133,12 +134,19 @@ public final class Utils {
 
             final long now = System.currentTimeMillis();
             if (KeyboardUtils.isSoftInputVisible(activity)) {
+                if (now - lastFrontendForceHideKeyboard < 500) {
+                    // 键盘被前端强制隐藏后短时间内又触发弹起，则再次强制隐藏键盘 https://github.com/siyuan-note/siyuan/issues/14589
+                    webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
+                    //Utils.logInfo("keyboard", "Force hide keyboard toolbar");
+                    return;
+                }
+
                 webView.evaluateJavascript("javascript:showKeyboardToolbar()", null);
                 lastShowKeyboard = now;
                 //Utils.logInfo("keyboard", "Show keyboard toolbar");
             } else {
                 if (now - lastShowKeyboard < 500) {
-                    // 短时间内键盘显示又隐藏，强制再次显示键盘 https://github.com/siyuan-note/siyuan/issues/11098#issuecomment-2273704439
+                    // 短时间内键盘显示又隐藏，则再次强制显示键盘 https://github.com/siyuan-note/siyuan/issues/11098#issuecomment-2273704439
                     KeyboardUtils.showSoftInput(activity);
                     Utils.logInfo("keyboard", "Force show keyboard");
                     return;

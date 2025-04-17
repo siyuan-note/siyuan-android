@@ -30,6 +30,7 @@ import androidx.core.app.ShareCompat;
 import androidx.core.content.FileProvider;
 
 import com.blankj.utilcode.util.BarUtils;
+import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.StringUtils;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
@@ -51,6 +52,15 @@ public final class JSAndroid {
 
     public JSAndroid(final MainActivity activity) {
         this.activity = activity;
+    }
+
+    @JavascriptInterface
+    public void hideKeyboard() {
+        activity.runOnUiThread(() -> {
+            KeyboardUtils.hideSoftInput(activity);
+            Utils.lastFrontendForceHideKeyboard = System.currentTimeMillis();
+            Utils.logInfo("keyboard", "Hide keyboard");
+        });
     }
 
     @JavascriptInterface
