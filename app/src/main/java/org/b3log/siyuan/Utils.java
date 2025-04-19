@@ -59,7 +59,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/wwxiaoqi">Jane Haring</a>
- * @version 1.4.0.1, Apr 6, 2025
+ * @version 1.4.0.2, Apr 19, 2025
  * @since 1.0.0
  */
 public final class Utils {
@@ -133,14 +133,15 @@ public final class Utils {
             }
 
             final long now = System.currentTimeMillis();
-            if (KeyboardUtils.isSoftInputVisible(activity)) {
-                if (now - lastFrontendForceHideKeyboard < 500) {
-                    // 键盘被前端强制隐藏后短时间内又触发弹起，则再次强制隐藏键盘 https://github.com/siyuan-note/siyuan/issues/14589
-                    webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
-                    //Utils.logInfo("keyboard", "Force hide keyboard toolbar");
-                    return;
-                }
+            if (lastFrontendForceHideKeyboard != 0 && now - lastFrontendForceHideKeyboard < 500) {
+                // 键盘被前端强制隐藏后短时间内又触发弹起，则再次强制隐藏键盘 https://github.com/siyuan-note/siyuan/issues/14589
+                webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
+                //Utils.logInfo("keyboard", "Force hide keyboard toolbar");
+                lastFrontendForceHideKeyboard = 0;
+                return;
+            }
 
+            if (KeyboardUtils.isSoftInputVisible(activity)) {
                 webView.evaluateJavascript("javascript:showKeyboardToolbar()", null);
                 lastShowKeyboard = now;
                 //Utils.logInfo("keyboard", "Show keyboard toolbar");
