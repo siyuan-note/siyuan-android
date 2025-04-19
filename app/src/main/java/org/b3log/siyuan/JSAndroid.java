@@ -59,7 +59,7 @@ public final class JSAndroid {
         activity.runOnUiThread(() -> {
             KeyboardUtils.hideSoftInput(activity);
             Utils.lastFrontendForceHideKeyboard = System.currentTimeMillis();
-            Utils.logInfo("keyboard", "Hide keyboard");
+            //Utils.logInfo("keyboard", "Hide keyboard");
         });
     }
 
