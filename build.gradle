@@ -1,8 +1,8 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     ext {
-        siyuanVersionCode = 273
-        siyuanVersionName = "3.1.29"
+        siyuanVersionCode = 274
+        siyuanVersionName = "3.1.30"
     }
     repositories {
         maven { url 'https://maven.aliyun.com/repository/google' }
