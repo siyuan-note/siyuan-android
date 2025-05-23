@@ -126,7 +126,7 @@ public class KeepLiveService extends Service {
             final String[] ret = new String[lines.size()];
             return lines.toArray(ret);
         } catch (final Exception e) {
-            Utils.logError("keeplive", "check version failed", e);
+            Utils.logError("keeplive", "get notification texts failed", e);
             return getLyrics();
         }
     }
