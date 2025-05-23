@@ -473,16 +473,15 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
      * 通知栏保活。
      */
     private void keepLive() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+        }
+
         while (true) {
             try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
-                            != PackageManager.PERMISSION_GRANTED) {
-                        sleep(45 * 1000);
-                        continue;
-                    }
-                }
-
                 final Intent intent = new Intent(MainActivity.this, KeepLiveService.class);
                 ContextCompat.startForegroundService(this, intent);
                 sleep(45 * 1000);

@@ -87,7 +87,7 @@ public class KeepLiveService extends Service {
         }
         final NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
         final String[] texts = getNotificationTexts();
-        if (null == texts || texts.length <= 0) {
+        if (null == texts || 1 > texts.length) {
             Utils.logError("keeplive", "notification texts is empty");
             return;
         }
