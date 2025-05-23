@@ -82,7 +82,9 @@ public class KeepLiveService extends Service {
         chan.setLightColor(Color.BLUE);
         chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
         final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.createNotificationChannel(chan);
+        if (null != manager) {
+            manager.createNotificationChannel(chan);
+        }
         final NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
         final String[] texts = getNotificationTexts();
         final Notification notification = notificationBuilder.setOngoing(true).
@@ -96,9 +98,9 @@ public class KeepLiveService extends Service {
     }
 
     private String[] getNotificationTexts() {
-        final String workspacePath = Mobile.getCurrentWorkspacePath();
-        final String notificationTxtPath = workspacePath + "/data/assets/android-notification-texts.txt";
         try {
+            final String workspacePath = Mobile.getCurrentWorkspacePath();
+            final String notificationTxtPath = workspacePath + "/data/assets/android-notification-texts.txt";
             final File notificationTxtFile = new File(notificationTxtPath);
             if (!notificationTxtFile.exists()) {
                 return getLyrics();
