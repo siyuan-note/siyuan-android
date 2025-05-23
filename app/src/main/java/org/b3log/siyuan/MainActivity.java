@@ -304,8 +304,8 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                         return true;
                     }
 
-                    final String[] permissions = {android.Manifest.permission.CAMERA};
-                    if (!hasPermissions(permissions)) {
+                    final String[] permissions = {};
+                    if (ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                         ActivityCompat.requestPermissions(MainActivity.this, permissions, REQUEST_CAMERA);
                         return true;
                     }
@@ -570,15 +570,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
     // 用于保存拍照图片的 uri
     private Uri mCameraUri;
-
-    private boolean hasPermissions(String[] permissions) {
-        for (String permission : permissions) {
-            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
-        }
-        return true;
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
