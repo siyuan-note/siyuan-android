@@ -91,7 +91,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.6, Apr 9, 2025
+ * @version 1.1.1.7, May 23, 2025
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -446,56 +446,17 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             return;
         }
 
-        final String appDir = getFilesDir().getAbsolutePath() + "/app";
-        final Locale locale = LocaleList.getDefault().get(0); // 获取用户的设备首选语言
-        final String language = locale.getLanguage().toLowerCase(); // 获取语言代码
-        final String script = locale.getScript().toLowerCase(); // 获取脚本代码
-        final String country = locale.getCountry().toLowerCase(); // 获取国家代码
-        final String workspaceBaseDir = getExternalFilesDir(null).getAbsolutePath();
-        final String timezone = TimeZone.getDefault().getID();
         new Thread(() -> {
-            final String localIPs = Utils.getIPAddressList();
-            String langCode;
-            if ("zh".equals(language)) {
-                // 检查是否为简体字脚本
-                if ("hans".equals(script)) {
-                    langCode = "zh_CN"; // 简体中文，使用 zh_CN
-
-                } else if ("hant".equals(script)) {
-                    // 对于繁体字脚本，需要进一步检查国家代码
-                    if ("tw".equals(country)) {
-                        langCode = "zh_CHT"; // 繁体中文对应台湾
-                    } else if ("hk".equals(country)) {
-                        langCode = "zh_CHT"; // 繁体中文对应香港
-                    } else {
-                        langCode = "zh_CHT"; // 其他繁体中文情况也使用 zh_CHT
-                    }
-                } else {
-                    langCode = "zh_CN"; // 如果脚本不是简体或繁体，默认为简体中文
-                }
-
-            } else {
-                // 对于非中文语言，创建一个映射来定义其他语言代码的对应关系
-                Map<String, String> otherLangMap = new HashMap<>();
-                otherLangMap.put("ar", "ar_SA");
-                otherLangMap.put("de", "de_DE");
-                otherLangMap.put("es", "es_ES");
-                otherLangMap.put("fr", "fr_FR");
-                otherLangMap.put("he", "he_IL");
-                otherLangMap.put("it", "it_IT");
-                otherLangMap.put("ja", "ja_JP");
-                otherLangMap.put("pl", "pl_PL");
-                otherLangMap.put("ru", "ru_RU");
-
-                // 使用 getOrDefault 方法从映射中获取语言代码，如果语言不存在则默认为 en_US
-                langCode = otherLangMap.getOrDefault(language, "en_US");
-            }
-
             if (Utils.isCnChannel(this.getPackageManager())) {
                 // Apps in Chinese mainland app stores no longer provide AI access settings https://github.com/siyuan-note/siyuan/issues/13051
                 Mobile.disableFeature("ai");
             }
 
+            final String appDir = getFilesDir().getAbsolutePath() + "/app";
+            final String workspaceBaseDir = getExternalFilesDir(null).getAbsolutePath();
+            final String timezone = TimeZone.getDefault().getID();
+            final String localIPs = Utils.getIPAddressList();
+            final String langCode = Utils.getLanguage();
             Mobile.startKernel("android", appDir, workspaceBaseDir, timezone, localIPs, langCode,
                     Build.VERSION.RELEASE +
                             "/SDK " + Build.VERSION.SDK_INT +

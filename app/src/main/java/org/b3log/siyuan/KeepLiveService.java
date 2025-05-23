@@ -44,7 +44,7 @@ import mobile.Mobile;
  * 保活服务.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.0.2.2, May 14, 2025
+ * @version 1.0.2.3, May 23, 2025
  * @since 1.0.0
  */
 public class KeepLiveService extends Service {
@@ -125,7 +125,14 @@ public class KeepLiveService extends Service {
     }
 
     private String[] getLyrics() {
-        final String lang = Mobile.currentLanguage();
+        String lang;
+        try {
+            lang = Mobile.currentLanguage();
+        } catch (final Exception e) {
+            Utils.logError("boot", "get current language failed", e);
+            lang = Utils.getLanguage();
+        }
+
         switch (lang) {
             case "zh_CN":
                 return zhCNLyrics;
