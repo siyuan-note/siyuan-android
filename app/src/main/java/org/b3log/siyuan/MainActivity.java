@@ -488,6 +488,8 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 sleep(45 * 1000);
                 stopService(intent);
             } catch (final Throwable t) {
+                Utils.logError("keeplive", "keep live failed", t);
+                break;
             }
         }
     }
