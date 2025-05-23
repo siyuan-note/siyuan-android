@@ -60,7 +60,7 @@ public class KeepLiveService extends Service {
             super.onCreate();
             startMyOwnForeground();
         } catch (final Throwable e) {
-            Utils.logError("keeplive", "Start foreground service failed", e);
+            Utils.logError("keeplive", "start foreground service failed", e);
         }
     }
 
@@ -128,6 +128,7 @@ public class KeepLiveService extends Service {
         String lang;
         try {
             lang = Mobile.currentLanguage();
+            Utils.logInfo("boot", "kernel language [" + lang + "]");
         } catch (final Exception e) {
             Utils.logError("boot", "get current language failed", e);
             lang = Utils.getLanguage();

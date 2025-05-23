@@ -173,7 +173,7 @@ public class ShortcutActivity extends AppCompatActivity {
                 input.append(content);
                 input.setSelection(input.getText().length());
             } catch (final Exception e) {
-                Utils.logError("shortcut", "Copy file failed", e);
+                Utils.logError("shortcut", "copy file failed", e);
                 Utils.showToast(this, "Failed to copy file [" + e.getMessage() + "]");
             }
         }
@@ -212,7 +212,7 @@ public class ShortcutActivity extends AppCompatActivity {
             try {
                 FileUtils.writeStringToFile(f, userInput, "UTF-8");
             } catch (final Exception e) {
-                Utils.logError("shortcut", "Failed to write to file", e);
+                Utils.logError("shortcut", "Write file failed", e);
                 Utils.showToast(this, "Failed to write to file [" + e.getMessage() + "]");
             }
 
