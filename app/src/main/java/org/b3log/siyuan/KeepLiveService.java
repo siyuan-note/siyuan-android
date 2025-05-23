@@ -87,6 +87,11 @@ public class KeepLiveService extends Service {
         }
         final NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
         final String[] texts = getNotificationTexts();
+        if (null == texts || texts.length <= 0) {
+            Utils.logError("keeplive", "notification texts is empty");
+            return;
+        }
+
         final Notification notification = notificationBuilder.setOngoing(true).
                 setSmallIcon(R.drawable.icon).
                 setContentTitle(texts[random.nextInt(texts.length)]).
@@ -121,7 +126,7 @@ public class KeepLiveService extends Service {
             final String[] ret = new String[lines.size()];
             return lines.toArray(ret);
         } catch (final Exception e) {
-            Utils.logError("boot", "check version failed", e);
+            Utils.logError("keeplive", "check version failed", e);
             return getLyrics();
         }
     }
@@ -130,9 +135,9 @@ public class KeepLiveService extends Service {
         String lang;
         try {
             lang = Mobile.currentLanguage();
-            Utils.logInfo("boot", "kernel language [" + lang + "]");
+            Utils.logInfo("keeplive", "kernel language [" + lang + "]");
         } catch (final Exception e) {
-            Utils.logError("boot", "get current language failed", e);
+            Utils.logError("keeplive", "get current language failed", e);
             lang = Utils.getLanguage();
         }
 
