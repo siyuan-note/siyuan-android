@@ -132,15 +132,7 @@ public class KeepLiveService extends Service {
     }
 
     private String[] getLyrics() {
-        String lang;
-        try {
-            lang = Mobile.currentLanguage();
-            Utils.logInfo("keeplive", "kernel language [" + lang + "]");
-        } catch (final Exception e) {
-            Utils.logError("keeplive", "get current language failed", e);
-            lang = Utils.getLanguage();
-        }
-
+        final String lang = Utils.getLanguage();
         switch (lang) {
             case "zh_CN":
                 return zhCNLyrics;
