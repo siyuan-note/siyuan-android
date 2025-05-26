@@ -691,17 +691,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     protected void onDestroy() {
         Log.i("boot", "Destroy main activity");
         super.onDestroy();
-        KeyboardUtils.unregisterSoftInputChangedListener(getWindow());
-        AppUtils.unregisterAppStatusChangedListener(this);
-        if (null != webView) {
-            ((ViewGroup) webView.getParent()).removeView(webView);
-            webView.removeAllViews();
-            webView.destroy();
-            webView = null;
-        }
-        if (null != server) {
-            server.stop();
-        }
+        release();
     }
 
     @Override
@@ -723,8 +713,21 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     }
 
     private void exit() {
+        release();
         finishAffinity();
         finishAndRemoveTask();
+    }
+
+    private void release() {
+        KeyboardUtils.unregisterSoftInputChangedListener(getWindow());
+        AppUtils.unregisterAppStatusChangedListener(this);
+        if (null != webView) {
+            ((ViewGroup) webView.getParent()).removeView(webView);
+            webView.removeAllViews();
+        }
+        if (null != server) {
+            server.stop();
+        }
     }
 
     private void checkWebViewVer(final WebSettings ws) {
