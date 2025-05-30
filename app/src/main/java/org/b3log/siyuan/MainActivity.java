@@ -741,11 +741,11 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                     final String[] chromeVersionParts = chromeVersion.split("\\.");
                     webViewVer = chromeVersionParts[0];
                     if (Integer.parseInt(webViewVer) < minVer) {
-                        Utils.showToast(this, "WebView version [" + chromeVersion + "] is too low, please upgrade to ");
+                        Utils.showToast(this, "WebView version [" + chromeVersion + "] is too low, please upgrade to [" + minVer + "] or higher");
                     }
                 }
             } catch (final Exception e) {
-                Utils.logError("boot", "check webview version failed", e);
+                Utils.logError("boot", "check WebView version failed", e);
                 Utils.showToast(this, "Check WebView version failed: " + e.getMessage());
             }
         }
