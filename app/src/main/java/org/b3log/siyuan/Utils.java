@@ -140,7 +140,8 @@ public final class Utils {
             if (lastFrontendForceHideKeyboard != 0 && now - lastFrontendForceHideKeyboard < 500) {
                 // 键盘被前端强制隐藏后短时间内又触发弹起，则再次强制隐藏键盘 https://github.com/siyuan-note/siyuan/issues/14589
                 webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
-                //Utils.logInfo("keyboard", "Force hide keyboard toolbar");
+                KeyboardUtils.hideSoftInput(activity);
+                //Utils.logInfo("keyboard", "Force hide keyboard");
                 lastFrontendForceHideKeyboard = 0;
                 return;
             }
