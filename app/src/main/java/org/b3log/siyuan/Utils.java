@@ -142,7 +142,14 @@ public final class Utils {
                 webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
                 KeyboardUtils.hideSoftInput(activity);
                 //Utils.logInfo("keyboard", "Force hide keyboard");
-                lastFrontendForceHideKeyboard = 0;
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(500);
+                        lastFrontendForceHideKeyboard = 0;
+                    } catch (final Exception e) {
+                        Utils.logError("runtime", "sleep failed", e);
+                    }
+                }).start();
                 return;
             }
 
@@ -154,7 +161,7 @@ public final class Utils {
                 if (now - lastShowKeyboard < 500) {
                     // 短时间内键盘显示又隐藏，则再次强制显示键盘 https://github.com/siyuan-note/siyuan/issues/11098#issuecomment-2273704439
                     KeyboardUtils.showSoftInput(activity);
-                    Utils.logInfo("keyboard", "Force show keyboard");
+                    //Utils.logInfo("keyboard", "Force show keyboard");
                     return;
                 }
                 webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
