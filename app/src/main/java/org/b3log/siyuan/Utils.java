@@ -63,7 +63,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/wwxiaoqi">Jane Haring</a>
- * @version 1.4.0.4, May 23, 2025
+ * @version 1.4.0.5, Jun 15, 2025
  * @since 1.0.0
  */
 public final class Utils {
@@ -402,6 +402,7 @@ public final class Utils {
             otherLangMap.put("it", "it_IT");
             otherLangMap.put("ja", "ja_JP");
             otherLangMap.put("pl", "pl_PL");
+            otherLangMap.put("pt", "pt_BR");
             otherLangMap.put("ru", "ru_RU");
 
             // 使用 getOrDefault 方法从映射中获取语言代码，如果语言不存在则默认为 en_US
