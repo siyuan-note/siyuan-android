@@ -91,7 +91,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.7, May 23, 2025
+ * @version 1.1.1.8, Jun 26, 2025
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -731,17 +731,17 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     }
 
     private void checkWebViewVer(final WebSettings ws) {
-        // Android check WebView version 75+ https://github.com/siyuan-note/siyuan/issues/7840
+        // Android check WebView version 95+ https://github.com/siyuan-note/siyuan/issues/15147
         final String ua = ws.getUserAgentString();
         if (ua.contains("Chrome/")) {
-            final int minVer = 75;
+            final int minVer = 95;
             try {
                 final String chromeVersion = ua.split("Chrome/")[1].split(" ")[0];
                 if (chromeVersion.contains(".")) {
                     final String[] chromeVersionParts = chromeVersion.split("\\.");
                     webViewVer = chromeVersionParts[0];
                     if (Integer.parseInt(webViewVer) < minVer) {
-                        Utils.showToast(this, "WebView version [" + chromeVersion + "] is too low, please upgrade to [" + minVer + "] or higher");
+                        Utils.showToast(this, "WebView version [" + webViewVer + "] is too low, please upgrade to [" + minVer + "] or higher");
                     }
                 }
             } catch (final Exception e) {
