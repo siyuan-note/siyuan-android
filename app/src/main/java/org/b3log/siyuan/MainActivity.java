@@ -91,7 +91,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.8, Jun 26, 2025
+ * @version 1.1.1.9, Jul 4, 2025
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -721,6 +721,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private void release() {
         KeyboardUtils.unregisterSoftInputChangedListener(getWindow());
         AppUtils.unregisterAppStatusChangedListener(this);
+        CookieManager.getInstance().removeSessionCookies(null); // The "Remember me" function on the auth page is invalid on the mobile https://github.com/siyuan-note/siyuan/issues/15216
         if (null != webView) {
             ((ViewGroup) webView.getParent()).removeView(webView);
             webView.removeAllViews();
