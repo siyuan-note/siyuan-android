@@ -31,12 +31,12 @@ android.applicationVariants.configureEach { variant ->
 
 android {
     namespace 'org.b3log.siyuan'
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
         applicationId "org.b3log.siyuan"
         minSdk 26
-        targetSdk 34 // 这里升级后会导致部分机型的工具栏被软键盘遮挡，升级的话需要回测 https://github.com/siyuan-note/siyuan/issues/14440
+        targetSdk 36 // 这里升级后会导致部分机型的工具栏被软键盘遮挡，升级的话需要回测 https://github.com/siyuan-note/siyuan/issues/14440
         versionCode siyuanVersionCode
         versionName siyuanVersionName
     }
