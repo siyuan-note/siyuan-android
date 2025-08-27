@@ -17,7 +17,8 @@ import com.blankj.utilcode.util.BarUtils;
  *
  * @author <a href="https://issuetracker.google.com/issues/36911528#comment100">al...@tutanota.com</a>
  * @author <a href="https://github.com/Zuoqiu-Yingyi">Yingyi</a>
- * @version 1.0.0.0, Nov 24, 2023
+ * @author <a href="https://88250.b3log.org">Liang Ding</a>
+ * @version 1.0.1.0, Aug 27, 2025
  * @since 2.11.0
  */
 public class AndroidBug5497Workaround {
@@ -37,13 +38,35 @@ public class AndroidBug5497Workaround {
 
     private AndroidBug5497Workaround(Activity activity) {
         this.activity = activity;
-        this.frameLayout = (FrameLayout) this.activity.findViewById(android.R.id.content);
+        this.frameLayout = this.activity.findViewById(android.R.id.content);
         this.view = this.frameLayout.getChildAt(0);
-        this.frameLayout.getViewTreeObserver().addOnGlobalLayoutListener(this::possiblyResizeChildOfContent);
         this.frameLayoutParams = (FrameLayout.LayoutParams) (this.view.getLayoutParams());
+
+        this.view.setOnApplyWindowInsetsListener((v, insets) -> {
+            int imeHeight = 0;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                imeHeight = insets.getInsets(android.view.WindowInsets.Type.ime()).bottom;
+            }
+
+            if (imeHeight > 0) { // imeHeight > 0 说明键盘弹出
+                frameLayoutParams.height = frameLayout.getHeight() - imeHeight;
+            } else {
+                frameLayoutParams.height = -1;
+            }
+            view.requestLayout();
+            return v.onApplyWindowInsets(insets);
+        });
+
+        // 兼容旧逻辑
+        this.frameLayout.getViewTreeObserver().addOnGlobalLayoutListener(this::possiblyResizeChildOfContent);
     }
 
     private void possiblyResizeChildOfContent() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S_V2) {
+            // Android 13 (33) 及以上用 WindowInsets 处理
+            return;
+        }
+
         final int usableHeight = this.computeUsableHeight();
         final int rootViewHeight = this.getRootViewHeight();
         // logInfo();
