@@ -44,7 +44,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/Soltus">绛亽</a>
- * @version 1.2.3.0, Mar 12, 2025
+ * @version 1.2.3.1, Sep 4, 2025
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -208,8 +208,7 @@ public final class JSAndroid {
 
         activity.runOnUiThread(() -> {
             UltimateBarX.statusBarOnly(activity).transparent().light(appearanceMode == 0).color(parseColor(color)).apply();
-            BarUtils.setNavBarLightMode(activity, appearanceMode == 0);
-            BarUtils.setNavBarColor(activity, parseColor(color));
+            BarUtils.setNavBarVisibility(activity, false);
         });
     }
 

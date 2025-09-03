@@ -53,7 +53,7 @@ import mobile.Mobile;
  * 追加到日记的快捷方式.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.0, Mar 27, 2025
+ * @version 1.0.0.1, Sep 4, 2025
  * @since 3.1.26
  */
 public class ShortcutActivity extends AppCompatActivity {
@@ -65,6 +65,7 @@ public class ShortcutActivity extends AppCompatActivity {
 
         final EditText input = findViewById(R.id.full_screen_input);
         UltimateBarX.statusBarOnly(this).transparent().apply();
+        BarUtils.setNavBarVisibility(this, false);
         ((ViewGroup) input.getParent()).setPadding(0, UltimateBarX.getStatusBarHeight(), 0, 0);
         BarUtils.setNavBarVisibility(this, false);
 

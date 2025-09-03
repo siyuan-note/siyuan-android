@@ -37,6 +37,8 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.blankj.utilcode.util.BarUtils;
+
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -47,7 +49,7 @@ import java.util.Set;
  * 引导启动.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.0, Mar 4, 2025
+ * @version 1.1.1.1, Sep 4, 2025
  * @since 1.0.0
  */
 public class BootActivity extends AppCompatActivity {
@@ -57,6 +59,8 @@ public class BootActivity extends AppCompatActivity {
         Log.i("boot", "Create boot activity");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_boot);
+
+        BarUtils.setNavBarVisibility(this, false);
 
         final String channel = Utils.getChannel(this.getPackageManager());
         final Set<String> showAgreementChannels = new HashSet<>();

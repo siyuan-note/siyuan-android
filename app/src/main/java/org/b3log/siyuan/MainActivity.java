@@ -91,7 +91,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.9, Jul 4, 2025
+ * @version 1.1.1.10, Sep 4, 2025
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -159,13 +159,14 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         if (Utils.isTablet(userAgent)) {
             // 平板上隐藏状态栏 Hide the status bar on tablet https://github.com/siyuan-note/siyuan/issues/12204
             BarUtils.setStatusBarVisibility(this, false);
-            BarUtils.setNavBarVisibility(this, false);
             Log.i("boot", "Hide status bar on tablet");
         } else {
             // 沉浸式状态栏设置
             UltimateBarX.statusBarOnly(this).transparent().light(false).color(Color.parseColor("#1e1e1e")).apply();
             ((ViewGroup) webView.getParent()).setPadding(0, UltimateBarX.getStatusBarHeight(), 0, 0);
         }
+
+        BarUtils.setNavBarVisibility(this, false);
 
         // Fix https://github.com/siyuan-note/siyuan/issues/9726
         // KeyboardUtils.fixAndroidBug5497(this);
