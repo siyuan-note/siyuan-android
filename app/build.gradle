@@ -104,7 +104,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.10.0'
     implementation 'androidx.lifecycle:lifecycle-process:2.6.2'
-    implementation 'androidx.work:work-runtime:2.10.3'
+    implementation 'androidx.work:work-runtime:2.10.4'
     implementation("commons-io:commons-io:2.20.0")
     implementation 'com.gitee.zackratos:UltimateBarX:0.8.1'
     implementation 'com.blankj:utilcodex:1.31.1'
