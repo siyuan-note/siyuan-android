@@ -63,7 +63,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/wwxiaoqi">Jane Haring</a>
- * @version 1.4.0.5, Jun 15, 2025
+ * @version 1.4.0.6, Oct 14, 2025
  * @since 1.0.0
  */
 public final class Utils {
@@ -154,7 +154,8 @@ public final class Utils {
             }
 
             if (KeyboardUtils.isSoftInputVisible(activity)) {
-                webView.evaluateJavascript("javascript:showKeyboardToolbar()", null);
+                final int h = height / 2 - 42;
+                webView.evaluateJavascript("javascript:showKeyboardToolbar(" + h + ")", null);
                 lastShowKeyboard = now;
                 //Utils.logInfo("keyboard", "Show keyboard toolbar");
             } else {
