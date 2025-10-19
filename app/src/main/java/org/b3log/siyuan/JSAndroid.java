@@ -44,7 +44,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/Soltus">绛亽</a>
- * @version 1.2.3.1, Sep 4, 2025
+ * @version 1.3.0.0, Oct 19, 2025
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -156,6 +156,21 @@ public final class JSAndroid {
     @JavascriptInterface
     public void exportByDefault(String url) {
         Utils.openByDefaultBrowser(url, activity);
+    }
+
+    @JavascriptInterface
+    public void print(final String html) {
+        final String filename = System.currentTimeMillis() + ".pdf";
+        try {
+            Utils.print(html, filename, activity);
+        } catch (final Exception e) {
+            Utils.logError("JSAndroid", "export PDF failed", e);
+        }
+    }
+
+    @JavascriptInterface
+    public int getScreenWidthPx() {
+        return activity.getResources().getDisplayMetrics().widthPixels;
     }
 
     @JavascriptInterface
