@@ -84,7 +84,7 @@ public final class Utils {
      */
     public static final int versionCode = BuildConfig.VERSION_CODE;
 
-    public static void print(String htmlContent, final String filename, Context context) {
+    public static void print(final String htmlContent, final String filename, Context context) {
         ((Activity) context).runOnUiThread(() -> {
             final WebView webView = new WebView(context);
             final WebSettings ws = webView.getSettings();
