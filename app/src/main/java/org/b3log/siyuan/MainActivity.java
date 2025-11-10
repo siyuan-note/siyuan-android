@@ -77,9 +77,12 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.TimeZone;
@@ -90,7 +93,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.11, Sep 30, 2025
+ * @version 1.1.1.12, Nov 10, 2025
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -248,6 +251,10 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                     headers.put("Referer", "https://b3log.org/siyuan/");
                 }
 
+                if (request.getUrl().toString().contains("qpic")) {
+                    // 改进公众号图片加载 https://github.com/siyuan-note/siyuan/issues/16326
+                    return handleRequest(request.getUrl().toString(), headers);
+                }
                 return super.shouldInterceptRequest(view, request);
             }
         });
@@ -483,6 +490,31 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         }).start();
 
         bootIndex();
+    }
+
+    private WebResourceResponse handleRequest(String urlString, Map<String, String> headers) {
+        try {
+            final URL url = new URL(urlString);
+            final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                if ("referer".equalsIgnoreCase(entry.getKey())) {
+                    continue;
+                }
+                connection.setRequestProperty(entry.getKey(), entry.getValue());
+            }
+            connection.setRequestProperty("User-Agent", userAgent);
+
+            final String contentType = connection.getContentType();
+            final String mimeType = (contentType != null && contentType.contains(";")) ? contentType.split(";")[0] : contentType;
+            final String encoding = (contentType != null && contentType.contains("charset=")) ? contentType.split("charset=")[1] : "UTF-8";
+            final InputStream is = connection.getInputStream();
+            return new WebResourceResponse(mimeType, encoding, is);
+
+        } catch (final Exception e) {
+            Utils.logError("webview", "handle request failed for url [" + urlString + "]", e);
+            return null; // 返回空后 WebView 会尝试自己加载原始 URL
+        }
     }
 
     /**
