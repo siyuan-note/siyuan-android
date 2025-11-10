@@ -43,6 +43,7 @@ import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -80,6 +81,7 @@ import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.TimeZone;
 
 import mobile.Mobile;
@@ -235,6 +237,18 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                     bootProgressBar.setVisibility(View.GONE);
                     bootDetailsText.setVisibility(View.GONE);
                 });
+            }
+
+            @Override
+            public WebResourceResponse shouldInterceptRequest(final WebView view, final WebResourceRequest request) {
+                final Map<String, String> headers = request.getRequestHeaders();
+
+                if (request.getUrl().toString().toLowerCase().contains("youtube")) {
+                    // YouTube 设置 Referer https://github.com/siyuan-note/siyuan/issues/16319
+                    headers.put("Referer", "https://b3log.org/siyuan/");
+                }
+
+                return super.shouldInterceptRequest(view, request);
             }
         });
 
