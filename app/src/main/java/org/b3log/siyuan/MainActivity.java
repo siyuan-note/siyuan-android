@@ -327,12 +327,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                         return true;
                     }
 
-                    final String[] permissions = {};
-                    if (ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                        ActivityCompat.requestPermissions(MainActivity.this, permissions, REQUEST_CAMERA);
-                        return true;
-                    }
-
                     openCamera();
                     return true;
                 }
