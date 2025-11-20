@@ -93,7 +93,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.12, Nov 10, 2025
+ * @version 1.1.1.13, Nov 20, 2025
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -365,7 +365,9 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         waitFotKernelHttpServing();
         webView.loadUrl("http://127.0.0.1:6806/appearance/boot/index.html?v=" + Utils.version);
 
-        new Thread(this::keepLive).start();
+        keepLiveActive = true;
+        keepLiveThread = new Thread(this::keepLive, "KeepLiveThread");
+        keepLiveThread.start();
     }
 
     private Handler bootHandler = new Handler(Looper.getMainLooper()) {
@@ -511,6 +513,9 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         }
     }
 
+    private volatile boolean keepLiveActive = true;
+    private Thread keepLiveThread;
+
     /**
      * 通知栏保活。
      */
@@ -522,7 +527,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             }
         }
 
-        while (true) {
+        while (keepLiveActive) {
             try {
                 final Intent intent = new Intent(MainActivity.this, KeepLiveService.class);
                 ContextCompat.startForegroundService(this, intent);
@@ -774,6 +779,12 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         }
         if (null != server) {
             server.stop();
+        }
+
+        keepLiveActive = false;
+        if (keepLiveThread != null) {
+            keepLiveThread.interrupt();
+            keepLiveThread = null;
         }
     }
 
