@@ -101,7 +101,7 @@ public final class Utils {
                 public void onPageFinished(WebView view, String url) {
                     final PrintManager printManager = (PrintManager) context.getSystemService(Context.PRINT_SERVICE);
                     final PrintDocumentAdapter printAdapter = view.createPrintDocumentAdapter(filename);
-                    printManager.print("Print doc", printAdapter, null);
+                    printManager.print(filename, printAdapter, null);
                 }
 
                 @Override
