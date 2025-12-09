@@ -220,11 +220,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                     return true;
                 }
 
-                if (url.contains("siyuan://api/system/exit")) {
-                    exit();
-                    return true;
-                }
-
                 if (uri.getScheme().toLowerCase().startsWith("http")) {
                     final Intent i = new Intent(Intent.ACTION_VIEW, uri);
                     startActivity(i);
