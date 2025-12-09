@@ -93,7 +93,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.13, Nov 20, 2025
+ * @version 1.1.1.14, Dev 9, 2025
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -465,25 +465,30 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             return;
         }
 
-        new Thread(() -> {
-            if (Utils.isCnChannel(this.getPackageManager())) {
-                // Apps in Chinese mainland app stores no longer provide AI access settings https://github.com/siyuan-note/siyuan/issues/13051
-                Mobile.disableFeature("ai");
-            }
+        try {
+            new Thread(() -> {
+                if (Utils.isCnChannel(this.getPackageManager())) {
+                    // Apps in Chinese mainland app stores no longer provide AI access settings https://github.com/siyuan-note/siyuan/issues/13051
+                    Mobile.disableFeature("ai");
+                }
 
-            final String appDir = getFilesDir().getAbsolutePath() + "/app";
-            final String workspaceBaseDir = getExternalFilesDir(null).getAbsolutePath();
-            final String timezone = TimeZone.getDefault().getID();
-            final String localIPs = Utils.getIPAddressList();
-            final String langCode = Utils.getLanguage();
-            Mobile.startKernel("android", appDir, workspaceBaseDir, timezone, localIPs, langCode,
-                    Build.VERSION.RELEASE +
-                            "/SDK " + Build.VERSION.SDK_INT +
-                            "/WebView " + webViewVer +
-                            "/Manufacturer " + android.os.Build.MANUFACTURER +
-                            "/Brand " + android.os.Build.BRAND +
-                            "/UA " + userAgent);
-        }).start();
+                final String appDir = getFilesDir().getAbsolutePath() + "/app";
+                final String workspaceBaseDir = getExternalFilesDir(null).getAbsolutePath();
+                final String timezone = TimeZone.getDefault().getID();
+                final String localIPs = Utils.getIPAddressList();
+                final String langCode = Utils.getLanguage();
+                Mobile.startKernel("android", appDir, workspaceBaseDir, timezone, localIPs, langCode,
+                        Build.VERSION.RELEASE +
+                                "/SDK " + Build.VERSION.SDK_INT +
+                                "/WebView " + webViewVer +
+                                "/Manufacturer " + android.os.Build.MANUFACTURER +
+                                "/Brand " + android.os.Build.BRAND +
+                                "/UA " + userAgent);
+            }).start();
+        } catch (final Exception e) {
+            Utils.logError("kernel", "boot kernel failed", e);
+            return;
+        }
 
         bootIndex();
     }
@@ -763,28 +768,63 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         super.onMultiWindowModeChanged(isInMultiWindowMode);
     }
 
-    private void exit() {
+    public void exit() {
         release();
+
         finishAffinity();
         finishAndRemoveTask();
     }
 
     private void release() {
-        KeyboardUtils.unregisterSoftInputChangedListener(getWindow());
-        AppUtils.unregisterAppStatusChangedListener(this);
-        CookieManager.getInstance().removeSessionCookies(null); // The "Remember me" function on the auth page is invalid on the mobile https://github.com/siyuan-note/siyuan/issues/15216
-        if (null != webView) {
-            ((ViewGroup) webView.getParent()).removeView(webView);
-            webView.removeAllViews();
-        }
-        if (null != server) {
-            server.stop();
+        try {
+            KeyboardUtils.unregisterSoftInputChangedListener(getWindow());
+        } catch (final Exception e) {
+            Utils.logError("runtime", "unregister keyboard listener failed", e);
         }
 
-        keepLiveActive = false;
-        if (keepLiveThread != null) {
-            keepLiveThread.interrupt();
-            keepLiveThread = null;
+        try {
+            AppUtils.unregisterAppStatusChangedListener(this);
+        } catch (final Exception e) {
+            Utils.logError("runtime", "unregister app status listener failed", e);
+        }
+
+        try {
+            // The "Remember me" function on the auth page is invalid on the mobile https://github.com/siyuan-note/siyuan/issues/15216
+            CookieManager.getInstance().removeSessionCookies(null);
+        } catch (final Exception e) {
+            Utils.logError("runtime", "clear cookies failed", e);
+        }
+
+        try {
+            if (null != webView) {
+                runOnUiThread(() -> {
+                    ((ViewGroup) webView.getParent()).removeView(webView);
+                    webView.removeAllViews();
+                    webView.destroy();
+                    webView = null;
+                });
+            }
+        } catch (final Exception e) {
+            Utils.logError("runtime", "destroy webview failed", e);
+        }
+
+        try {
+            if (null != server) {
+                server.stop();
+                server = null;
+            }
+        } catch (final Exception e) {
+            Utils.logError("runtime", "stop http server failed", e);
+        }
+
+        try {
+            keepLiveActive = false;
+            if (keepLiveThread != null) {
+                keepLiveThread.interrupt();
+                keepLiveThread = null;
+            }
+        } catch (final Exception e) {
+            Utils.logError("runtime", "stop keep live thread failed", e);
         }
     }
 

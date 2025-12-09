@@ -44,7 +44,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/Soltus">绛亽</a>
- * @version 1.3.0.1, Nov 21, 2025
+ * @version 1.3.0.2, Dec 9, 2025
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -52,6 +52,11 @@ public final class JSAndroid {
 
     public JSAndroid(final MainActivity activity) {
         this.activity = activity;
+    }
+
+    @JavascriptInterface
+    public void exit() {
+        this.activity.exit();
     }
 
     @JavascriptInterface
