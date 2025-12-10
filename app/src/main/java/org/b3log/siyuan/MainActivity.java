@@ -175,7 +175,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         BarUtils.setNavBarVisibility(this, false);
 
         // Fix https://github.com/siyuan-note/siyuan/issues/9726
-        // KeyboardUtils.fixAndroidBug5497(this);
         AndroidBug5497Workaround.assistActivity(this);
     }
 
