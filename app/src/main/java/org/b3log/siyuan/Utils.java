@@ -145,7 +145,6 @@ public final class Utils {
                 (userAgent.contains("android") && !userAgent.contains("mobile"));
     }
 
-
     public static boolean isCnChannel(final PackageManager pm) {
         final String channel = getChannel(pm);
         return channel.contains("cn") || channel.equals("huawei");
