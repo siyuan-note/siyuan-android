@@ -93,7 +93,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.14, Dev 9, 2025
+ * @version 1.1.2.0, Dec 20, 2025
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -741,7 +741,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     protected void onDestroy() {
         Log.i("boot", "Destroy main activity");
         super.onDestroy();
-        release();
+        exit();
     }
 
     @Override
@@ -767,6 +767,12 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
         finishAffinity();
         finishAndRemoveTask();
+
+        try {
+            Mobile.exit();
+        } catch (Exception e) {
+            Utils.logError("runtime", "exit kernel failed", e);
+        }
     }
 
     private void release() {
