@@ -232,6 +232,13 @@ public final class JSAndroid {
         });
     }
 
+    @JavascriptInterface
+    public String getLocalFileSystemPath() {
+        activity.getStoragePermissions();
+        activity.pickLocalFileSystemFolder();
+        return activity.getLocalSyncPath();
+    }
+
     private int parseColor(String str) {
         try {
             str = str.trim();
