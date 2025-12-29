@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_shorthand">Приставка к ярлыкам</string>
+    <string name="enter_your_text">Пожалуйста, введите текст. После отправки откройте SiYuan и нажмите кнопку со значком молнии рядом с блокнотом, чтобы создать новый документ, названный в соответствии со временем, указанным в «Приставка к ярлыкам»</string>
+    <string name="submit">Отправить</string>
+    <string name="add_to_home">Добавить на Домашнюю</string>
+    <string name="add_to_home_success">Добавлено на Домашнюю</string>
+    <string name="add_to_home_failed">Не удалось добавить ярлык на Домашнюю, убедитесь что вы дали нужные разрешения</string>
+    <string name="paste">Вставить</string>
+    <string name="adding_to_home">Добавление на Домашнюю, подождите немного...</string>
+</resources>
