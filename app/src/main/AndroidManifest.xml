@@ -39,6 +39,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SiYuan"
         android:usesCleartextTraffic="true"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:enableOnBackInvokedCallback="true"
         tools:targetApi="tiramisu">
 
