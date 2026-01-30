@@ -214,7 +214,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             public boolean shouldOverrideUrlLoading(final WebView view, final WebResourceRequest request) {
                 final Uri uri = request.getUrl();
                 final String url = uri.toString();
-                if (url.contains("127.0.0.1")) {
+                if (url.contains("127.0.0.1") && !url.contains("openExternal")) {
                     view.loadUrl(url);
                     return true;
                 }
