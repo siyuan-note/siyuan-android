@@ -221,6 +221,23 @@ public final class JSAndroid {
     }
 
     @JavascriptInterface
+    public void openAuthURL(final String url) {
+        if (StringUtils.isEmpty(url) || url.startsWith("#")) {
+            Utils.logError("JSAndroid", "openAuthURL failed: invalid url");
+            return;
+        }
+
+        final Uri uri = Uri.parse(url);
+        final String scheme = uri.getScheme();
+        if ((!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme))) {
+            Utils.logError("JSAndroid", "openAuthURL failed: only support http/https protocol, not " + scheme);
+            return;
+        }
+
+        Utils.tryOpenCustomTabs(uri, activity);
+    }
+
+    @JavascriptInterface
     public void changeStatusBarColor(final String color, final int appearanceMode) {
         if (Utils.isTablet(MainActivity.userAgent)) {
             return;

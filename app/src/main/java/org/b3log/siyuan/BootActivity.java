@@ -122,7 +122,9 @@ public class BootActivity extends AppCompatActivity {
         }
 
         final Intent startMainIntent = new Intent(getApplicationContext(), MainActivity.class);
-        startMainIntent.putExtra("blockURL", blockURL);
+        if (!blockURL.isEmpty()) {
+            startMainIntent.putExtra("blockURL", blockURL);
+        }
         startActivity(startMainIntent);
     }
 
