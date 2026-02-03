@@ -93,7 +93,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.2.0, Dec 20, 2025
+ * @version 1.1.2.1, Feb 3, 2026
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -184,6 +184,11 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         bootDetailsText = findViewById(R.id.bootDetails);
         webView = findViewById(R.id.webView);
         webView.setBackgroundColor(Color.parseColor("#1e1e1e"));
+
+        // 禁止 WebView 获取焦点以防止自动弹出软键盘，软键盘弹出由前端控制
+        // Improve soft keyboard toolbar pop-up https://github.com/siyuan-note/siyuan/issues/16548
+        webView.setFocusable(false);
+        webView.setFocusableInTouchMode(false);
 
         webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
             final Uri uri = Uri.parse(url);

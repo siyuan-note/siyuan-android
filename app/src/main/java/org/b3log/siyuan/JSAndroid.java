@@ -44,7 +44,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/Soltus">绛亽</a>
- * @version 1.3.0.2, Dec 9, 2025
+ * @version 1.4.0.0, Feb 3, 2026
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -63,8 +63,15 @@ public final class JSAndroid {
     public void hideKeyboard() {
         activity.runOnUiThread(() -> {
             KeyboardUtils.hideSoftInput(activity);
-            Utils.lastFrontendForceHideKeyboard = System.currentTimeMillis();
             //Utils.logInfo("keyboard", "Hide keyboard");
+        });
+    }
+
+    @JavascriptInterface
+    public void showKeyboard() {
+        activity.runOnUiThread(() -> {
+            KeyboardUtils.showSoftInput(activity);
+            //Utils.logInfo("keyboard", "Show keyboard");
         });
     }
 

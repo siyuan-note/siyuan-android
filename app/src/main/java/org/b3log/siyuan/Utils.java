@@ -69,7 +69,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/wwxiaoqi">Jane Haring</a>
- * @version 1.5.0.0, Oct 19, 2025
+ * @version 1.5.0.1, Feb 3, 2026
  * @since 1.0.0
  */
 public final class Utils {
@@ -164,9 +164,6 @@ public final class Utils {
         return applicationInfo.metaData.getString("CHANNEL");
     }
 
-    private static long lastShowKeyboard = 0;
-    public static long lastFrontendForceHideKeyboard = 0;
-
     public static void registerSoftKeyboardToolbar(final Activity activity, final WebView webView) {
         KeyboardUtils.registerSoftInputChangedListener(activity, height -> {
             if (activity.isInMultiWindowMode()) {
@@ -174,35 +171,11 @@ public final class Utils {
                 return;
             }
 
-            final long now = System.currentTimeMillis();
-            if (lastFrontendForceHideKeyboard != 0 && now - lastFrontendForceHideKeyboard < 500) {
-                // 键盘被前端强制隐藏后短时间内又触发弹起，则再次强制隐藏键盘 https://github.com/siyuan-note/siyuan/issues/14589
-                webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
-                KeyboardUtils.hideSoftInput(activity);
-                //Utils.logInfo("keyboard", "Force hide keyboard");
-                new Thread(() -> {
-                    try {
-                        Thread.sleep(500);
-                        lastFrontendForceHideKeyboard = 0;
-                    } catch (final Exception e) {
-                        Utils.logError("runtime", "sleep failed", e);
-                    }
-                }).start();
-                return;
-            }
-
             if (KeyboardUtils.isSoftInputVisible(activity)) {
                 final int h = height / 2 - 42;
                 webView.evaluateJavascript("javascript:showKeyboardToolbar(" + h + ")", null);
-                lastShowKeyboard = now;
                 //Utils.logInfo("keyboard", "Show keyboard toolbar");
             } else {
-                if (now - lastShowKeyboard < 500) {
-                    // 短时间内键盘显示又隐藏，则再次强制显示键盘 https://github.com/siyuan-note/siyuan/issues/11098#issuecomment-2273704439
-                    KeyboardUtils.showSoftInput(activity);
-                    //Utils.logInfo("keyboard", "Force show keyboard");
-                    return;
-                }
                 webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
                 //Utils.logInfo("keyboard", "Hide keyboard toolbar");
                 activity.getWindow().getDecorView().clearFocus();
