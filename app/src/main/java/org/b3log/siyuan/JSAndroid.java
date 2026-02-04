@@ -25,6 +25,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebView;
 
 import androidx.core.app.ShareCompat;
 import androidx.core.content.FileProvider;
@@ -44,7 +45,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/Soltus">绛亽</a>
- * @version 1.4.0.0, Feb 3, 2026
+ * @version 1.4.0.1, Feb 4, 2026
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -62,6 +63,8 @@ public final class JSAndroid {
     @JavascriptInterface
     public void hideKeyboard() {
         activity.runOnUiThread(() -> {
+            final WebView webView = activity.findViewById(R.id.webView);
+            Utils.setImeEnabled(webView, false);
             KeyboardUtils.hideSoftInput(activity);
             //Utils.logInfo("keyboard", "Hide keyboard");
         });

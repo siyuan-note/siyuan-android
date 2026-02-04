@@ -69,7 +69,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/wwxiaoqi">Jane Haring</a>
- * @version 1.5.0.1, Feb 3, 2026
+ * @version 1.5.0.1, Feb 4, 2026
  * @since 1.0.0
  */
 public final class Utils {
@@ -164,6 +164,18 @@ public final class Utils {
         return applicationInfo.metaData.getString("CHANNEL");
     }
 
+    public static void setImeEnabled(final WebView webView, final boolean enabled) {
+        // 禁止 WebView 获取焦点以防止自动弹出软键盘，软键盘弹出由前端控制
+        // Improve soft keyboard toolbar pop-up https://github.com/siyuan-note/siyuan/issues/16548
+        webView.setFocusable(enabled);
+        webView.setFocusableInTouchMode(enabled);
+        if (!enabled) {
+            webView.clearFocus();
+        } else {
+            webView.requestFocus();
+        }
+    }
+
     public static void registerSoftKeyboardToolbar(final Activity activity, final WebView webView) {
         KeyboardUtils.registerSoftInputChangedListener(activity, height -> {
             if (activity.isInMultiWindowMode()) {
@@ -175,11 +187,12 @@ public final class Utils {
                 final int h = height / 2 - 42;
                 webView.evaluateJavascript("javascript:showKeyboardToolbar(" + h + ")", null);
                 //Utils.logInfo("keyboard", "Show keyboard toolbar");
+                Utils.setImeEnabled(webView, true);
             } else {
                 webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
                 //Utils.logInfo("keyboard", "Hide keyboard toolbar");
-                activity.getWindow().getDecorView().clearFocus();
-                webView.clearFocus();
+                Utils.setImeEnabled(webView, false);
+                Log.i("siyuan", "Hide WebView height: " + webView.getHeight());
             }
         });
     }
