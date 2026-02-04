@@ -192,7 +192,6 @@ public final class Utils {
                 webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
                 //Utils.logInfo("keyboard", "Hide keyboard toolbar");
                 Utils.setImeEnabled(webView, false);
-                Log.i("siyuan", "Hide WebView height: " + webView.getHeight());
             }
         });
     }
