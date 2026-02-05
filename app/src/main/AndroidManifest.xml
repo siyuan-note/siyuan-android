@@ -61,7 +61,9 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="siyuan" />
+                <data
+                    android:scheme="siyuan"
+                    android:host="blocks" />
             </intent-filter>
 
             <intent-filter>
@@ -75,6 +77,24 @@
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
             -->
+        </activity>
+
+        <activity
+            android:name=".RedirectUriReceiverActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:noHistory="true"
+            android:theme="@style/Theme.SiYuan.Transparent">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="siyuan"
+                    android:host="oidc-callback" />
+            </intent-filter>
         </activity>
 
         <activity

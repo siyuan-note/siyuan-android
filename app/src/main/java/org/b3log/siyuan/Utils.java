@@ -37,6 +37,7 @@ import android.webkit.WebViewClient;
 import android.widget.Toast;
 
 import androidx.annotation.StringRes;
+import androidx.browser.customtabs.CustomTabsIntent;
 
 import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.StringUtils;
@@ -78,6 +79,9 @@ public final class Utils {
      * App version.
      */
     public static final String version = BuildConfig.VERSION_NAME;
+
+    private static volatile boolean authKeepAliveActive = false;
+    private static final String CUSTOM_TABS_KEEP_ALIVE = "android.support.customtabs.extra.KEEP_ALIVE";
 
     /**
      * App version code.
@@ -389,6 +393,22 @@ public final class Utils {
         final Uri uri = Uri.parse(url);
         final Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
         activity.startActivity(browserIntent);
+    }
+
+    // Try opening the URL with Custom Tabs; fall back to default browser on failure.
+    // Returns true if Custom Tabs was used, false if we fell back.
+    public static boolean tryOpenCustomTabs(Uri uri, final Activity activity) {
+        try {
+            final CustomTabsIntent customTabsIntent = new CustomTabsIntent.Builder()
+                    .setShowTitle(true)
+                    .build();
+
+            customTabsIntent.launchUrl(activity, uri);
+            return true;
+        } catch (final Exception e) {
+            openByDefaultBrowser(uri.toString(), activity);
+            return false;
+        }
     }
 
     public static String getLanguage() {

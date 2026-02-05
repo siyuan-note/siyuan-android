@@ -115,11 +115,26 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     @Override
     public void onNewIntent(final Intent intent) {
         super.onNewIntent(intent);
-        if (null != webView) {
-            final String blockURL = intent.getStringExtra("blockURL");
-            if (!StringUtils.isEmpty(blockURL)) {
-                webView.evaluateJavascript("javascript:window.openFileByURL('" + blockURL + "')", null);
+        setIntent(intent);
+
+        if (null == intent || null == webView) {
+            return;
+        }
+
+        try {
+            final String script;
+            if(!StringUtils.isEmpty(intent.getStringExtra("oidcCallback"))){
+                script =  "window.handleOidcCallbackLink(" + JSONObject.quote(intent.getStringExtra("oidcCallback")) + ");";
+            }else if (!StringUtils.isEmpty(intent.getStringExtra("blockURL"))){
+                script = "window.openFileByURL(" + JSONObject.quote(intent.getStringExtra("blockURL")) + ");";
+            } else {
+                return;
             }
+
+            runOnUiThread(() -> webView.evaluateJavascript(script, null));
+
+        } catch (final Exception e) {
+            Utils.logError("intent", "handle payload failed", e);
         }
     }
 

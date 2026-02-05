@@ -15,4 +15,13 @@
         <item name="android:windowAnimationStyle">@null</item>
         <item name="android:windowBackground">@color/white</item>
     </style>
+
+    <style name="Theme.SiYuan.Transparent" parent="Theme.SiYuan">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
 </resources>
