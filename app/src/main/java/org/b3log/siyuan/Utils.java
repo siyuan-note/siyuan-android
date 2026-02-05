@@ -184,9 +184,9 @@ public final class Utils {
             }
 
             if (KeyboardUtils.isSoftInputVisible(activity)) {
-                webView.postDelayed(() -> webView.evaluateJavascript("javascript:showKeyboardToolbar()", null), 288);
-                //Utils.logInfo("keyboard", "Show keyboard toolbar");
                 Utils.setImeEnabled(webView, true);
+                webView.postDelayed(() -> webView.evaluateJavascript("javascript:showKeyboardToolbar();", null), 288);
+                //Utils.logInfo("keyboard", "Show keyboard toolbar");
             } else {
                 webView.evaluateJavascript("javascript:hideKeyboardToolbar();document.activeElement.blur();", null);
                 //Utils.logInfo("keyboard", "Hide keyboard toolbar");
