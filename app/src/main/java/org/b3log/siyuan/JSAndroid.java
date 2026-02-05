@@ -237,8 +237,10 @@ public final class JSAndroid {
         }
 
         activity.runOnUiThread(() -> {
-            UltimateBarX.statusBarOnly(activity).transparent().light(appearanceMode == 0).color(parseColor(color)).apply();
+            final int colorVal = parseColor(color);
+            UltimateBarX.statusBarOnly(activity).transparent().light(appearanceMode == 0).color(colorVal).apply();
             BarUtils.setNavBarVisibility(activity, false);
+            activity.webView.getRootView().setBackgroundColor(colorVal);
         });
     }
 

@@ -99,7 +99,7 @@ import mobile.Mobile;
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
 
     private AsyncHttpServer server;
-    private WebView webView;
+    WebView webView;
     private ImageView bootLogo;
     private ProgressBar bootProgressBar;
     private TextView bootDetailsText;
@@ -183,7 +183,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         bootProgressBar = findViewById(R.id.progressBar);
         bootDetailsText = findViewById(R.id.bootDetails);
         webView = findViewById(R.id.webView);
-        webView.setBackgroundColor(Color.parseColor("#1e1e1e"));
         Utils.setImeEnabled(webView, false);
 
         webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
