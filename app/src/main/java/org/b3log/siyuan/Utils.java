@@ -189,7 +189,7 @@ public final class Utils {
                 //Utils.logInfo("keyboard", "Show keyboard toolbar");
                 Utils.setImeEnabled(webView, true);
             } else {
-                webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
+                webView.evaluateJavascript("javascript:hideKeyboardToolbar();document.activeElement.blur();", null);
                 //Utils.logInfo("keyboard", "Hide keyboard toolbar");
                 Utils.setImeEnabled(webView, false);
             }
