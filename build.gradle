@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     ext {
-        siyuanVersionCode = 295
+        siyuanVersionCode = 296
         siyuanVersionName = "3.5.4"
     }
     repositories {
