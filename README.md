@@ -1,4 +1,4 @@
-[中文](https://github.com/siyuan-note/siyuan-android/blob/master/README_zh_CN.md)
+[中文](https://github.com/siyuan-note/siyuan-android/blob/master/README_zh_CN.md) | [日本語](https://github.com/siyuan-note/siyuan-android/blob/master/README_ja_JP.md)
 
 ## Overview
 
