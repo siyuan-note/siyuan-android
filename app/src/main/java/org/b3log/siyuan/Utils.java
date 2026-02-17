@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.LocaleList;
 import android.print.PrintDocumentAdapter;
@@ -38,6 +39,8 @@ import android.widget.Toast;
 
 import androidx.annotation.StringRes;
 import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.StringUtils;
@@ -70,7 +73,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/wwxiaoqi">Jane Haring</a>
- * @version 1.5.0.0, Oct 19, 2025
+ * @version 1.5.0.3, Feb 11, 2026
  * @since 1.0.0
  */
 public final class Utils {
@@ -139,14 +142,9 @@ public final class Utils {
         currentToast.show();
     }
 
-    public static boolean isTablet(String userAgent) {
-        if (StringUtils.isEmpty(userAgent)) {
-            return false;
-        }
-
-        userAgent = userAgent.toLowerCase();
-        return userAgent.contains("tablet") || userAgent.contains("pad") ||
-                (userAgent.contains("android") && !userAgent.contains("mobile"));
+    public static boolean isTablet(final Context context) {
+        Configuration configuration = context.getResources().getConfiguration();
+        return (configuration.smallestScreenWidthDp >= 600);
     }
 
     public static boolean isCnChannel(final PackageManager pm) {
@@ -168,50 +166,54 @@ public final class Utils {
         return applicationInfo.metaData.getString("CHANNEL");
     }
 
-    private static long lastShowKeyboard = 0;
-    public static long lastFrontendForceHideKeyboard = 0;
+    public static void setImeEnabled(final WebView webView, final boolean enabled) {
+        // 禁止 WebView 获取焦点以防止自动弹出软键盘，软键盘弹出由前端控制
+        // Improve soft keyboard toolbar pop-up https://github.com/siyuan-note/siyuan/issues/16548
+        webView.setFocusable(enabled);
+        webView.setFocusableInTouchMode(enabled);
+        if (!enabled) {
+            webView.clearFocus();
+        } else {
+            webView.requestFocus();
+        }
+    }
 
     public static void registerSoftKeyboardToolbar(final Activity activity, final WebView webView) {
+        if (Utils.isTablet(activity)) {
+            return;
+        }
+
         KeyboardUtils.registerSoftInputChangedListener(activity, height -> {
-            if (activity.isInMultiWindowMode()) {
-                Utils.logInfo("keyboard", "In multi window mode, do not show keyboard toolbar");
-                return;
-            }
-
-            final long now = System.currentTimeMillis();
-            if (lastFrontendForceHideKeyboard != 0 && now - lastFrontendForceHideKeyboard < 500) {
-                // 键盘被前端强制隐藏后短时间内又触发弹起，则再次强制隐藏键盘 https://github.com/siyuan-note/siyuan/issues/14589
-                webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
-                KeyboardUtils.hideSoftInput(activity);
-                //Utils.logInfo("keyboard", "Force hide keyboard");
-                new Thread(() -> {
-                    try {
-                        Thread.sleep(500);
-                        lastFrontendForceHideKeyboard = 0;
-                    } catch (final Exception e) {
-                        Utils.logError("runtime", "sleep failed", e);
-                    }
-                }).start();
-                return;
-            }
-
             if (KeyboardUtils.isSoftInputVisible(activity)) {
-                final int h = height / 2 - 42;
-                webView.evaluateJavascript("javascript:showKeyboardToolbar(" + h + ")", null);
-                lastShowKeyboard = now;
-                //Utils.logInfo("keyboard", "Show keyboard toolbar");
+                showKeyboardAndToolbar(webView);
             } else {
-                if (now - lastShowKeyboard < 500) {
-                    // 短时间内键盘显示又隐藏，则再次强制显示键盘 https://github.com/siyuan-note/siyuan/issues/11098#issuecomment-2273704439
-                    KeyboardUtils.showSoftInput(activity);
-                    //Utils.logInfo("keyboard", "Force show keyboard");
-                    return;
-                }
-                webView.evaluateJavascript("javascript:hideKeyboardToolbar()", null);
-                //Utils.logInfo("keyboard", "Hide keyboard toolbar");
-                activity.getWindow().getDecorView().clearFocus();
-                webView.clearFocus();
+                hideKeyboardAndToolbar(webView);
             }
+        });
+
+        ViewCompat.setOnApplyWindowInsetsListener(activity.getWindow().getDecorView(), (v, insets) -> {
+            // 多窗口模式下，监听窗口插图以获取 IME 状态
+            boolean isVisible = insets.isVisible(WindowInsetsCompat.Type.ime());
+            if (isVisible) {
+                showKeyboardAndToolbar(webView);
+            } else {
+                hideKeyboardAndToolbar(webView);
+            }
+            return insets;
+        });
+    }
+
+    public static void showKeyboardAndToolbar(final WebView webView) {
+        webView.post(() -> {
+            webView.postDelayed(() -> webView.evaluateJavascript("javascript:showKeyboardToolbar();", null), 288);
+            Utils.setImeEnabled(webView, true);
+        });
+    }
+
+    public static void hideKeyboardAndToolbar(final WebView webView) {
+        webView.post(() -> {
+            webView.evaluateJavascript("javascript:hideKeyboardToolbar();document.activeElement.blur();", null);
+            Utils.setImeEnabled(webView, false);
         });
     }
 
