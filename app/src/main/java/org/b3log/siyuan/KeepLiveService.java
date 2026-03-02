@@ -21,6 +21,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
@@ -64,15 +65,6 @@ public class KeepLiveService extends Service {
     private Random random = new Random();
 
     private void startMyOwnForeground() {
-        final Intent resultIntent = new Intent(this, MainActivity.class).
-                setAction(Intent.ACTION_MAIN).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent resultPendingIntent;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 端部分系统闪退 https://github.com/siyuan-note/siyuan/issues/7188
-            resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
-        } else {
-            resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        }
-
         if (!NotificationReceiver.createNotificationChannel(this)) {
             return;
         }
@@ -84,6 +76,7 @@ public class KeepLiveService extends Service {
             return;
         }
 
+        final PendingIntent resultPendingIntent = NotificationReceiver.createNotificationPendingIntent(this);
         final Notification notification = notificationBuilder.setOngoing(true).
                 setSmallIcon(R.drawable.icon).
                 setContentTitle(texts[random.nextInt(texts.length)]).

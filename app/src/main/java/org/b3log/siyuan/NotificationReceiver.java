@@ -21,10 +21,12 @@ import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -48,18 +50,21 @@ public class NotificationReceiver extends BroadcastReceiver {
 
         final String title = intent.getStringExtra("title");
         final String body = intent.getStringExtra("body");
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            Utils.logError("notification", "Notification permission not granted [title=" + title + ", body=" + body + "]");
+            return;
+        }
+
+
         final int notifyId = (int) System.currentTimeMillis();
+        final PendingIntent resultPendingIntent = NotificationReceiver.createNotificationPendingIntent(context);
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NotificationReceiver.NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.icon)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true);
-
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            Utils.logError("notification", "Notification permission not granted [title=" + title + ", body=" + body + "]");
-            return;
-        }
+                .setAutoCancel(true)
+                .setContentIntent(resultPendingIntent);
         NotificationManagerCompat.from(context).notify(notifyId, builder.build());
     }
 
@@ -75,5 +80,17 @@ public class NotificationReceiver extends BroadcastReceiver {
         }
         manager.createNotificationChannel(chan);
         return true;
+    }
+
+    static PendingIntent createNotificationPendingIntent(final Context context) {
+        final Intent resultIntent = new Intent(context, MainActivity.class).
+                setAction(Intent.ACTION_MAIN).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent resultPendingIntent;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 端部分系统闪退 https://github.com/siyuan-note/siyuan/issues/7188
+            resultPendingIntent = PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+        } else {
+            resultPendingIntent = PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        }
+        return resultPendingIntent;
     }
 }

@@ -28,6 +28,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
+import android.provider.Settings;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
@@ -72,6 +74,16 @@ public final class JSAndroid {
         }
 
         if (0 < delayInSeconds) {
+            final AlarmManager alarmManager = (AlarmManager) this.activity.getSystemService(Context.ALARM_SERVICE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+                Utils.showToast(this.activity, "没有定时通知权限，无法发送定时通知 / No schedule exact alarm permission, unable to send scheduled notification");
+
+                final Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                intent.setData(Uri.parse("package:" + this.activity.getPackageName()));
+                this.activity.startActivity(intent);
+                return;
+            }
+
             final Intent intent = new Intent(this.activity, NotificationReceiver.class);
             intent.putExtra("title", title);
             intent.putExtra("body", body);
@@ -85,12 +97,14 @@ public final class JSAndroid {
         }
 
         final int notifyId = (int) System.currentTimeMillis();
+        final PendingIntent resultPendingIntent = NotificationReceiver.createNotificationPendingIntent(this.activity);
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(activity, NotificationReceiver.NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.icon)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true);
+                .setAutoCancel(true)
+                .setContentIntent(resultPendingIntent);
         NotificationManagerCompat.from(this.activity).notify(notifyId, builder.build());
     }
 
