@@ -73,12 +73,11 @@ public class KeepLiveService extends Service {
             resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         }
 
-        final String notificationChannelId = "siyuan_keep_live_service";
-        if (!NotificationReceiver.createNotificationChannel(this, notificationChannelId)) {
+        if (!NotificationReceiver.createNotificationChannel(this)) {
             return;
         }
 
-        final NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, notificationChannelId);
+        final NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NotificationReceiver.NOTIFICATION_CHANNEL_ID);
         final String[] texts = getNotificationTexts();
         if (null == texts || 1 > texts.length) {
             Utils.logError("keeplive", "notification texts is empty");

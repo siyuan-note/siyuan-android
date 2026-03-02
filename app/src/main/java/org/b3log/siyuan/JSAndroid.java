@@ -80,13 +80,12 @@ public final class JSAndroid {
             return;
         }
 
-        final String notificationChannelId = "siyuan_js_android";
-        if (!NotificationReceiver.createNotificationChannel(activity, notificationChannelId)) {
+        if (!NotificationReceiver.createNotificationChannel(activity)) {
             return;
         }
 
         final int notifyId = (int) System.currentTimeMillis();
-        final NotificationCompat.Builder builder = new NotificationCompat.Builder(activity, notificationChannelId)
+        final NotificationCompat.Builder builder = new NotificationCompat.Builder(activity, NotificationReceiver.NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.icon)
                 .setContentTitle(title)
                 .setContentText(body)

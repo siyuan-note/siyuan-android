@@ -42,14 +42,14 @@ public class NotificationReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (!createNotificationChannel(context, "siyuan_notification_receiver")) {
+        if (!createNotificationChannel(context)) {
             return;
         }
 
         final String title = intent.getStringExtra("title");
         final String body = intent.getStringExtra("body");
         final int notifyId = (int) System.currentTimeMillis();
-        final NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "siyuan_js_android")
+        final NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NotificationReceiver.NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.icon)
                 .setContentTitle(title)
                 .setContentText(body)
@@ -63,8 +63,10 @@ public class NotificationReceiver extends BroadcastReceiver {
         NotificationManagerCompat.from(context).notify(notifyId, builder.build());
     }
 
-    static boolean createNotificationChannel(final Context context, final String notificationChannelId) {
-        final NotificationChannel chan = new NotificationChannel(notificationChannelId, "SiYuan Notifications", NotificationManager.IMPORTANCE_HIGH);
+    static String NOTIFICATION_CHANNEL_ID = BuildConfig.APPLICATION_ID;
+
+    static boolean createNotificationChannel(final Context context) {
+        final NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "SiYuan Notifications", NotificationManager.IMPORTANCE_HIGH);
         chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
         final NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (null == manager) {

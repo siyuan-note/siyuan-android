@@ -34,9 +34,6 @@
     <!-- 预约通知 -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
-    <!-- 监听系统广播以实现预约通知 -->
-    <receiver android:name=".NotificationReceiver" />
-
     <application
         android:name=".App"
         android:icon="@mipmap/ic_launcher"
@@ -186,6 +183,9 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="hosting" />
         </service>
+
+        <!-- 监听系统广播以实现预约通知 -->
+        <receiver android:name=".NotificationReceiver" />
 
         <!--
             Support opening assets through other apps on the Android
