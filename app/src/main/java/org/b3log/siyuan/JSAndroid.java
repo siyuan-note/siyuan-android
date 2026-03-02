@@ -69,15 +69,17 @@ public final class JSAndroid {
     @JavascriptInterface
     public void sendNotification(final String title, final String body, final int delayInSeconds) {
         if (ActivityCompat.checkSelfPermission(this.activity, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            Utils.showToast(this.activity, "没有通知权限，无法发送通知 / No notification permission, unable to send notification");
+            Utils.showToast(this.activity, "请允许通知权限以接收通知 / Please allow notification permission to receive notifications");
+            final Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+            intent.setData(Uri.parse("package:" + this.activity.getPackageName()));
+            this.activity.startActivity(intent);
             return;
         }
 
         if (0 < delayInSeconds) {
             final AlarmManager alarmManager = (AlarmManager) this.activity.getSystemService(Context.ALARM_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
-                Utils.showToast(this.activity, "没有定时通知权限，无法发送定时通知 / No schedule exact alarm permission, unable to send scheduled notification");
-
+                Utils.showToast(this.activity, "请允许精确闹钟权限以接收定时通知（同时需要允许自启动） / Please allow exact alarm permission to receive scheduled notifications (also need to allow auto-start)");
                 final Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
                 intent.setData(Uri.parse("package:" + this.activity.getPackageName()));
                 this.activity.startActivity(intent);
