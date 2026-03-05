@@ -28,7 +28,7 @@ import androidx.appcompat.app.AppCompatActivity;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @version 1.0.0.0, Jan 30, 2026
- * @since 1.0.0
+ * @since 3.5.9
  */
 public class RedirectUriReceiverActivity extends AppCompatActivity {
 
