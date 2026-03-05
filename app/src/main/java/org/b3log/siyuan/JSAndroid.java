@@ -29,6 +29,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
@@ -110,8 +111,9 @@ public final class JSAndroid {
             intent.putExtra("id", ret);
             intent.putExtra("title", title);
             intent.putExtra("body", body);
+            final long triggerTime = SystemClock.elapsedRealtime() + (delayInSeconds * 1000L);
             final PendingIntent pendingIntent = PendingIntent.getBroadcast(this.activity, ret, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-            AlarmManagerCompat.setExactAndAllowWhileIdle((AlarmManager) this.activity.getSystemService(Context.ALARM_SERVICE), AlarmManager.ELAPSED_REALTIME_WAKEUP, delayInSeconds * 1000L, pendingIntent);
+            AlarmManagerCompat.setExactAndAllowWhileIdle((AlarmManager) this.activity.getSystemService(Context.ALARM_SERVICE), AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerTime, pendingIntent);
             return ret;
         }
 
