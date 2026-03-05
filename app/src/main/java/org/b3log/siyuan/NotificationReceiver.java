@@ -36,15 +36,15 @@ import androidx.core.app.NotificationManagerCompat;
  * 通知接收器.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @author <a href="https://github.com/Soltus">绛亽</a>
- * @version 1.0.0.0, Mar 2, 2026
+ * @version 1.0.0.1, Mar 5, 2026
  * @since 3.5.9
  */
 public class NotificationReceiver extends BroadcastReceiver {
 
     @Override
-    public void onReceive(Context context, Intent intent) {
-        if (!createNotificationChannel(context)) {
+    public void onReceive(final Context context, final Intent intent) {
+        final String channel = intent.getStringExtra("channel");
+        if (!createNotificationChannel(context, channel)) {
             return;
         }
 
@@ -58,7 +58,7 @@ public class NotificationReceiver extends BroadcastReceiver {
 
         final int notifyId = (int) System.currentTimeMillis();
         final PendingIntent resultPendingIntent = NotificationReceiver.createNotificationPendingIntent(context);
-        final NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NotificationReceiver.NOTIFICATION_CHANNEL_ID)
+        final NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel)
                 .setSmallIcon(R.drawable.icon)
                 .setContentTitle(title)
                 .setContentText(body)
@@ -68,10 +68,8 @@ public class NotificationReceiver extends BroadcastReceiver {
         NotificationManagerCompat.from(context).notify(notifyId, builder.build());
     }
 
-    static String NOTIFICATION_CHANNEL_ID = BuildConfig.APPLICATION_ID;
-
-    static boolean createNotificationChannel(final Context context) {
-        final NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "SiYuan Notifications", NotificationManager.IMPORTANCE_HIGH);
+    static boolean createNotificationChannel(final Context context, final String channel) {
+        final NotificationChannel chan = new NotificationChannel(channel, channel, NotificationManager.IMPORTANCE_HIGH);
         chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
         final NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (null == manager) {

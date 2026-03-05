@@ -42,7 +42,7 @@ import mobile.Mobile;
  * 保活服务.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.0.2.3, May 23, 2025
+ * @version 1.0.2.4, Mar 5, 2026
  * @since 1.0.0
  */
 public class KeepLiveService extends Service {
@@ -65,11 +65,12 @@ public class KeepLiveService extends Service {
     private Random random = new Random();
 
     private void startMyOwnForeground() {
-        if (!NotificationReceiver.createNotificationChannel(this)) {
+        final String channel = "Keep Live Service";
+        if (!NotificationReceiver.createNotificationChannel(this, channel)) {
             return;
         }
 
-        final NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NotificationReceiver.NOTIFICATION_CHANNEL_ID);
+        final NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channel);
         final String[] texts = getNotificationTexts();
         if (null == texts || 1 > texts.length) {
             Utils.logError("keeplive", "notification texts is empty");

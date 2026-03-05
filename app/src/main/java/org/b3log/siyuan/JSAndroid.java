@@ -56,7 +56,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/Soltus">绛亽</a>
- * @version 1.6.0.1, Mar 2, 2026
+ * @version 1.6.0.2, Mar 5, 2026
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -67,7 +67,7 @@ public final class JSAndroid {
     }
 
     @JavascriptInterface
-    public void sendNotification(final String title, final String body, final int delayInSeconds) {
+    public void sendNotification(final String channel, final String title, final String body, final int delayInSeconds) {
         if (ActivityCompat.checkSelfPermission(this.activity, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             Utils.showToast(this.activity, "请允许通知权限以接收通知 / Please allow notification permission to receive notifications");
             final Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
@@ -87,6 +87,7 @@ public final class JSAndroid {
             }
 
             final Intent intent = new Intent(this.activity, NotificationReceiver.class);
+            intent.putExtra("channel", channel);
             intent.putExtra("title", title);
             intent.putExtra("body", body);
             final PendingIntent pendingIntent = PendingIntent.getBroadcast(this.activity, (int) System.currentTimeMillis(), intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
@@ -94,13 +95,13 @@ public final class JSAndroid {
             return;
         }
 
-        if (!NotificationReceiver.createNotificationChannel(activity)) {
+        if (!NotificationReceiver.createNotificationChannel(activity, channel)) {
             return;
         }
 
         final int notifyId = (int) System.currentTimeMillis();
         final PendingIntent resultPendingIntent = NotificationReceiver.createNotificationPendingIntent(this.activity);
-        final NotificationCompat.Builder builder = new NotificationCompat.Builder(activity, NotificationReceiver.NOTIFICATION_CHANNEL_ID)
+        final NotificationCompat.Builder builder = new NotificationCompat.Builder(activity, channel)
                 .setSmallIcon(R.drawable.icon)
                 .setContentTitle(title)
                 .setContentText(body)
