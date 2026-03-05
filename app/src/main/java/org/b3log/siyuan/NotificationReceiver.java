@@ -55,8 +55,7 @@ public class NotificationReceiver extends BroadcastReceiver {
             return;
         }
 
-
-        final int notifyId = (int) System.currentTimeMillis();
+        final int id = intent.getIntExtra("id", (int) System.currentTimeMillis());
         final PendingIntent resultPendingIntent = NotificationReceiver.createNotificationPendingIntent(context);
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel)
                 .setSmallIcon(R.drawable.icon)
@@ -65,7 +64,7 @@ public class NotificationReceiver extends BroadcastReceiver {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
                 .setContentIntent(resultPendingIntent);
-        NotificationManagerCompat.from(context).notify(notifyId, builder.build());
+        NotificationManagerCompat.from(context).notify(id, builder.build());
     }
 
     static boolean createNotificationChannel(final Context context, final String channel) {
