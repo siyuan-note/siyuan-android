@@ -80,14 +80,20 @@ public final class JSAndroid {
     }
 
     @JavascriptInterface
-    public void sendNotification(final String channel, final int id, final String title, final String body, final int delayInSeconds) {
+    public int sendNotification(final String channel, final String title, final String body, final int delayInSeconds) {
         if (ActivityCompat.checkSelfPermission(this.activity, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             Utils.showToast(this.activity, "请允许通知权限以接收通知 / Please allow notification permission to receive notifications");
             final Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
             intent.setData(Uri.parse("package:" + this.activity.getPackageName()));
             this.activity.startActivity(intent);
-            return;
+            return -1;
         }
+
+        if (!NotificationReceiver.createNotificationChannel(activity, channel)) {
+            return -1;
+        }
+
+        final int ret = (int) System.currentTimeMillis();
 
         if (0 < delayInSeconds) {
             final AlarmManager alarmManager = (AlarmManager) this.activity.getSystemService(Context.ALARM_SERVICE);
@@ -96,21 +102,17 @@ public final class JSAndroid {
                 final Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
                 intent.setData(Uri.parse("package:" + this.activity.getPackageName()));
                 this.activity.startActivity(intent);
-                return;
+                return -1;
             }
 
             final Intent intent = new Intent(this.activity, NotificationReceiver.class);
             intent.putExtra("channel", channel);
-            intent.putExtra("id", id);
+            intent.putExtra("id", ret);
             intent.putExtra("title", title);
             intent.putExtra("body", body);
-            final PendingIntent pendingIntent = PendingIntent.getBroadcast(this.activity, id, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            final PendingIntent pendingIntent = PendingIntent.getBroadcast(this.activity, ret, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             AlarmManagerCompat.setExactAndAllowWhileIdle((AlarmManager) this.activity.getSystemService(Context.ALARM_SERVICE), AlarmManager.ELAPSED_REALTIME_WAKEUP, delayInSeconds * 1000L, pendingIntent);
-            return;
-        }
-
-        if (!NotificationReceiver.createNotificationChannel(activity, channel)) {
-            return;
+            return ret;
         }
 
         final PendingIntent resultPendingIntent = NotificationReceiver.createNotificationPendingIntent(this.activity);
@@ -121,7 +123,8 @@ public final class JSAndroid {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
                 .setContentIntent(resultPendingIntent);
-        NotificationManagerCompat.from(this.activity).notify(id, builder.build());
+        NotificationManagerCompat.from(this.activity).notify(ret, builder.build());
+        return ret;
     }
 
     @JavascriptInterface

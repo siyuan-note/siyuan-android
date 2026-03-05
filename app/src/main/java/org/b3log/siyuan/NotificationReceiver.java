@@ -44,10 +44,6 @@ public class NotificationReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(final Context context, final Intent intent) {
         final String channel = intent.getStringExtra("channel");
-        if (!createNotificationChannel(context, channel)) {
-            return;
-        }
-
         final String title = intent.getStringExtra("title");
         final String body = intent.getStringExtra("body");
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
