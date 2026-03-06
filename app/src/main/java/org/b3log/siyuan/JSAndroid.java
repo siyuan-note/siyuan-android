@@ -61,32 +61,46 @@ import mobile.Mobile;
  * @since 1.0.0
  */
 public final class JSAndroid {
-    private MainActivity activity;
+    private final java.lang.ref.WeakReference<MainActivity> activityRef;
 
     public JSAndroid(final MainActivity activity) {
-        this.activity = activity;
+        this.activityRef = new java.lang.ref.WeakReference<>(activity);
+    }
+
+    private MainActivity getActivity() {
+        return activityRef.get();
     }
 
     @JavascriptInterface
     public void cancelNotification(final int id) {
-        final Intent intent = new Intent(this.activity, NotificationReceiver.class);
-        final PendingIntent pendingIntent = PendingIntent.getBroadcast(this.activity, id, intent, PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
+        final MainActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
+
+        final Intent intent = new Intent(activity, NotificationReceiver.class);
+        final PendingIntent pendingIntent = PendingIntent.getBroadcast(activity, id, intent, PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
         if (pendingIntent != null) {
-            final AlarmManager alarmManager = (AlarmManager) this.activity.getSystemService(Context.ALARM_SERVICE);
+            final AlarmManager alarmManager = (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
             alarmManager.cancel(pendingIntent);
             pendingIntent.cancel();
         }
 
-        NotificationManagerCompat.from(this.activity).cancel(id);
+        NotificationManagerCompat.from(activity).cancel(id);
     }
 
     @JavascriptInterface
     public int sendNotification(final String channel, final String title, final String body, final int delayInSeconds) {
-        if (ActivityCompat.checkSelfPermission(this.activity, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            Utils.showToast(this.activity, "请允许通知权限以接收通知 / Please allow notification permission to receive notifications");
+        final MainActivity activity = getActivity();
+        if (activity == null) {
+            return -1;
+        }
+
+        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            Utils.showToast(activity, "请允许通知权限以接收通知 / Please allow notification permission to receive notifications");
             final Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
-            intent.setData(Uri.parse("package:" + this.activity.getPackageName()));
-            this.activity.startActivity(intent);
+            intent.setData(Uri.parse("package:" + activity.getPackageName()));
+            activity.startActivity(intent);
             return -1;
         }
 
@@ -97,27 +111,27 @@ public final class JSAndroid {
         final int ret = (int) System.currentTimeMillis();
 
         if (0 < delayInSeconds) {
-            final AlarmManager alarmManager = (AlarmManager) this.activity.getSystemService(Context.ALARM_SERVICE);
+            final AlarmManager alarmManager = (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
-                Utils.showToast(this.activity, "请允许精确闹钟权限以接收定时通知（同时需要允许自启动） / Please allow exact alarm permission to receive scheduled notifications (also need to allow auto-start)");
+                Utils.showToast(activity, "请允许精确闹钟权限以接收定时通知（同时需要允许自启动） / Please allow exact alarm permission to receive scheduled notifications (also need to allow auto-start)");
                 final Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
-                intent.setData(Uri.parse("package:" + this.activity.getPackageName()));
-                this.activity.startActivity(intent);
+                intent.setData(Uri.parse("package:" + activity.getPackageName()));
+                activity.startActivity(intent);
                 return -1;
             }
 
-            final Intent intent = new Intent(this.activity, NotificationReceiver.class);
+            final Intent intent = new Intent(activity, NotificationReceiver.class);
             intent.putExtra("channel", channel);
             intent.putExtra("id", ret);
             intent.putExtra("title", title);
             intent.putExtra("body", body);
             final long triggerTime = SystemClock.elapsedRealtime() + (delayInSeconds * 1000L);
-            final PendingIntent pendingIntent = PendingIntent.getBroadcast(this.activity, ret, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-            AlarmManagerCompat.setExactAndAllowWhileIdle((AlarmManager) this.activity.getSystemService(Context.ALARM_SERVICE), AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerTime, pendingIntent);
+            final PendingIntent pendingIntent = PendingIntent.getBroadcast(activity, ret, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            AlarmManagerCompat.setExactAndAllowWhileIdle((AlarmManager) activity.getSystemService(Context.ALARM_SERVICE), AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerTime, pendingIntent);
             return ret;
         }
 
-        final PendingIntent resultPendingIntent = NotificationReceiver.createNotificationPendingIntent(this.activity);
+        final PendingIntent resultPendingIntent = NotificationReceiver.createNotificationPendingIntent(activity);
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(activity, channel)
                 .setSmallIcon(R.drawable.icon)
                 .setContentTitle(title)
@@ -125,43 +139,59 @@ public final class JSAndroid {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
                 .setContentIntent(resultPendingIntent);
-        NotificationManagerCompat.from(this.activity).notify(ret, builder.build());
+        NotificationManagerCompat.from(activity).notify(ret, builder.build());
         return ret;
     }
 
     @JavascriptInterface
     public void exit() {
-        this.activity.exit();
+        final MainActivity activity = getActivity();
+        if (activity != null) {
+            activity.exit();
+        }
     }
 
     @JavascriptInterface
     public void hideKeyboard() {
-        activity.runOnUiThread(() -> {
-            final WebView webView = activity.findViewById(R.id.webView);
-            Utils.hideKeyboardAndToolbar(webView);
-            KeyboardUtils.hideSoftInput(activity);
-        });
+        final MainActivity activity = getActivity();
+        if (activity != null) {
+            activity.runOnUiThread(() -> {
+                final WebView webView = activity.findViewById(R.id.webView);
+                Utils.hideKeyboardAndToolbar(webView);
+                KeyboardUtils.hideSoftInput(activity);
+            });
+        }
     }
 
     @JavascriptInterface
     public void showKeyboard() {
-        activity.runOnUiThread(() -> {
-            final WebView webView = activity.findViewById(R.id.webView);
-            Utils.showKeyboardAndToolbar(webView);
-            KeyboardUtils.showSoftInput(activity);
-        });
+        final MainActivity activity = getActivity();
+        if (activity != null) {
+            activity.runOnUiThread(() -> {
+                final WebView webView = activity.findViewById(R.id.webView);
+                Utils.showKeyboardAndToolbar(webView);
+                KeyboardUtils.showSoftInput(activity);
+            });
+        }
     }
 
     @JavascriptInterface
     public void setWebViewFocusable(final boolean focusable) {
-        activity.runOnUiThread(() -> {
-            final WebView webView = activity.findViewById(R.id.webView);
-            Utils.setWebViewFocusable(webView, focusable);
-        });
+        final MainActivity activity = getActivity();
+        if (activity != null) {
+            activity.runOnUiThread(() -> {
+                final WebView webView = activity.findViewById(R.id.webView);
+                Utils.setWebViewFocusable(webView, focusable);
+            });
+        }
     }
 
     @JavascriptInterface
     public String getBlockURL() {
+        final MainActivity activity = getActivity();
+        if (activity == null) {
+            return "";
+        }
         String blockURL = activity.getIntent().getStringExtra("blockURL");
         if (StringUtils.isEmpty(blockURL)) {
             blockURL = "";
@@ -171,11 +201,19 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void setWebViewDebuggingEnabled(final boolean debuggable) {
-        activity.setWebViewDebuggable(debuggable);
+        final MainActivity activity = getActivity();
+        if (activity != null) {
+            activity.setWebViewDebuggable(debuggable);
+        }
     }
 
     @JavascriptInterface
     public String readClipboard() {
+        final MainActivity activity = getActivity();
+        if (activity == null) {
+            return "";
+        }
+
         final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
         final ClipData clipData = clipboard.getPrimaryClip();
         if (null == clipData) {
@@ -210,6 +248,10 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public String readHTMLClipboard() {
+        final MainActivity activity = getActivity();
+        if (activity == null) {
+            return "";
+        }
         final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
         final ClipData clipData = clipboard.getPrimaryClip();
         if (null == clipData) {
@@ -226,6 +268,10 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public String readSiYuanHTMLClipboard() {
+        final MainActivity activity = getActivity();
+        if (activity == null) {
+            return "";
+        }
         final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
         final ClipData clipData = clipboard.getPrimaryClip();
         if (null == clipData) {
@@ -244,6 +290,10 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void writeImageClipboard(final String uri) {
+        final MainActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
         final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
         final ClipData clip = ClipData.newUri(activity.getContentResolver(), "Copied img from SiYuan", Uri.parse("http://127.0.0.1:6806/" + uri));
         clipboard.setPrimaryClip(clip);
@@ -251,6 +301,10 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void writeClipboard(final String content) {
+        final MainActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
         final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
         final ClipData clip = ClipData.newPlainText("Copied text from SiYuan", content);
         clipboard.setPrimaryClip(clip);
@@ -258,6 +312,10 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void writeHTMLClipboard(final String text, final String html) {
+        final MainActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
         final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
         final ClipData clip = ClipData.newHtmlText("Copied html from SiYuan", text, html);
         clipboard.setPrimaryClip(clip);
@@ -265,6 +323,10 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void writeSiYuanHTMLClipboard(final String text, final String html, final String siyuanHTML) {
+        final MainActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
         final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
         final String[] mimeTypes = new String[]{ClipDescription.MIMETYPE_TEXT_PLAIN, ClipDescription.MIMETYPE_TEXT_HTML, "text/siyuan"};
         final ClipData.Item standardItem = new ClipData.Item(text, html, null, null);
@@ -276,6 +338,10 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void returnDesktop() {
+        final MainActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
         final Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_HOME);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -284,11 +350,18 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void exportByDefault(String url) {
-        Utils.openByDefaultBrowser(url, activity);
+        final MainActivity activity = getActivity();
+        if (activity != null) {
+            Utils.openByDefaultBrowser(url, activity);
+        }
     }
 
     @JavascriptInterface
     public void print(final String title, final String html) {
+        final MainActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
         final String filename = title + ".pdf";
         try {
             Utils.print(html, filename, activity);
@@ -299,11 +372,20 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public int getScreenWidthPx() {
+        final MainActivity activity = getActivity();
+        if (activity == null) {
+            return 0;
+        }
         return activity.getResources().getDisplayMetrics().widthPixels;
     }
 
     @JavascriptInterface
     public void openExternal(String url) {
+        final MainActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
+
         if (!url.startsWith("assets/")) {
             Utils.openByDefaultBrowser(url, activity);
             return;
@@ -346,6 +428,11 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void openAuthURL(final String url) {
+        final MainActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
+
         if (StringUtils.isEmpty(url) || url.startsWith("#")) {
             Utils.logError("JSAndroid", "openAuthURL failed: invalid url");
             return;
@@ -363,6 +450,11 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void changeStatusBarColor(final String color, final int appearanceMode) {
+        final MainActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
+
         if (Utils.isTablet(activity)) {
             return;
         }
