@@ -133,7 +133,7 @@ public final class Utils {
 
     public static boolean isTablet(final Context context) {
         Configuration configuration = context.getResources().getConfiguration();
-        return (configuration.smallestScreenWidthDp >= 600);
+        return configuration.smallestScreenWidthDp >= 600;
     }
 
     public static boolean isCnChannel(final PackageManager pm) {
