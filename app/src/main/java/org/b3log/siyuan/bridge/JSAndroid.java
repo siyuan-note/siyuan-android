@@ -500,7 +500,7 @@ public final class JSAndroid {
             return Color.parseColor(str);
         } catch (final Exception e) {
             Utils.logError("js", "parse color [" + str + "] failed", e);
-            return Color.parseColor("#212224");
+            return Color.parseColor(AppConfig.DEFAULT_FALLBACK_COLOR);
         }
     }
 

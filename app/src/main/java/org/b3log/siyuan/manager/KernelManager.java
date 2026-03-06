@@ -21,6 +21,7 @@ import android.content.Context;
 import android.os.Build;
 import android.util.Log;
 
+import org.b3log.siyuan.config.AppConfig;
 import org.b3log.siyuan.util.Utils;
 
 import java.util.TimeZone;
@@ -80,7 +81,7 @@ public class KernelManager {
                     // Disable AI feature for Chinese mainland channels
                     // 为中国大陆渠道禁用 AI 功能
                     if (Utils.isCnChannel(context.getPackageManager())) {
-                        Mobile.disableFeature("ai");
+                        Mobile.disableFeature(AppConfig.FEATURE_AI);
                     }
 
                     final String timezone = TimeZone.getDefault().getID();
@@ -114,7 +115,7 @@ public class KernelManager {
     public void waitForKernelReady() {
         while (true) {
             try {
-                Thread.sleep(10);
+                Thread.sleep(AppConfig.KERNEL_BOOT_CHECK_INTERVAL_MS);
             } catch (final InterruptedException e) {
                 Utils.logError("kernel", "Kernel ready check interrupted", e);
                 Thread.currentThread().interrupt();

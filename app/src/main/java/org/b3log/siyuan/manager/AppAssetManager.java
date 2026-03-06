@@ -24,6 +24,7 @@ import com.blankj.utilcode.util.StringUtils;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.b3log.siyuan.config.AppConfig;
 import org.b3log.siyuan.util.Utils;
 
 import java.io.File;
@@ -57,9 +58,9 @@ public class AppAssetManager {
      */
     public AppAssetManager(Context context) {
         this.context = context;
-        this.appDir = context.getFilesDir().getAbsolutePath() + "/app";
+        this.appDir = context.getFilesDir().getAbsolutePath() + AppConfig.APP_DIR;
         this.appDirFile = new File(appDir);
-        this.appVersionFile = new File(appDir, "VERSION");
+        this.appVersionFile = new File(appDir, AppConfig.APP_VERSION_FILE);
     }
 
     /**
@@ -145,10 +146,10 @@ public class AppAssetManager {
             // Extract assets
             callback.onProgress("Initializing appearance...", 60);
             final String appZipPath = context.getCacheDir() + "/app.zip";
-            IOUtils.copy(context.getAssets().open("app.zip"),
+            IOUtils.copy(context.getAssets().open(AppConfig.APP_ZIP),
                         FileUtils.openOutputStream(new File(appZipPath)));
-            Utils.unzipAsset(appZipPath, appDir + "/app");
-            Log.i("asset", "Extracted app.zip to: " + appDir + "/app");
+            Utils.unzipAsset(appZipPath, appDir + AppConfig.APP_DIR);
+            Log.i("asset", "Extracted app.zip to: " + appDir + AppConfig.APP_DIR);
 
             // Write version file
             FileUtils.writeStringToFile(appVersionFile, String.valueOf(Utils.versionCode),

@@ -78,13 +78,13 @@ public class WebViewManager {
         ws.setDomStorageEnabled(true);
         ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
         ws.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-        ws.setTextZoom(100);
+        ws.setTextZoom(AppConfig.WEBVIEW_TEXT_ZOOM);
         ws.setUseWideViewPort(true);
         ws.setLoadWithOverviewMode(true);
 
         // Set custom user agent
-        ws.setUserAgentString("SiYuan/" + Utils.version +
-                " https://b3log.org/siyuan Android " + userAgent);
+        ws.setUserAgentString(AppConfig.USER_AGENT_PREFIX + Utils.version +
+                AppConfig.USER_AGENT_SUFFIX + userAgent);
 
         // Enable third-party cookies
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);

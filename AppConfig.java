@@ -15,15 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package org.b3log.siyuan.config;
-
-import org.b3log.siyuan.util.Utils;
+package org.b3log.siyuan;
 
 /**
  * Application configuration constants.
  * 应用配置常量
  *
- * @version 1.0.0.0, Mar 6, 2026
+ * @author <a href="https://88250.b3log.org">Liang Ding</a>
+ * @version 1.0.0.0, Jan 27, 2026
+ * @since 3.5.5
  */
 public final class AppConfig {
 
