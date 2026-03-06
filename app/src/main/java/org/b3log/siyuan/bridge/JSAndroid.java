@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package org.b3log.siyuan;
+package org.b3log.siyuan.bridge;
 
 import android.Manifest;
 import android.app.AlarmManager;
@@ -46,6 +46,14 @@ import com.blankj.utilcode.util.BarUtils;
 import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.StringUtils;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
+
+import org.b3log.siyuan.BuildConfig;
+import org.b3log.siyuan.R;
+import org.b3log.siyuan.activity.MainActivity;
+import org.b3log.siyuan.activity.ShortcutActivity;
+import org.b3log.siyuan.config.AppConfig;
+import org.b3log.siyuan.service.NotificationReceiver;
+import org.b3log.siyuan.util.Utils;
 
 import java.io.File;
 import java.net.URLDecoder;

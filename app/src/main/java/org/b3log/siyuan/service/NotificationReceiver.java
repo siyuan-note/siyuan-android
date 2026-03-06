@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package org.b3log.siyuan;
+package org.b3log.siyuan.service;
 
 import android.Manifest;
 import android.app.Notification;
@@ -31,6 +31,10 @@ import android.os.Build;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+
+import org.b3log.siyuan.R;
+import org.b3log.siyuan.activity.MainActivity;
+import org.b3log.siyuan.util.Utils;
 
 /**
  * 通知接收器.
@@ -63,7 +67,7 @@ public class NotificationReceiver extends BroadcastReceiver {
         NotificationManagerCompat.from(context).notify(id, builder.build());
     }
 
-    static boolean createNotificationChannel(final Context context, final String channel) {
+    public static boolean createNotificationChannel(final Context context, final String channel) {
         final NotificationChannel chan = new NotificationChannel(channel, channel, NotificationManager.IMPORTANCE_HIGH);
         chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
         final NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -75,7 +79,7 @@ public class NotificationReceiver extends BroadcastReceiver {
         return true;
     }
 
-    static PendingIntent createNotificationPendingIntent(final Context context) {
+    public static PendingIntent createNotificationPendingIntent(final Context context) {
         final Intent resultIntent = new Intent(context, MainActivity.class).
                 setAction(Intent.ACTION_MAIN).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent resultPendingIntent;

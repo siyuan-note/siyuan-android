@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package org.b3log.siyuan;
+package org.b3log.siyuan.service;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -29,6 +29,8 @@ import android.os.IBinder;
 import androidx.core.app.NotificationCompat;
 
 import org.apache.commons.io.FileUtils;
+import org.b3log.siyuan.R;
+import org.b3log.siyuan.util.Utils;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;

@@ -47,7 +47,7 @@
         tools:targetApi="tiramisu">
 
         <activity
-            android:name=".BootActivity"
+            android:name=".activity.BootActivity"
             android:autoRemoveFromRecents="true"
             android:configChanges="orientation|screenSize"
             android:exported="true"
@@ -83,7 +83,7 @@
         </activity>
 
         <activity
-            android:name=".RedirectUriReceiverActivity"
+            android:name=".activity.RedirectUriReceiverActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:noHistory="true"
@@ -101,7 +101,7 @@
         </activity>
 
         <activity
-            android:name=".MainActivity"
+            android:name=".activity.MainActivity"
             android:autoRemoveFromRecents="true"
             android:configChanges="keyboard|keyboardHidden|screenLayout|uiMode|orientation|screenSize|smallestScreenSize"
             android:hardwareAccelerated="true"
@@ -177,7 +177,7 @@
         -->
 
         <service
-            android:name=".KeepLiveService"
+            android:name=".service.KeepLiveService"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
@@ -185,7 +185,7 @@
         </service>
 
         <!-- 监听系统广播以实现预约通知 -->
-        <receiver android:name=".NotificationReceiver" />
+        <receiver android:name=".service.NotificationReceiver" />
 
         <!--
             Support opening assets through other apps on the Android

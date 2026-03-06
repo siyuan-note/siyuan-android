@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package org.b3log.siyuan;
+package org.b3log.siyuan.manager;
 
 import android.util.Log;
 
@@ -23,6 +23,8 @@ import com.koushikdutta.async.http.AsyncHttpClient;
 import com.koushikdutta.async.http.AsyncHttpPost;
 import com.koushikdutta.async.http.body.JSONObjectBody;
 
+import org.b3log.siyuan.config.AppConfig;
+import org.b3log.siyuan.util.Utils;
 import org.json.JSONObject;
 
 import java.util.concurrent.atomic.AtomicBoolean;

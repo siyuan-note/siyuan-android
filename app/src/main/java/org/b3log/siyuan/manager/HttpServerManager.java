@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package org.b3log.siyuan;
+package org.b3log.siyuan.manager;
 
 import android.content.Context;
 
@@ -26,6 +26,8 @@ import com.koushikdutta.async.util.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.b3log.siyuan.config.AppConfig;
+import org.b3log.siyuan.util.Utils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

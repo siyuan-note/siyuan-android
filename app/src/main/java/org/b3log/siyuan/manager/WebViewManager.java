@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package org.b3log.siyuan;
+package org.b3log.siyuan.manager;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -25,6 +25,10 @@ import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+
+import org.b3log.siyuan.bridge.JSAndroid;
+import org.b3log.siyuan.config.AppConfig;
+import org.b3log.siyuan.util.Utils;
 
 import java.lang.ref.WeakReference;
 

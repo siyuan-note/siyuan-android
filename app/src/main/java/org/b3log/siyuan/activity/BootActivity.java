@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package org.b3log.siyuan;
+package org.b3log.siyuan.activity;
 
 import android.app.AlertDialog;
 import android.content.ClipData;
@@ -40,6 +40,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.blankj.utilcode.util.BarUtils;
 
 import org.apache.commons.io.FileUtils;
+import org.b3log.siyuan.R;
+import org.b3log.siyuan.util.Utils;
 
 import java.io.File;
 import java.util.HashSet;

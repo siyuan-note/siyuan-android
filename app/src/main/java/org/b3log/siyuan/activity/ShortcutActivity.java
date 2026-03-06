@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package org.b3log.siyuan;
+package org.b3log.siyuan.activity;
 
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -43,6 +43,8 @@ import com.blankj.utilcode.util.StringUtils;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import org.apache.commons.io.FileUtils;
+import org.b3log.siyuan.R;
+import org.b3log.siyuan.util.Utils;
 
 import java.io.File;
 import java.util.List;

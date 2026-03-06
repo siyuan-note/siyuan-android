@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package org.b3log.siyuan;
+package org.b3log.siyuan.activity;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -66,6 +66,18 @@ import com.koushikdutta.async.http.AsyncHttpPost;
 import com.koushikdutta.async.http.body.JSONObjectBody;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
+import org.b3log.siyuan.R;
+import org.b3log.siyuan.bridge.JSAndroid;
+import org.b3log.siyuan.config.AppConfig;
+import org.b3log.siyuan.manager.AppAssetManager;
+import org.b3log.siyuan.manager.HttpServerManager;
+import org.b3log.siyuan.manager.KernelManager;
+import org.b3log.siyuan.manager.SyncManager;
+import org.b3log.siyuan.manager.WebViewManager;
+import org.b3log.siyuan.service.KeepLiveService;
+import org.b3log.siyuan.util.AndroidBug5497Workaround;
+import org.b3log.siyuan.util.Utils;
+
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -86,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private KernelManager kernelManager;
     private SyncManager syncManager;
     private WebViewManager webViewManager;
-    WebView webView;
+    public WebView webView;
     private ImageView bootLogo;
     private ProgressBar bootProgressBar;
     private TextView bootDetailsText;
