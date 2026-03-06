@@ -73,9 +73,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
-import java.util.TimeZone;
-
-import mobile.Mobile;
 
 /**
  * 主程序.
@@ -88,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
     private AppAssetManager assetManager;
     private HttpServerManager httpServerManager;
+    private KernelManager kernelManager;
     WebView webView;
     private ImageView bootLogo;
     private ProgressBar bootProgressBar;
@@ -381,36 +379,18 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
 
     private void bootKernel() {
-        Mobile.setHttpServerPort(MainActivity.serverPort);
-        if (Mobile.isHttpServing()) {
-            Log.i("kernel", "Kernel HTTP server is running");
-            bootIndex();
-            return;
-        }
+        // Initialize KernelManager
+        final String appDir = assetManager.getAppDir();
+        final String workspaceBaseDir = getExternalFilesDir(null).getAbsolutePath();
+        kernelManager = new KernelManager(this, appDir, workspaceBaseDir,
+                                         webViewVer, userAgent, serverPort);
 
-        try {
-            new Thread(() -> {
-                if (Utils.isCnChannel(this.getPackageManager())) {
-                    // Apps in Chinese mainland app stores no longer provide AI access settings https://github.com/siyuan-note/siyuan/issues/13051
-                    Mobile.disableFeature("ai");
-                }
+        // Start kernel
+        kernelManager.startKernel();
 
-                final String appDir = getFilesDir().getAbsolutePath() + "/app";
-                final String workspaceBaseDir = getExternalFilesDir(null).getAbsolutePath();
-                final String timezone = TimeZone.getDefault().getID();
-                final String localIPs = Utils.getIPAddressList();
-                final String langCode = Utils.getLanguage();
-                Mobile.startKernel("android", appDir, workspaceBaseDir, timezone, localIPs, langCode,
-                        Build.VERSION.RELEASE +
-                                "/SDK " + Build.VERSION.SDK_INT +
-                                "/WebView " + webViewVer +
-                                "/Manufacturer " + android.os.Build.MANUFACTURER +
-                                "/Brand " + android.os.Build.BRAND +
-                                "/UA " + userAgent);
-            }).start();
-        } catch (final Exception e) {
-            Utils.logError("kernel", "boot kernel failed", e);
-            return;
+        // Check if already running
+        if (kernelManager.isKernelServing()) {
+            Log.i("kernel", "Kernel HTTP server is already running");
         }
 
         bootIndex();
@@ -488,11 +468,8 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
      * 等待内核 HTTP 服务伺服。
      */
     private void waitFotKernelHttpServing() {
-        while (true) {
-            sleep(10);
-            if (Mobile.isHttpServing()) {
-                break;
-            }
+        if (kernelManager != null) {
+            kernelManager.waitForKernelReady();
         }
     }
 
@@ -651,7 +628,9 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         finishAndRemoveTask();
 
         try {
-            Mobile.exit();
+            if (kernelManager != null) {
+                kernelManager.shutdown();
+            }
         } catch (Exception e) {
             Utils.logError("runtime", "exit kernel failed", e);
         }
