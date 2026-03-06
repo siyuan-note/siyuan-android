@@ -106,10 +106,8 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private TextView bootDetailsText;
 
     private ValueCallback<Uri[]> uploadMessage;
-    private static final int REQUEST_SELECT_FILE = 100;
-    private static final int REQUEST_CAMERA = 101;
 
-    static int serverPort = 6906;
+    static int serverPort = AppConfig.DEFAULT_ASYNC_SERVER_PORT;
     static String webViewVer;
     static String userAgent;
 
@@ -184,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             Utils.setWebViewFocusable(webView, true);
         } else {
             // 沉浸式状态栏设置
-            UltimateBarX.statusBarOnly(this).transparent().light(false).color(Color.parseColor("#1e1e1e")).apply();
+            UltimateBarX.statusBarOnly(this).transparent().light(false).color(Color.parseColor(AppConfig.DEFAULT_STATUS_BAR_COLOR)).apply();
             ((ViewGroup) webView.getParent()).setPadding(0, UltimateBarX.getStatusBarHeight(), 0, 0);
         }
 
@@ -326,7 +324,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                         builder.setTitle("权限申请 / Permission Request");
                         builder.setMessage("需要相机权限以拍摄照片并插入到当前文档中 / Camera permission is required to take photos and insert them into the current document");
                         builder.setPositiveButton("同意/Agree", (dialog, which) -> {
-                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{android.Manifest.permission.CAMERA}, REQUEST_CAMERA);
+                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{android.Manifest.permission.CAMERA}, AppConfig.REQUEST_CAMERA);
                         });
                         builder.setNegativeButton("拒绝/Decline", (dialog, which) -> {
                             Utils.showToast(MainActivity.this, "权限已被拒绝 / Permission denied");
@@ -344,7 +342,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 final Intent intent = fileChooserParams.createIntent();
                 intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                 try {
-                    startActivityForResult(intent, REQUEST_SELECT_FILE);
+                    startActivityForResult(intent, AppConfig.REQUEST_SELECT_FILE);
                 } catch (final Exception e) {
                     uploadMessage = null;
                     Utils.showToast(MainActivity.this, "Cannot open file chooser");
@@ -360,7 +358,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         });
 
         final JSAndroid JSAndroid = new JSAndroid(this);
-        webView.addJavascriptInterface(JSAndroid, "JSAndroid");
+        webView.addJavascriptInterface(JSAndroid, AppConfig.JS_INTERFACE_NAME);
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
         final WebSettings ws = webView.getSettings();
         ws.setJavaScriptEnabled(true);
@@ -373,7 +371,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         ws.setUserAgentString("SiYuan/" + Utils.version + " https://b3log.org/siyuan Android " + ws.getUserAgentString());
 
         waitFotKernelHttpServing();
-        webView.loadUrl("http://127.0.0.1:6806/appearance/boot/index.html?v=" + Utils.version);
+        webView.loadUrl(AppConfig.KERNEL_BOOT_URL);
 
         keepLiveActive = true;
         keepLiveThread = new Thread(this::keepLive, "KeepLiveThread");
@@ -408,7 +406,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         }
 
         server = new AsyncHttpServer();
-        server.post("/api/walkDir", (request, response) -> {
+        server.post(AppConfig.API_WALK_DIR, (request, response) -> {
             try {
                 final long start = System.currentTimeMillis();
                 final JSONObject requestJSON = (JSONObject) request.getBody().get();
@@ -456,7 +454,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     }
 
     private int getAvailablePort() {
-        int ret = 6906;
+        int ret = AppConfig.DEFAULT_ASYNC_SERVER_PORT;
         try {
             ServerSocket s = new ServerSocket(0);
             ret = s.getLocalPort();
@@ -546,7 +544,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             try {
                 final Intent intent = new Intent(MainActivity.this, KeepLiveService.class);
                 ContextCompat.startForegroundService(this, intent);
-                sleep(45 * 1000);
+                sleep(AppConfig.KEEP_ALIVE_DURATION_MS);
                 stopService(intent);
             } catch (final Throwable t) {
                 Utils.logError("keeplive", "keep live failed", t);
@@ -648,7 +646,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (requestCode == REQUEST_CAMERA) {
+        if (requestCode == AppConfig.REQUEST_CAMERA) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 openCamera();
                 return;
@@ -668,7 +666,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             if (photoUri != null) {
                 captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
                 captureIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                startActivityForResult(captureIntent, REQUEST_CAMERA);
+                startActivityForResult(captureIntent, AppConfig.REQUEST_CAMERA);
             }
         }
     }
@@ -680,7 +678,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             return;
         }
 
-        if (requestCode == REQUEST_CAMERA) {
+        if (requestCode == AppConfig.REQUEST_CAMERA) {
             if (RESULT_OK != resultCode) {
                 uploadMessage.onReceiveValue(null);
                 uploadMessage = null;
@@ -688,7 +686,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             }
 
             uploadMessage.onReceiveValue(new Uri[]{mCameraUri});
-        } else if (requestCode == REQUEST_SELECT_FILE) {
+        } else if (requestCode == AppConfig.REQUEST_SELECT_FILE) {
             // 以下代码参考自 https://github.com/mgks/os-fileup/blob/master/app/src/main/java/mgks/os/fileup/MainActivity.java MIT license
 
             Uri[] results = null;
@@ -892,7 +890,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             }
             syncing = true;
 
-            final AsyncHttpPost req = new com.koushikdutta.async.http.AsyncHttpPost("http://127.0.0.1:6806/api/sync/performSync");
+            final AsyncHttpPost req = new com.koushikdutta.async.http.AsyncHttpPost(AppConfig.API_SYNC_PERFORM);
             req.setBody(new JSONObjectBody(new JSONObject().put("mobileSwitch", true)));
             AsyncHttpClient.getDefaultInstance().executeJSONObject(req,
                     new com.koushikdutta.async.http.AsyncHttpClient.JSONObjectCallback() {
