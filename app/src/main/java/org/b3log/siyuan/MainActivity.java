@@ -86,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private AppAssetManager assetManager;
     private HttpServerManager httpServerManager;
     private KernelManager kernelManager;
+    private SyncManager syncManager;
     WebView webView;
     private ImageView bootLogo;
     private ProgressBar bootProgressBar;
@@ -142,6 +143,9 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         // 启动 HTTP Server
         httpServerManager = new HttpServerManager(this);
         serverPort = httpServerManager.startServer();
+
+        // 初始化同步管理器
+        syncManager = new SyncManager();
 
         // 初始化 UI 元素
         initUIElements();
@@ -605,7 +609,9 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
     @Override
     public void onForeground(Activity activity) {
-        startSyncData();
+        if (syncManager != null) {
+            syncManager.startSync();
+        }
         if (null != webView) {
             webView.evaluateJavascript("javascript:window.reconnectWebSocket()", null);
         }
@@ -613,7 +619,9 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
     @Override
     public void onBackground(Activity activity) {
-        startSyncData();
+        if (syncManager != null) {
+            syncManager.startSync();
+        }
     }
 
     @Override
@@ -713,35 +721,4 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         WebView.setWebContentsDebuggingEnabled(debuggable);
     }
 
-    private static boolean syncing;
-
-    public static void startSyncData() {
-        new Thread(MainActivity::syncData).start();
-    }
-
-    public static void syncData() {
-        try {
-            if (syncing) {
-                Log.i("sync", "Data is syncing...");
-                return;
-            }
-            syncing = true;
-
-            final AsyncHttpPost req = new com.koushikdutta.async.http.AsyncHttpPost(AppConfig.API_SYNC_PERFORM);
-            req.setBody(new JSONObjectBody(new JSONObject().put("mobileSwitch", true)));
-            AsyncHttpClient.getDefaultInstance().executeJSONObject(req,
-                    new com.koushikdutta.async.http.AsyncHttpClient.JSONObjectCallback() {
-                        @Override
-                        public void onCompleted(Exception e, com.koushikdutta.async.http.AsyncHttpResponse source, JSONObject result) {
-                            if (null != e) {
-                                Utils.logError("sync", "data sync failed", e);
-                            }
-                        }
-                    });
-        } catch (final Throwable e) {
-            Utils.logError("sync", "data sync failed", e);
-        } finally {
-            syncing = false;
-        }
-    }
 }
