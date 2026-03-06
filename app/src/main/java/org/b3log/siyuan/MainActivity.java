@@ -87,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private HttpServerManager httpServerManager;
     private KernelManager kernelManager;
     private SyncManager syncManager;
+    private WebViewManager webViewManager;
     WebView webView;
     private ImageView bootLogo;
     private ProgressBar bootProgressBar;
@@ -215,7 +216,10 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             return;
         }
 
-        webView.setVisibility(View.VISIBLE);
+        // Initialize WebViewManager
+        webViewManager = new WebViewManager(this, webView);
+        userAgent = webViewManager.initialize();
+        MainActivity.webViewVer = userAgent;
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(final WebView view, final WebResourceRequest request) {
@@ -348,21 +352,13 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             }
         });
 
+        // Register JavaScript interface
         final JSAndroid JSAndroid = new JSAndroid(this);
-        webView.addJavascriptInterface(JSAndroid, AppConfig.JS_INTERFACE_NAME);
-        CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
-        final WebSettings ws = webView.getSettings();
-        ws.setJavaScriptEnabled(true);
-        ws.setDomStorageEnabled(true);
-        ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
-        ws.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-        ws.setTextZoom(100);
-        ws.setUseWideViewPort(true);
-        ws.setLoadWithOverviewMode(true);
-        ws.setUserAgentString("SiYuan/" + Utils.version + " https://b3log.org/siyuan Android " + ws.getUserAgentString());
+        webViewManager.registerJavaScriptInterface(JSAndroid);
 
+        // Wait for kernel and load boot URL
         waitFotKernelHttpServing();
-        webView.loadUrl(AppConfig.KERNEL_BOOT_URL);
+        webViewManager.loadBootUrl();
 
         keepLiveActive = true;
         keepLiveThread = new Thread(this::keepLive, "KeepLiveThread");
@@ -510,7 +506,9 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     }
 
     private void goBack() {
-        webView.evaluateJavascript("javascript:window.goBack ? window.goBack() : window.history.back()", null);
+        if (webViewManager != null) {
+            webViewManager.goBack();
+        }
     }
 
     // 用于保存拍照图片的 uri
@@ -601,6 +599,22 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        if (webViewManager != null) {
+            webViewManager.pause();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (webViewManager != null) {
+            webViewManager.resume();
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         Log.i("boot", "Destroy main activity");
         super.onDestroy();
@@ -612,8 +626,8 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         if (syncManager != null) {
             syncManager.startSync();
         }
-        if (null != webView) {
-            webView.evaluateJavascript("javascript:window.reconnectWebSocket()", null);
+        if (webViewManager != null) {
+            webViewManager.reconnectWebSocket();
         }
     }
 
@@ -665,13 +679,8 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         }
 
         try {
-            if (null != webView) {
-                runOnUiThread(() -> {
-                    ((ViewGroup) webView.getParent()).removeView(webView);
-                    webView.removeAllViews();
-                    webView.destroy();
-                    webView = null;
-                });
+            if (webViewManager != null) {
+                webViewManager.destroy();
             }
         } catch (final Exception e) {
             Utils.logError("runtime", "destroy webview failed", e);
