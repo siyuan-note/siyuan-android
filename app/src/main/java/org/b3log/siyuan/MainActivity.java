@@ -99,6 +99,7 @@ import mobile.Mobile;
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
 
+    private AppAssetManager assetManager;
     private AsyncHttpServer server;
     WebView webView;
     private ImageView bootLogo;
@@ -582,38 +583,14 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     }
 
     private void initAppearance() {
-        if (needUnzipAssets()) {
-            final String appDir = getFilesDir().getAbsolutePath() + "/app";
-            final File appVerFile = new File(appDir, "VERSION");
+        assetManager = new AppAssetManager(this);
+        boolean success = assetManager.initializeIfNeeded((message, percent) -> {
+            setBootProgress(message, percent);
+        });
 
-            setBootProgress("Clearing appearance...", 20);
-            try {
-                FileUtils.deleteDirectory(new File(appDir));
-            } catch (final Exception e) {
-                Utils.logError("boot", "delete dir [" + appDir + "] failed, exit application", e);
-                exit();
-                return;
-            }
-
-            setBootProgress("Initializing appearance...", 60);
-
-            try {
-                final String appZip = getCacheDir() + "/app.zip";
-                IOUtils.copy(getAssets().open("app.zip"), FileUtils.openOutputStream(new File(appZip)));
-                Utils.unzipAsset(appZip, appDir + "/app");
-            } catch (final Exception e) {
-                Utils.logError("boot", "unzip assets failed, exit application", e);
-                exit();
-                return;
-            }
-
-            try {
-                FileUtils.writeStringToFile(appVerFile, Utils.versionCode + "", StandardCharsets.UTF_8);
-            } catch (final Exception e) {
-                Utils.logError("boot", "write version failed", e);
-            }
-
-            setBootProgress("Booting kernel...", 80);
+        if (!success) {
+            Utils.logError("boot", "Failed to initialize appearance assets, exit application", null);
+            exit();
         }
     }
 
@@ -727,38 +704,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         super.onActivityResult(requestCode, resultCode, intent);
     }
 
-    private boolean needUnzipAssets() {
-        final String appDir = getFilesDir().getAbsolutePath() + "/app";
-        final File appDirFile = new File(appDir);
-        appDirFile.mkdirs();
-
-        if (Utils.isDebugPackageAndMode(this)) {
-            Log.i("boot", "Always unzip assets in debug mode");
-            return true;
-        }
-
-        final File appVerFile = new File(appDir, "VERSION");
-        if (!appVerFile.exists()) {
-            return true;
-        }
-
-        boolean ret = true;
-        try {
-            String ver = FileUtils.readFileToString(appVerFile, StandardCharsets.UTF_8);
-            if (StringUtils.isEmpty(ver)) {
-                return true;
-            }
-            ver = ver.trim();
-            try {
-                return Integer.parseInt(ver) != Utils.versionCode;
-            } catch (final NumberFormatException e) {
-                return true;
-            }
-        } catch (final Exception e) {
-            Utils.logError("boot", "check version failed", e);
-        }
-        return ret;
-    }
 
     @Override
     protected void onDestroy() {
