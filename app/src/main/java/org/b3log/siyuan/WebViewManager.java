@@ -135,6 +135,40 @@ public class WebViewManager {
     }
 
     /**
+     * Open a block by URL.
+     * 通过 URL 打开块
+     *
+     * @param blockURL Block URL
+     */
+    public void openBlockByURL(String blockURL) {
+        if (blockURL != null && webView != null) {
+            final Activity activity = activityRef.get();
+            if (activity != null) {
+                activity.runOnUiThread(() ->
+                    evaluateJavaScript("javascript:window.openFileByURL('" +
+                        blockURL.replace("'", "\\'") + "')"));
+            }
+        }
+    }
+
+    /**
+     * Handle OIDC callback link.
+     * 处理 OIDC 回调链接
+     *
+     * @param callbackUrl OIDC callback URL
+     */
+    public void handleOidcCallback(String callbackUrl) {
+        if (callbackUrl != null && webView != null) {
+            final Activity activity = activityRef.get();
+            if (activity != null) {
+                activity.runOnUiThread(() ->
+                    evaluateJavaScript("javascript:window.handleOidcCallbackLink('" +
+                        callbackUrl.replace("'", "\\'") + "')"));
+            }
+        }
+    }
+
+    /**
      * Reconnect WebSocket.
      * 重新连接 WebSocket
      */

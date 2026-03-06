@@ -66,8 +66,6 @@ import com.koushikdutta.async.http.AsyncHttpPost;
 import com.koushikdutta.async.http.body.JSONObjectBody;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
-import org.json.JSONObject;
-
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -104,24 +102,21 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         super.onNewIntent(intent);
         setIntent(intent);
 
-        if (null == intent || null == webView) {
+        if (null == intent || null == webViewManager) {
             return;
         }
 
-        try {
-            final String script;
-            if (!StringUtils.isEmpty(intent.getStringExtra("oidcCallback"))) {
-                script = "window.handleOidcCallbackLink(" + JSONObject.quote(intent.getStringExtra("oidcCallback")) + ");";
-            } else if (!StringUtils.isEmpty(intent.getStringExtra("blockURL"))) {
-                script = "window.openFileByURL(" + JSONObject.quote(intent.getStringExtra("blockURL")) + ");";
-            } else {
-                return;
-            }
+        // Handle OIDC callback
+        final String oidcCallback = intent.getStringExtra("oidcCallback");
+        if (!StringUtils.isEmpty(oidcCallback)) {
+            webViewManager.handleOidcCallback(oidcCallback);
+            return;
+        }
 
-            runOnUiThread(() -> webView.evaluateJavascript(script, null));
-
-        } catch (final Exception e) {
-            Utils.logError("intent", "handle payload failed", e);
+        // Handle block URL
+        final String blockURL = intent.getStringExtra("blockURL");
+        if (!StringUtils.isEmpty(blockURL)) {
+            webViewManager.openBlockByURL(blockURL);
         }
     }
 
