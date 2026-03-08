@@ -1,44 +1,53 @@
 plugins {
     id 'com.android.application'
+    id 'base' // 显式引入 base 插件以确保 base 闭包可用
 }
 
-// 多渠道打包配置已引用的方式传递
+// 多渠道打包配置
 apply from: rootProject.file('flavors.gradle')
 apply from: rootProject.file('signings.gradle')
 apply from: rootProject.file('buildRelease.gradle')
 
-// By appending the version name, build type, and a timestamp to the APK filename,
-// it becomes very easy for testers and developers to identify exactly which version of the application they are testing.
-// This is particularly useful when multiple versions or builds are being tested simultaneously.
-// Testers don’t need to manually rename APKs to keep track of different builds or worry about which version is the latest.
-android.applicationVariants.configureEach { variant ->
-    variant.outputs.configureEach { output ->
-        def versionName = variant.versionName
-        def buildType = variant.buildType.name
-        def flavorName = variant.flavorName
+// 1. 配置 App Bundle (.aab) 的基础文件名
+base {
+    archivesName = "siyuan-${siyuanVersionName}"
+}
 
-        // Set the archivesBaseName property
-        // https://stackoverflow.com/questions/52508720/how-to-change-the-generated-filename-for-app-bundles-with-gradle
-        project.setProperty("archivesBaseName", "siyuan-${versionName}")
-
-        // 根据构建类型调整文件名
-        if (buildType != "release") {
-            def formattedDate = new Date().format('yyyyMMddHHmmss')
-            project.setProperty("archivesBaseName", "siyuan-${versionName}-${buildType}-${formattedDate}")
-        }
-    }
+tasks.withType(Copy).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 android {
     namespace 'org.b3log.siyuan'
-    compileSdk 36
+    compileSdk = 36
+
+    // 2. 配置 APK 输出文件名
+    applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach { output ->
+            def buildType = variant.buildType.name
+            def flavorName = variant.flavorName
+            def versionName = variant.versionName
+
+            def fileName = "siyuan-${versionName}-${flavorName}-${buildType}"
+
+            if (buildType != "release") {
+                def formattedDate = new Date().format('yyyyMMddHHmmss')
+                fileName += "-${formattedDate}"
+            }
+            output.outputFileName = "${fileName}.apk"
+        }
+    }
 
     defaultConfig {
         applicationId "org.b3log.siyuan"
-        minSdk 26
-        targetSdk 36
+        minSdk = 26
+        targetSdk = 36
         versionCode siyuanVersionCode
         versionName siyuanVersionName
+    }
+
+    buildFeatures {
+        buildConfig true
     }
 
     buildTypes {
