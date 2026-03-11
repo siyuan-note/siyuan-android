@@ -19,6 +19,7 @@ package org.b3log.siyuan;
 
 import android.Manifest;
 import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.ClipData;
 import android.content.ClipDescription;
@@ -57,7 +58,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/Soltus">绛亽</a>
- * @version 1.6.0.2, Mar 5, 2026
+ * @version 1.6.0.3, Mar 11, 2026
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -118,13 +119,14 @@ public final class JSAndroid {
         }
 
         final PendingIntent resultPendingIntent = NotificationReceiver.createNotificationPendingIntent(this.activity);
-        final NotificationCompat.Builder builder = new NotificationCompat.Builder(activity, channel)
-                .setSmallIcon(R.drawable.icon)
-                .setContentTitle(title)
-                .setContentText(body)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true)
-                .setContentIntent(resultPendingIntent);
+        final NotificationCompat.Builder builder = new NotificationCompat.Builder(activity, channel).
+                setSmallIcon(R.drawable.icon).
+                setContentTitle(title).
+                setContentText(body).
+                setPriority(NotificationCompat.PRIORITY_HIGH).
+                setAutoCancel(true).
+                setContentIntent(resultPendingIntent).
+                setCategory(Notification.CATEGORY_REMINDER);
         NotificationManagerCompat.from(this.activity).notify(ret, builder.build());
         return ret;
     }
