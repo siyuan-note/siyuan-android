@@ -32,6 +32,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * 通知接收器.
  *
@@ -51,7 +53,7 @@ public class NotificationReceiver extends BroadcastReceiver {
             return;
         }
 
-        final int id = intent.getIntExtra("id", (int) System.currentTimeMillis());
+        final int id = intent.getIntExtra("id", getNextNotificationId());
         final PendingIntent resultPendingIntent = NotificationReceiver.createNotificationPendingIntent(context);
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel).
                 setSmallIcon(R.drawable.icon).
@@ -86,5 +88,25 @@ public class NotificationReceiver extends BroadcastReceiver {
             resultPendingIntent = PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         }
         return resultPendingIntent;
+    }
+
+    // 基准时间：2026-01-01 00:00:00 (毫秒)
+    private static final long EPOCH_2026 = 1735689600000L;
+
+    // 原子计数器，用于解决同一秒内的并发问题
+    private static final AtomicInteger counter = new AtomicInteger(0);
+
+    public static int getNextNotificationId() {
+        // 1. 获取距离 2026 年的秒数 (long 类型防止中间计算溢出)
+        final long secondsSince2026 = (System.currentTimeMillis() - EPOCH_2026) / 1000;
+
+        // 2. 将秒数左移，或者直接加上一个自增值
+        // 为了简单且利用全部 31 位正数空间：
+        // (秒数 + 自增值) & 0x7FFFFFFF
+        // 这样即使在同一秒，counter 也会让结果不同
+        final int id = (int) (secondsSince2026 + counter.incrementAndGet());
+
+        // 3. 强制抹去符号位，确保永远为正
+        return id & 0x7FFFFFFF;
     }
 }
