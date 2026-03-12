@@ -50,6 +50,7 @@ import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import java.io.File;
 import java.net.URLDecoder;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import mobile.Mobile;
 
@@ -58,7 +59,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/Soltus">绛亽</a>
- * @version 1.6.0.3, Mar 11, 2026
+ * @version 1.6.0.4, Mar 12, 2026
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -95,8 +96,7 @@ public final class JSAndroid {
             return -1;
         }
 
-        final int ret = (int) System.currentTimeMillis();
-
+        final int ret = getNextNotificationId();
         if (0 < delayInSeconds) {
             final AlarmManager alarmManager = (AlarmManager) this.activity.getSystemService(Context.ALARM_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
@@ -406,5 +406,23 @@ public final class JSAndroid {
         }
     }
 
+    // 基准时间：2026-01-01 00:00:00 (毫秒)
+    private static final long EPOCH_2026 = 1735689600000L;
 
+    // 原子计数器，用于解决同一秒内的并发问题
+    private static final AtomicInteger counter = new AtomicInteger(0);
+
+    public static int getNextNotificationId() {
+        // 1. 获取距离 2026 年的秒数 (long 类型防止中间计算溢出)
+        final long secondsSince2026 = (System.currentTimeMillis() - EPOCH_2026) / 1000;
+
+        // 2. 将秒数左移，或者直接加上一个自增值
+        // 为了简单且利用全部 31 位正数空间：
+        // (秒数 + 自增值) & 0x7FFFFFFF
+        // 这样即使在同一秒，counter 也会让结果不同
+        final int id = (int) (secondsSince2026 + counter.incrementAndGet());
+
+        // 3. 强制抹去符号位，确保永远为正
+        return id & 0x7FFFFFFF;
+    }
 }
