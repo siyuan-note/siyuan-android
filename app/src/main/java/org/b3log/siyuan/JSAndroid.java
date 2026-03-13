@@ -364,6 +364,11 @@ public final class JSAndroid {
     }
 
     @JavascriptInterface
+    public void pickLocalSyncFolder() {
+        activity.pickLocalSyncFolder();
+    }
+
+    @JavascriptInterface
     public void changeStatusBarColor(final String color, final int appearanceMode) {
         if (Utils.isTablet(activity)) {
             return;

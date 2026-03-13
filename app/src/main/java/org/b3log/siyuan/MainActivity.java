@@ -32,6 +32,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.DragEvent;
@@ -108,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private ValueCallback<Uri[]> uploadMessage;
     private static final int REQUEST_SELECT_FILE = 100;
     private static final int REQUEST_CAMERA = 101;
+    private static final int REQUEST_LOCAL_SYNC_FOLDER = 102;
 
     static int serverPort = 6906;
     static String webViewVer;
@@ -673,8 +675,54 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         }
     }
 
+    public void pickLocalSyncFolder() {
+        final Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        startActivityForResult(intent, REQUEST_LOCAL_SYNC_FOLDER);
+    }
+
+    private String resolveTreeUriToPath(final Uri treeUri) {
+        try {
+            final String docId = DocumentsContract.getTreeDocumentId(treeUri);
+            final String[] split = docId.split(":");
+            if (split.length < 1) {
+                return null;
+            }
+            final String type = split[0];
+            final String relativePath = split.length > 1 ? split[1] : "";
+            if ("primary".equalsIgnoreCase(type)) {
+                final String base = "/storage/emulated/0";
+                return relativePath.isEmpty() ? base : base + "/" + relativePath;
+            } else {
+                // SD card or USB OTG
+                final String base = "/storage/" + type;
+                return relativePath.isEmpty() ? base : base + "/" + relativePath;
+            }
+        } catch (final Exception e) {
+            Utils.logError("picker", "resolve tree URI failed", e);
+            return null;
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (requestCode == REQUEST_LOCAL_SYNC_FOLDER) {
+            if (resultCode == RESULT_OK && intent != null) {
+                final Uri treeUri = intent.getData();
+                if (treeUri != null) {
+                    getContentResolver().takePersistableUriPermission(treeUri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                    final String path = resolveTreeUriToPath(treeUri);
+                    if (path != null) {
+                        final String jsPath = path.replace("'", "\\'");
+                        runOnUiThread(() -> webView.evaluateJavascript(
+                                "window.siyuanAndroidFolderPickerResult('" + jsPath + "')", null));
+                    }
+                }
+            }
+            super.onActivityResult(requestCode, resultCode, intent);
+            return;
+        }
+
         if (null == uploadMessage) {
             super.onActivityResult(requestCode, resultCode, intent);
             return;
