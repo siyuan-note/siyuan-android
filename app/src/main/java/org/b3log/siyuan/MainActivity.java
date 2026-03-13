@@ -34,6 +34,8 @@ import android.os.Looper;
 import android.os.Message;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.provider.Settings;
+import android.os.Environment;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.View;
@@ -676,6 +678,18 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     }
 
     public void pickLocalSyncFolder() {
+        // MANAGE_EXTERNAL_STORAGE is required so the Go kernel can read/write
+        // the chosen path via standard POSIX file I/O (os.Open etc.).
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+                && !Environment.isExternalStorageManager()) {
+            // Ask the user to grant "All files access" in system settings,
+            // then re-open the picker once they return.
+            final Intent settings = new Intent(
+                    Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                    Uri.parse("package:" + getPackageName()));
+            startActivityForResult(settings, REQUEST_LOCAL_SYNC_FOLDER);
+            return;
+        }
         final Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         startActivityForResult(intent, REQUEST_LOCAL_SYNC_FOLDER);
     }
@@ -706,6 +720,19 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         if (requestCode == REQUEST_LOCAL_SYNC_FOLDER) {
+            // Case 1: returning from ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION settings screen
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+                    && intent != null
+                    && Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION.equals(
+                            intent.getAction())) {
+                // Permission screen returned — now launch the actual picker if granted
+                if (Environment.isExternalStorageManager()) {
+                    final Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                    startActivityForResult(picker, REQUEST_LOCAL_SYNC_FOLDER);
+                }
+                return;
+            }
+            // Case 2: returning from the document tree picker
             if (resultCode == RESULT_OK && intent != null) {
                 final Uri treeUri = intent.getData();
                 if (treeUri != null) {
