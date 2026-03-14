@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 通知接收器.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.2, Mar 11, 2026
+ * @version 1.0.0.3, Mar 14, 2026
  * @since 3.5.9
  */
 public class NotificationReceiver extends BroadcastReceiver {
@@ -53,13 +53,18 @@ public class NotificationReceiver extends BroadcastReceiver {
             return;
         }
 
+        if (!NotificationReceiver.createNotificationChannel(context, channel)) {
+            return;
+        }
+
         final int id = intent.getIntExtra("id", getNextNotificationId());
         final PendingIntent resultPendingIntent = NotificationReceiver.createNotificationPendingIntent(context);
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel).
+                setVisibility(NotificationCompat.VISIBILITY_PRIVATE).
+                setPriority(NotificationCompat.PRIORITY_HIGH).
                 setSmallIcon(R.drawable.icon).
                 setContentTitle(title).
                 setContentText(body).
-                setPriority(NotificationCompat.PRIORITY_HIGH).
                 setAutoCancel(true).
                 setContentIntent(resultPendingIntent).
                 setCategory(Notification.CATEGORY_REMINDER);

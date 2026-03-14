@@ -50,7 +50,6 @@ import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import java.io.File;
 import java.net.URLDecoder;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import mobile.Mobile;
 
@@ -59,7 +58,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/Soltus">绛亽</a>
- * @version 1.6.0.4, Mar 12, 2026
+ * @version 1.6.0.5, Mar 14, 2026
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -120,10 +119,11 @@ public final class JSAndroid {
 
         final PendingIntent resultPendingIntent = NotificationReceiver.createNotificationPendingIntent(this.activity);
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(activity, channel).
+                setVisibility(NotificationCompat.VISIBILITY_PRIVATE).
+                setPriority(NotificationCompat.PRIORITY_HIGH).
                 setSmallIcon(R.drawable.icon).
                 setContentTitle(title).
                 setContentText(body).
-                setPriority(NotificationCompat.PRIORITY_HIGH).
                 setAutoCancel(true).
                 setContentIntent(resultPendingIntent).
                 setCategory(Notification.CATEGORY_REMINDER);
