@@ -535,6 +535,12 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
      * 通知栏保活。
      */
     private void keepLive() {
+        if (!KeepLiveService.isKeepLiveEnabled()) {
+            Utils.logInfo("keeplive", "Keep live service is disabled");
+            return;
+        }
+
+        Utils.logInfo("keeplive", "Keep live service is enabled, starting keep live thread");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {

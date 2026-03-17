@@ -42,7 +42,7 @@ import mobile.Mobile;
  * 保活服务.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.0.3.0, Mar 17, 2026
+ * @version 1.1.0.0, Mar 17, 2026
  * @since 1.0.0
  */
 public class KeepLiveService extends Service {
@@ -76,7 +76,6 @@ public class KeepLiveService extends Service {
 
         final String[] texts = getNotificationTexts();
         if (null == texts || 1 > texts.length) {
-            Utils.logError("keeplive", "notification texts is empty");
             return;
         }
 
@@ -94,11 +93,10 @@ public class KeepLiveService extends Service {
 
     private String[] getNotificationTexts() {
         try {
-            final String workspacePath = Mobile.getCurrentWorkspacePath();
-            final String notificationTxtPath = workspacePath + "/data/assets/android-notification-texts.txt";
+            final String notificationTxtPath = getNotificationTxtPath();
             final File notificationTxtFile = new File(notificationTxtPath);
             if (!notificationTxtFile.exists()) {
-                return getLyrics();
+                return null;
             }
 
             final List<String> tmp = FileUtils.readLines(notificationTxtFile, StandardCharsets.UTF_8);
@@ -110,58 +108,26 @@ public class KeepLiveService extends Service {
                 lines.add(line);
             }
             if (lines.isEmpty()) {
-                return getLyrics();
+                return null;
             }
 
             final String[] ret = new String[lines.size()];
             return lines.toArray(ret);
         } catch (final Exception e) {
             Utils.logError("keeplive", "get notification texts failed", e);
-            return getLyrics();
+            return null;
         }
     }
 
-    private String[] getLyrics() {
-        final String lang = Utils.getLanguage();
-        switch (lang) {
-            case "zh_CN":
-                return zhCNLyrics;
-            case "zh_CHT":
-                return zhCHTLyrics;
-            default:
-                return lyrics;
-        }
+    public static boolean isKeepLiveEnabled() {
+        final String notificationTxtPath = getNotificationTxtPath();
+        final File notificationTxtFile = new File(notificationTxtPath);
+        return notificationTxtFile.exists();
     }
 
-    private final String[] lyrics = new String[]{
-            "We are programmed to receive",
-            "Then the piper will lead us to reason",
-            "You're not the only one",
-            "Sometimes I need some time all alone",
-            "We still can find a way",
-            "You gotta make it your own way",
-            "Everybody needs somebody",
-            "Now, there is a fire within me",
-    };
-
-    private final String[] zhCNLyrics = new String[]{
-            "原谅我这一生不羁放纵爱自由",
-            "我要再次找那旧日的足迹",
-            "心中一股冲劲勇闯，抛开那现实没有顾虑",
-            "愿望是努力走向那一方",
-            "其实怕被忘记至放大来演吧",
-            "荣耀的背后刻着一道孤独",
-            "动机也只有一种名字那叫做欲望",
-    };
-
-    private final String[] zhCHTLyrics = new String[]{
-            "原諒我這一生不羈放縱愛自由",
-            "我要再次找那舊日的足跡",
-            "心中一股衝勁勇闖，拋開那現實沒有顧慮",
-            "願望是努力走向那一方",
-            "其實怕被忘記至放大來演吧",
-            "榮耀的背後刻著一道孤獨",
-            "動機也只有一種名字那叫做慾望",
-    };
+    private static String getNotificationTxtPath() {
+        final String workspacePath = Mobile.getCurrentWorkspacePath();
+        return workspacePath + "/data/assets/android-notification-texts.txt";
+    }
 }
 
