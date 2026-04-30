@@ -24,13 +24,16 @@ import android.app.PendingIntent;
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
@@ -58,7 +61,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/Soltus">绛亽</a>
- * @version 1.6.0.5, Mar 14, 2026
+ * @version 1.6.0.6, Apr 30, 2026
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -287,6 +290,122 @@ public final class JSAndroid {
     @JavascriptInterface
     public void exportByDefault(String url) {
         Utils.openByDefaultBrowser(url, activity);
+    }
+
+    @JavascriptInterface
+    public void saveExportFile(final String url) {
+        if (StringUtils.isEmpty(url)) {
+            return;
+        }
+
+        String fullUrl = url;
+        if (fullUrl.startsWith("/")) {
+            fullUrl = "http://127.0.0.1:6806" + fullUrl;
+        }
+
+        final String finalUrl = fullUrl;
+        new Thread(() -> {
+            try {
+                final java.net.URL downloadUrl = new java.net.URL(finalUrl);
+                final java.net.HttpURLConnection connection = (java.net.HttpURLConnection) downloadUrl.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(5000);
+                connection.setReadTimeout(60000);
+                connection.connect();
+
+                final int responseCode = connection.getResponseCode();
+                if (responseCode != java.net.HttpURLConnection.HTTP_OK) {
+                    activity.runOnUiThread(() ->
+                            Utils.showToast(activity, "导出失败，服务器返回 " + responseCode + " / Export failed, server returned " + responseCode));
+                    connection.disconnect();
+                    return;
+                }
+
+                final String contentDisposition = connection.getHeaderField("Content-Disposition");
+                String fileName;
+                if (!StringUtils.isEmpty(contentDisposition) && contentDisposition.contains("filename=")) {
+                    fileName = contentDisposition.substring(contentDisposition.indexOf("filename=") + 9);
+                    if (fileName.startsWith("\"") && fileName.endsWith("\"")) {
+                        fileName = fileName.substring(1, fileName.length() - 1);
+                    }
+                    fileName = URLDecoder.decode(fileName, "UTF-8");
+                } else {
+                    fileName = finalUrl.substring(finalUrl.lastIndexOf('/') + 1);
+                    final int queryIdx = fileName.indexOf('?');
+                    if (-1 != queryIdx) {
+                        fileName = fileName.substring(0, queryIdx);
+                    }
+                    fileName = URLDecoder.decode(fileName, "UTF-8");
+                }
+
+                if (StringUtils.isEmpty(fileName)) {
+                    fileName = "export";
+                }
+
+                final String mimeType = Mobile.getMimeTypeByExt(fileName);
+
+                final java.io.InputStream inputStream = connection.getInputStream();
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    final ContentValues values = new ContentValues();
+                    values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
+                    values.put(MediaStore.Downloads.MIME_TYPE, mimeType);
+                    values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+
+                    final Uri insertUri = activity.getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                    if (null == insertUri) {
+                        activity.runOnUiThread(() ->
+                                Utils.showToast(activity, "导出失败，无法创建文件 / Export failed, cannot create file"));
+                        inputStream.close();
+                        connection.disconnect();
+                        return;
+                    }
+
+                    final java.io.OutputStream outputStream = activity.getContentResolver().openOutputStream(insertUri);
+                    if (null == outputStream) {
+                        activity.runOnUiThread(() ->
+                                Utils.showToast(activity, "导出失败，无法写入文件 / Export failed, cannot write file"));
+                        inputStream.close();
+                        connection.disconnect();
+                        return;
+                    }
+
+                    final byte[] buffer = new byte[8192];
+                    int bytesRead;
+                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, bytesRead);
+                    }
+                    outputStream.flush();
+                    outputStream.close();
+                } else {
+                    final File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                    if (!downloadsDir.exists()) {
+                        downloadsDir.mkdirs();
+                    }
+                    final File outFile = new File(downloadsDir, fileName);
+                    final java.io.FileOutputStream outputStream = new java.io.FileOutputStream(outFile);
+
+                    final byte[] buffer = new byte[8192];
+                    int bytesRead;
+                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, bytesRead);
+                    }
+                    outputStream.flush();
+                    outputStream.close();
+                }
+
+                inputStream.close();
+                connection.disconnect();
+
+                String finalFileName = fileName;
+                activity.runOnUiThread(() ->
+                        Utils.showToast(activity, "已导出到下载目录: " + finalFileName + " / Exported to Downloads: " + finalFileName));
+            } catch (final Exception e) {
+                Utils.logError("JSAndroid", "saveExportFile failed", e);
+                activity.runOnUiThread(() ->
+                        Utils.showToast(activity, "导出失败 / Export failed"));
+            }
+        }).start();
     }
 
     @JavascriptInterface
