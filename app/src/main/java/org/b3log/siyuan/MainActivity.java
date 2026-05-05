@@ -20,6 +20,7 @@ package org.b3log.siyuan;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.KeyguardManager;
 import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -94,7 +95,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.3.2, Feb 15, 2026
+ * @version 1.2.0.0, May 5, 2026
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -786,6 +787,17 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     @Override
     public void onBackground(Activity activity) {
         startSyncData();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (webView != null) {
+            final KeyguardManager keyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
+            if (keyguardManager != null && keyguardManager.isKeyguardLocked()) {
+                webView.evaluateJavascript("javascript:window.lockscreenByMode && window.lockscreenByMode()", null);
+            }
+        }
     }
 
     @Override
