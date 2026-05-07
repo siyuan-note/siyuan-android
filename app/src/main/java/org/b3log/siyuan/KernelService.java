@@ -33,11 +33,15 @@ import androidx.core.app.NotificationCompat;
 
 /**
  * 内核常驻服务.
+ *
  * <p>
  * Keeps the Go kernel HTTP server alive when the app is in the background
  * or the screen is off by holding a partial WakeLock and a WifiLock,
  * running as a foreground service with a minimal silent notification.
+ * </p>
  *
+ * @author <a href="https://88250.b3log.org">Liang Ding</a>
+ * @author <a href="https://github.com/fayaz-modz">Fayaz Mohammad</a>
  * @version 1.0.0.0, May 6, 2026
  * @since 3.1.0
  */
