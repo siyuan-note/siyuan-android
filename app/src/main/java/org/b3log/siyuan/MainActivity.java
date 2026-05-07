@@ -379,6 +379,15 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         keepLiveActive = true;
         keepLiveThread = new Thread(this::keepLive, "KeepLiveThread");
         keepLiveThread.start();
+
+        // Start the kernel background service to keep the Go server alive
+        // when the app is backgrounded or the screen is off
+        try {
+            final Intent kernelServiceIntent = new Intent(this, KernelService.class);
+            ContextCompat.startForegroundService(this, kernelServiceIntent);
+        } catch (final Exception e) {
+            Utils.logError("boot", "start kernel service failed", e);
+        }
     }
 
     private Handler bootHandler = new Handler(Looper.getMainLooper()) {
@@ -868,6 +877,13 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             }
         } catch (final Exception e) {
             Utils.logError("runtime", "stop keep live thread failed", e);
+        }
+
+        try {
+            final Intent kernelServiceIntent = new Intent(this, KernelService.class);
+            stopService(kernelServiceIntent);
+        } catch (final Exception e) {
+            Utils.logError("runtime", "stop kernel service failed", e);
         }
     }
 
