@@ -397,9 +397,8 @@ public final class JSAndroid {
                 inputStream.close();
                 connection.disconnect();
 
-                String finalFileName = fileName;
                 activity.runOnUiThread(() ->
-                        Utils.showToast(activity, "已导出到下载目录: " + finalFileName + " / Exported to Downloads: " + finalFileName));
+                        Utils.showToast(activity, "已导出到下载目录 / Exported to Downloads"));
             } catch (final Exception e) {
                 Utils.logError("JSAndroid", "saveExportFile failed", e);
                 activity.runOnUiThread(() ->
