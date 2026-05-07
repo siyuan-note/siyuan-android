@@ -8,6 +8,12 @@
     <!-- 运行前台服务 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
+    <!-- Keep CPU alive for background kernel service -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Keep Wi-Fi alive for background kernel service -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
     <!--
         Fix the problem that notifications cannot be allowed on Android 13
         https://github.com/siyuan-note/siyuan/issues/7960
@@ -179,6 +185,15 @@
         <service
             android:name=".KeepLiveService"
             android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="hosting" />
+        </service>
+
+        <service
+            android:name=".KernelService"
+            android:foregroundServiceType="specialUse"
+            android:exported="false">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="hosting" />
