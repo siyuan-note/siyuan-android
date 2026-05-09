@@ -18,6 +18,7 @@
 package org.b3log.siyuan;
 
 import android.app.PendingIntent;
+import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
@@ -36,6 +37,8 @@ import android.widget.EditText;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ContentInfoCompat;
+import androidx.core.view.ViewCompat;
 
 import com.blankj.utilcode.util.BarUtils;
 import com.blankj.utilcode.util.KeyboardUtils;
@@ -50,11 +53,11 @@ import java.util.List;
 import mobile.Mobile;
 
 /**
- * 追加到日记的快捷方式.
+ * 闪念速记.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.1, Sep 4, 2025
- * @since 3.1.26
+ * @version 1.0.0.2, May 9, 2026
+ * @since 3.7.0
  */
 public class ShortcutActivity extends AppCompatActivity {
 
@@ -64,6 +67,23 @@ public class ShortcutActivity extends AppCompatActivity {
         setContentView(R.layout.activity_shortcut);
 
         final EditText input = findViewById(R.id.full_screen_input);
+        ViewCompat.setOnReceiveContentListener(input, new String[]{"text/html"}, (view, contentInfo) -> {
+            final ClipData clip = contentInfo.getClip();
+            if (0 < clip.getItemCount()) {
+                final ClipData.Item item = clip.getItemAt(0);
+                final String html = item.getHtmlText();
+                if (null != html && !html.isEmpty()) {
+                    final String md = Mobile.htmL2Markdown(html);
+                    if (null != md && !md.isEmpty()) {
+                        final ClipData newClip = ClipData.newPlainText("", md);
+                        return new ContentInfoCompat.Builder(contentInfo)
+                                .setClip(newClip)
+                                .build();
+                    }
+                }
+            }
+            return null;
+        });
         UltimateBarX.statusBarOnly(this).transparent().apply();
         BarUtils.setNavBarVisibility(this, false);
         ((ViewGroup) input.getParent()).setPadding(0, UltimateBarX.getStatusBarHeight(), 0, 0);
@@ -84,28 +104,7 @@ public class ShortcutActivity extends AppCompatActivity {
     }
 
     private void handleIntent(final Intent intent) {
-        setupFullScreenInput();
-
-        if (Intent.ACTION_MAIN.equals(intent.getAction())) { // 来自桌面快捷方式
-            final EditText input = findViewById(R.id.full_screen_input);
-            input.postDelayed(() -> {
-                input.requestFocus();
-                KeyboardUtils.showSoftInput(input);
-            }, 500);
-            return;
-        } else if (Intent.ACTION_VIEW.equals(intent.getAction())) { // 来自菜单快捷方式
-            final String data = intent.getDataString();
-            if (StringUtils.equals(data, "shorthand")) {
-                final EditText input = findViewById(R.id.full_screen_input);
-                input.postDelayed(() -> {
-                    input.requestFocus();
-                    KeyboardUtils.showSoftInput(input);
-                }, 500);
-                return;
-            }
-
-            Log.w("shortcut", "Unknown data [" + data + "]");
-        } else if (Intent.ACTION_SEND.equals(intent.getAction())) { // 来自其他应用分享
+        if (Intent.ACTION_SEND.equals(intent.getAction())) { // 来自其他应用分享
             final String type = intent.getType();
             if (type == null) {
                 Log.w("shortcut", "Unknown type [null]");
@@ -113,24 +112,24 @@ public class ShortcutActivity extends AppCompatActivity {
             }
 
             if ("text/plain".equals(type)) {
+                setupFullScreenInput();
                 final String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
                 if (sharedText != null) {
                     final EditText input = findViewById(R.id.full_screen_input);
                     input.append(sharedText);
                     input.setSelection(sharedText.length());
                 }
+                return;
             } else if (type.startsWith("image/") || type.startsWith("video/") || type.startsWith("audio") || type.startsWith("application/")) {
+                setupFullScreenInput();
                 final Uri assetUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
-                if (assetUri == null) {
-                    return;
+                if (assetUri != null) {
+                    final List<Uri> assets = List.of(assetUri);
+                    writeAssets(assets, type);
                 }
-
-                final List<Uri> assets = List.of(assetUri);
-                writeAssets(assets, type);
                 return;
             }
-
-            Log.w("shortcut", "Unknown type [" + type + "]");
+            return;
         } else if (Intent.ACTION_SEND_MULTIPLE.equals(intent.getAction())) {
             final String type = intent.getType();
             if (type == null) {
@@ -139,13 +138,30 @@ public class ShortcutActivity extends AppCompatActivity {
             }
 
             if (type.startsWith("image/") || type.startsWith("video/") || type.startsWith("audio") || type.startsWith("application/")) {
+                setupFullScreenInput();
                 final List<Uri> imageUris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-                writeAssets(imageUris, type);
+                if (null != imageUris) {
+                    writeAssets(imageUris, type);
+                }
                 return;
             }
-
-            Log.w("shortcut", "Unknown type [" + type + "]");
+            return;
         }
+
+        // 来自桌面快捷方式或菜单快捷方式 — 显示文本输入界面
+        setupFullScreenInput();
+        if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+            final String data = intent.getDataString();
+            if (!StringUtils.equals(data, "shorthand")) {
+                Log.w("shortcut", "Unknown data [" + data + "]");
+            }
+        }
+
+        final EditText input = findViewById(R.id.full_screen_input);
+        input.postDelayed(() -> {
+            input.requestFocus();
+            KeyboardUtils.showSoftInput(input);
+        }, 500);
     }
 
     private void writeAssets(final List<Uri> assetUris, final String type) {
@@ -164,14 +180,12 @@ public class ShortcutActivity extends AppCompatActivity {
             final File f = new File(shorthandsDir + "assets", fileName);
             try {
                 FileUtils.copyInputStreamToFile(getContentResolver().openInputStream(uri), f);
-                String content = "";
                 if (type.startsWith("image/")) {
-                    content = "![" + baseName + "](assets/" + fileName + ")";
+                    input.append("![" + baseName + "](assets/" + fileName + ")");
                 } else {
-                    content = "[" + baseName + "](assets/" + fileName + ")";
+                    input.append("[" + baseName + "](assets/" + fileName + ")");
                 }
-                content += "\n\n";
-                input.append(content);
+                input.append("\n\n");
                 input.setSelection(input.getText().length());
             } catch (final Exception e) {
                 Utils.logError("shortcut", "copy file failed", e);

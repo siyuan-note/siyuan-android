@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="shortcut_shorthand">Приставка к ярлыкам</string>
-    <string name="enter_your_text">Пожалуйста, введите текст. После отправки откройте SiYuan и нажмите кнопку со значком молнии рядом с блокнотом, чтобы создать новый документ, названный в соответствии со временем, указанным в «Приставка к ярлыкам»</string>
+    <string name="enter_your_text">Введите текст и отправьте. Содержимое будет сохранено в Настройки - Документ - Путь сохранения сокращений по умолчанию</string>
     <string name="submit">Отправить</string>
     <string name="add_to_home">Добавить на Домашнюю</string>
     <string name="add_to_home_success">Добавлено на Домашнюю</string>
