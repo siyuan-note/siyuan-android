@@ -61,6 +61,8 @@ import mobile.Mobile;
  */
 public class ShortcutActivity extends AppCompatActivity {
 
+    private boolean inputSetupDone = false;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,7 +71,7 @@ public class ShortcutActivity extends AppCompatActivity {
         final EditText input = findViewById(R.id.full_screen_input);
         ViewCompat.setOnReceiveContentListener(input, new String[]{"text/html"}, (view, contentInfo) -> {
             final ClipData clip = contentInfo.getClip();
-            if (0 < clip.getItemCount()) {
+            if (null != clip && 0 < clip.getItemCount()) {
                 final ClipData.Item item = clip.getItemAt(0);
                 final String html = item.getHtmlText();
                 if (null != html && !html.isEmpty()) {
@@ -129,6 +131,9 @@ public class ShortcutActivity extends AppCompatActivity {
                 }
                 return;
             }
+
+            setupFullScreenInput();
+            Log.w("shortcut", "Unknown share type [" + type + "]");
             return;
         } else if (Intent.ACTION_SEND_MULTIPLE.equals(intent.getAction())) {
             final String type = intent.getType();
@@ -174,6 +179,9 @@ public class ShortcutActivity extends AppCompatActivity {
         final String shorthandsDir = getShorthandsDir();
         for (final Uri uri : assetUris) {
             final String p = uri.getLastPathSegment();
+            if (null == p) {
+                continue;
+            }
             String baseName = Mobile.filepathBase(p);
             baseName = Mobile.filterUploadFileName(baseName);
             final String fileName = Mobile.assetName(baseName);
@@ -195,6 +203,11 @@ public class ShortcutActivity extends AppCompatActivity {
     }
 
     private void setupFullScreenInput() {
+        if (inputSetupDone) {
+            return;
+        }
+        inputSetupDone = true;
+
         initAddToHomeButton();
 
         final EditText input = findViewById(R.id.full_screen_input);

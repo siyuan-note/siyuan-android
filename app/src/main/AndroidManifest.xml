@@ -124,8 +124,15 @@
         <activity
             android:name=".ShortcutActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
             android:windowSoftInputMode="adjustPan">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="shorthand" />
+            </intent-filter>
+
             <intent-filter android:label="@string/shortcut_shorthand">
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />

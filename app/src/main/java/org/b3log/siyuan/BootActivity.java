@@ -18,9 +18,6 @@
 package org.b3log.siyuan;
 
 import android.app.AlertDialog;
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -49,7 +46,7 @@ import java.util.Set;
  * 引导启动.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.1, Sep 4, 2025
+ * @version 1.1.1.2, May 9, 2026
  * @since 1.0.0
  */
 public class BootActivity extends AppCompatActivity {
@@ -84,7 +81,6 @@ public class BootActivity extends AppCompatActivity {
 
     private void startMainActivity() {
         final Intent intent = getIntent();
-        // 获取可能存在的 block URL（通过 siyuan://blocks/xxx 打开应用时传递的）
         String blockURL = "";
         try {
             final Uri blockURLUri = intent.getData();
@@ -94,31 +90,6 @@ public class BootActivity extends AppCompatActivity {
             }
         } catch (final Exception e) {
             Utils.logError("boot", "gets block URL failed", e);
-        }
-
-        // 获取可能存在的分享数据
-        final String action = intent.getAction();
-        final String type = intent.getType();
-        if (Intent.ACTION_SEND.equals(action) && type != null) {
-            if ("text/plain".equals(type)) {
-                String text = intent.getStringExtra(Intent.EXTRA_TEXT);
-                if (text != null) {
-                    Log.i("boot", "Received shared text [" + text + "]");
-
-                    if (Utils.isURL(text)) {
-                        text = "[" + text + "](" + text + ")";
-                    } else {
-                        if (text.startsWith("\"") && text.contains("\"\n http") && text.contains("#:~:text=")) {
-                            final int start = text.indexOf("\"");
-                            final int end = text.indexOf("\"\n http");
-                            text = text.substring(start + 1, end);
-                        }
-                    }
-
-                    final ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                    clipboard.setPrimaryClip(ClipData.newHtmlText("Copied text from shared", text, text));
-                }
-            }
         }
 
         final Intent startMainIntent = new Intent(getApplicationContext(), MainActivity.class);
