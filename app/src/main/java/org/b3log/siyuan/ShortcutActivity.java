@@ -242,6 +242,7 @@ public class ShortcutActivity extends AppCompatActivity {
             } catch (final Exception e) {
                 Utils.logError("shortcut", "Write file failed", e);
                 Utils.showToast(this, "Failed to write to file [" + e.getMessage() + "]");
+                return;
             }
 
             finish();

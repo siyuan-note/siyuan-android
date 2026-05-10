@@ -124,7 +124,7 @@
         <activity
             android:name=".ShortcutActivity"
             android:exported="true"
-            android:launchMode="singleTop"
+            android:launchMode="singleTask"
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
