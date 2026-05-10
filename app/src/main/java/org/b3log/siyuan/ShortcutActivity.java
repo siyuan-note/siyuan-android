@@ -34,6 +34,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -283,7 +284,6 @@ public class ShortcutActivity extends AppCompatActivity {
                     findViewById(R.id.add_to_home_button).setVisibility(View.GONE);
                     Utils.showToast(this, R.string.add_to_home_success);
                 });
-
                 return;
             }
 
@@ -294,7 +294,7 @@ public class ShortcutActivity extends AppCompatActivity {
     }
 
     private void initAddToHomeButton() {
-        final Button addToHomeButton = findViewById(R.id.add_to_home_button);
+        final TextView addToHomeButton = findViewById(R.id.add_to_home_button);
         if (isShortcutExists("shortcut_shorthand")) {
             addToHomeButton.setVisibility(View.GONE);
         } else {
