@@ -314,14 +314,17 @@ public final class JSAndroid {
 
         final String finalFileName = fileName;
         new Thread(() -> {
+            java.io.FileInputStream inputStream = null;
+            java.io.OutputStream outputStream = null;
             try {
-                final byte[] data = Mobile.readExportFile(url);
-                if (null == data || 0 == data.length) {
+                final String srcPath = Mobile.getExportFilePath(url);
+                if (null == srcPath || srcPath.isEmpty()) {
                     Mobile.showMsg(Mobile.language(291), 5000);
                     return;
                 }
 
                 final String mimeType = Mobile.getMimeTypeByExt(finalFileName);
+                inputStream = new java.io.FileInputStream(srcPath);
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     final ContentValues values = new ContentValues();
@@ -335,30 +338,34 @@ public final class JSAndroid {
                         return;
                     }
 
-                    final java.io.OutputStream outputStream = activity.getContentResolver().openOutputStream(insertUri);
+                    outputStream = activity.getContentResolver().openOutputStream(insertUri);
                     if (null == outputStream) {
                         Mobile.showMsg(Mobile.language(293), 5000);
                         return;
                     }
-                    outputStream.write(data);
-                    outputStream.flush();
-                    outputStream.close();
                 } else {
                     final File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                     if (!downloadsDir.exists()) {
                         downloadsDir.mkdirs();
                     }
                     final File outFile = new File(downloadsDir, finalFileName);
-                    final java.io.FileOutputStream outputStream = new java.io.FileOutputStream(outFile);
-                    outputStream.write(data);
-                    outputStream.flush();
-                    outputStream.close();
+                    outputStream = new java.io.FileOutputStream(outFile);
                 }
+
+                final byte[] buffer = new byte[65536];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+                outputStream.flush();
 
                 Mobile.showMsg(Mobile.language(289), 5000);
             } catch (final Exception e) {
                 Utils.logError("JSAndroid", "saveExportFile failed", e);
                 Mobile.showMsg(Mobile.language(290), 5000);
+            } finally {
+                try { if (null != inputStream) { inputStream.close(); } } catch (final Exception ignored) {}
+                try { if (null != outputStream) { outputStream.close(); } } catch (final Exception ignored) {}
             }
         }).start();
     }
