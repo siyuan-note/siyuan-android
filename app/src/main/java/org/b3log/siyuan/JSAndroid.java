@@ -298,57 +298,35 @@ public final class JSAndroid {
             return;
         }
 
-        String fullUrl = url;
-        if (fullUrl.startsWith("/")) {
-            fullUrl = "http://127.0.0.1:6806" + fullUrl;
+        String fileName = url.substring(url.lastIndexOf('/') + 1);
+        final int queryIdx = fileName.indexOf('?');
+        if (-1 != queryIdx) {
+            fileName = fileName.substring(0, queryIdx);
+        }
+        try {
+            fileName = URLDecoder.decode(fileName, "UTF-8");
+        } catch (final Exception e) {
+            Utils.logError("JSAndroid", "decode fileName failed", e);
+        }
+        if (StringUtils.isEmpty(fileName)) {
+            fileName = "export";
         }
 
-        final String finalUrl = fullUrl;
+        final String finalFileName = fileName;
         new Thread(() -> {
             try {
-                final java.net.URL downloadUrl = new java.net.URL(finalUrl);
-                final java.net.HttpURLConnection connection = (java.net.HttpURLConnection) downloadUrl.openConnection();
-                connection.setRequestMethod("GET");
-                connection.setConnectTimeout(5000);
-                connection.setReadTimeout(60000);
-                connection.connect();
-
-                final int responseCode = connection.getResponseCode();
-                if (responseCode != java.net.HttpURLConnection.HTTP_OK) {
+                final byte[] data = Mobile.readExportFile(url);
+                if (null == data || 0 == data.length) {
                     activity.runOnUiThread(() ->
-                            Utils.showToast(activity, "导出失败，服务器返回 " + responseCode + " / Export failed, server returned " + responseCode));
-                    connection.disconnect();
+                            Utils.showToast(activity, "导出失败：文件不存在或为空 / Export failed: File not found or empty"));
                     return;
                 }
 
-                final String contentDisposition = connection.getHeaderField("Content-Disposition");
-                String fileName;
-                if (!StringUtils.isEmpty(contentDisposition) && contentDisposition.contains("filename=")) {
-                    fileName = contentDisposition.substring(contentDisposition.indexOf("filename=") + 9);
-                    if (fileName.startsWith("\"") && fileName.endsWith("\"")) {
-                        fileName = fileName.substring(1, fileName.length() - 1);
-                    }
-                    fileName = URLDecoder.decode(fileName, "UTF-8");
-                } else {
-                    fileName = finalUrl.substring(finalUrl.lastIndexOf('/') + 1);
-                    final int queryIdx = fileName.indexOf('?');
-                    if (-1 != queryIdx) {
-                        fileName = fileName.substring(0, queryIdx);
-                    }
-                    fileName = URLDecoder.decode(fileName, "UTF-8");
-                }
-
-                if (StringUtils.isEmpty(fileName)) {
-                    fileName = "export";
-                }
-
-                final String mimeType = Mobile.getMimeTypeByExt(fileName);
-
-                final java.io.InputStream inputStream = connection.getInputStream();
+                final String mimeType = Mobile.getMimeTypeByExt(finalFileName);
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     final ContentValues values = new ContentValues();
-                    values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
+                    values.put(MediaStore.Downloads.DISPLAY_NAME, finalFileName);
                     values.put(MediaStore.Downloads.MIME_TYPE, mimeType);
                     values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
 
@@ -356,8 +334,6 @@ public final class JSAndroid {
                     if (null == insertUri) {
                         activity.runOnUiThread(() ->
                                 Utils.showToast(activity, "导出失败，无法创建文件 / Export failed, cannot create file"));
-                        inputStream.close();
-                        connection.disconnect();
                         return;
                     }
 
@@ -365,16 +341,9 @@ public final class JSAndroid {
                     if (null == outputStream) {
                         activity.runOnUiThread(() ->
                                 Utils.showToast(activity, "导出失败，无法写入文件 / Export failed, cannot write file"));
-                        inputStream.close();
-                        connection.disconnect();
                         return;
                     }
-
-                    final byte[] buffer = new byte[8192];
-                    int bytesRead;
-                    while ((bytesRead = inputStream.read(buffer)) != -1) {
-                        outputStream.write(buffer, 0, bytesRead);
-                    }
+                    outputStream.write(data);
                     outputStream.flush();
                     outputStream.close();
                 } else {
@@ -382,20 +351,12 @@ public final class JSAndroid {
                     if (!downloadsDir.exists()) {
                         downloadsDir.mkdirs();
                     }
-                    final File outFile = new File(downloadsDir, fileName);
+                    final File outFile = new File(downloadsDir, finalFileName);
                     final java.io.FileOutputStream outputStream = new java.io.FileOutputStream(outFile);
-
-                    final byte[] buffer = new byte[8192];
-                    int bytesRead;
-                    while ((bytesRead = inputStream.read(buffer)) != -1) {
-                        outputStream.write(buffer, 0, bytesRead);
-                    }
+                    outputStream.write(data);
                     outputStream.flush();
                     outputStream.close();
                 }
-
-                inputStream.close();
-                connection.disconnect();
 
                 activity.runOnUiThread(() ->
                         Utils.showToast(activity, "已导出到下载目录 / Exported to Downloads"));
