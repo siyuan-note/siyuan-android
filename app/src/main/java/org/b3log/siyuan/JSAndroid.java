@@ -317,8 +317,7 @@ public final class JSAndroid {
             try {
                 final byte[] data = Mobile.readExportFile(url);
                 if (null == data || 0 == data.length) {
-                    activity.runOnUiThread(() ->
-                            Utils.showToast(activity, "导出失败：文件不存在或为空 / Export failed: File not found or empty"));
+                    Mobile.showMsg(Mobile.language(291), 5000);
                     return;
                 }
 
@@ -332,15 +331,13 @@ public final class JSAndroid {
 
                     final Uri insertUri = activity.getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
                     if (null == insertUri) {
-                        activity.runOnUiThread(() ->
-                                Utils.showToast(activity, "导出失败，无法创建文件 / Export failed, cannot create file"));
+                        Mobile.showMsg(Mobile.language(292), 5000);
                         return;
                     }
 
                     final java.io.OutputStream outputStream = activity.getContentResolver().openOutputStream(insertUri);
                     if (null == outputStream) {
-                        activity.runOnUiThread(() ->
-                                Utils.showToast(activity, "导出失败，无法写入文件 / Export failed, cannot write file"));
+                        Mobile.showMsg(Mobile.language(293), 5000);
                         return;
                     }
                     outputStream.write(data);
@@ -358,12 +355,10 @@ public final class JSAndroid {
                     outputStream.close();
                 }
 
-                activity.runOnUiThread(() ->
-                        Utils.showToast(activity, "已导出到下载目录 / Exported to Downloads"));
+                Mobile.showMsg(Mobile.language(289), 5000);
             } catch (final Exception e) {
                 Utils.logError("JSAndroid", "saveExportFile failed", e);
-                activity.runOnUiThread(() ->
-                        Utils.showToast(activity, "导出失败 / Export failed"));
+                Mobile.showMsg(Mobile.language(290), 5000);
             }
         }).start();
     }
