@@ -11,10 +11,19 @@
     <locale android:name="es" />
     <locale android:name="fr" />
     <locale android:name="he" />
+    <locale android:name="hi" />
+    <locale android:name="id" />
     <locale android:name="it" />
     <locale android:name="ja" />
+    <locale android:name="ko" />
+    <locale android:name="nl" />
     <locale android:name="pl" />
+    <locale android:name="pt-BR" />
     <locale android:name="ru" />
+    <locale android:name="sk" />
+    <locale android:name="th" />
+    <locale android:name="tr" />
+    <locale android:name="uk" />
     <locale android:name="zh-Hans" />
     <locale android:name="zh-Hant" />
 

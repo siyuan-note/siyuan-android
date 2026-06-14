@@ -375,35 +375,42 @@ public final class Utils {
         if ("zh".equals(language)) {
             // 检查是否为简体字脚本
             if ("hans".equals(script)) {
-                ret = "zh_CN"; // 简体中文，使用 zh_CN
+                ret = "zh-CN"; // 简体中文
             } else if ("hant".equals(script)) {
-                // 对于繁体字脚本，需要进一步检查国家代码
-                if ("tw".equals(country)) {
-                    ret = "zh_CHT"; // 繁体中文对应台湾
-                } else if ("hk".equals(country)) {
-                    ret = "zh_CHT"; // 繁体中文对应香港
-                } else {
-                    ret = "zh_CHT"; // 其他繁体中文情况也使用 zh_CHT
-                }
+                // 对于繁体字脚本，统一映射到 zh-TW（思源当前只有一套繁体翻译，偏台湾用词）
+                ret = "zh-TW";
             } else {
-                ret = "zh_CN"; // 如果脚本不是简体或繁体，默认为简体中文
+                // 如果脚本不是简体或繁体，按国家代码二次判断
+                if ("tw".equals(country) || "hk".equals(country) || "mo".equals(country)) {
+                    ret = "zh-TW";
+                } else {
+                    ret = "zh-CN"; // 默认为简体中文
+                }
             }
         } else {
-            // 对于非中文语言，创建一个映射来定义其他语言代码的对应关系
+            // 对于非中文语言，映射到 BCP 47 合规值（zh-CN/zh-TW/en/ja/pt-BR 等）
             Map<String, String> otherLangMap = new HashMap<>();
-            otherLangMap.put("ar", "ar_SA");
-            otherLangMap.put("de", "de_DE");
-            otherLangMap.put("es", "es_ES");
-            otherLangMap.put("fr", "fr_FR");
-            otherLangMap.put("he", "he_IL");
-            otherLangMap.put("it", "it_IT");
-            otherLangMap.put("ja", "ja_JP");
-            otherLangMap.put("pl", "pl_PL");
-            otherLangMap.put("pt", "pt_BR");
-            otherLangMap.put("ru", "ru_RU");
+            otherLangMap.put("ar", "ar");
+            otherLangMap.put("de", "de");
+            otherLangMap.put("es", "es");
+            otherLangMap.put("fr", "fr");
+            otherLangMap.put("he", "he");
+            otherLangMap.put("it", "it");
+            otherLangMap.put("ja", "ja");
+            otherLangMap.put("ko", "ko");
+            otherLangMap.put("nl", "nl");
+            otherLangMap.put("pl", "pl");
+            otherLangMap.put("pt", "pt-BR");
+            otherLangMap.put("ru", "ru");
+            otherLangMap.put("sk", "sk");
+            otherLangMap.put("th", "th");
+            otherLangMap.put("tr", "tr");
+            otherLangMap.put("uk", "uk");
+            otherLangMap.put("hi", "hi");
+            otherLangMap.put("id", "id");
 
-            // 使用 getOrDefault 方法从映射中获取语言代码，如果语言不存在则默认为 en_US
-            ret = otherLangMap.getOrDefault(language, "en_US");
+            // 使用 getOrDefault 方法从映射中获取语言代码，如果语言不存在则默认为 en
+            ret = otherLangMap.getOrDefault(language, "en");
         }
         return ret;
     }
