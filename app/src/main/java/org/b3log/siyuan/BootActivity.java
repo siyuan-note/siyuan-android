@@ -46,7 +46,7 @@ import java.util.Set;
  * 引导启动.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.2, May 9, 2026
+ * @version 1.1.1.3, Jun 28, 2026
  * @since 1.0.0
  */
 public class BootActivity extends AppCompatActivity {
@@ -93,6 +93,8 @@ public class BootActivity extends AppCompatActivity {
         }
 
         final Intent startMainIntent = new Intent(getApplicationContext(), MainActivity.class);
+        // 若 MainActivity 已在任务栈中则将其拉到栈顶复用，不创建新实例，避免触发 onDestroy → exit() 重启内核
+        startMainIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         if (!blockURL.isEmpty()) {
             startMainIntent.putExtra("blockURL", blockURL);
         }
