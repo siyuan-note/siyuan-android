@@ -36,6 +36,7 @@ import android.os.Message;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.DragEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -95,7 +96,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.2.0.0, May 5, 2026
+ * @version 1.2.0.1, Jun 28, 2026
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener {
@@ -195,6 +196,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         AndroidBug5497Workaround.assistActivity(this);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void initUIElements() {
         bootLogo = findViewById(R.id.bootLogo);
         bootProgressBar = findViewById(R.id.progressBar);
@@ -213,6 +215,15 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         webView.setOnDragListener((v, event) -> {
             // 禁用拖拽 https://github.com/siyuan-note/siyuan/issues/6436
             return DragEvent.ACTION_DRAG_ENDED != event.getAction();
+        });
+
+        webView.setOnTouchListener((v, event) -> {
+            // 手指抬起（整个手势结束）时通知前端，用于清除长按多选定时器
+            // 前端的 touchend 在多选/长按分支会被 stopImmediatePropagation 阻断，需由原生补足
+            if (MotionEvent.ACTION_UP == event.getActionMasked()) {
+                webView.evaluateJavascript("javascript:window.dispatchEvent(new Event('androidPhysicalTouchUp'))", null);
+            }
+            return false;   // 不消费事件，保证 WebView 正常滚动/点击
         });
 
         final WebSettings ws = webView.getSettings();
