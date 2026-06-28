@@ -221,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             // 手指抬起（整个手势结束）时通知前端，用于清除长按多选定时器
             // 前端的 touchend 在多选/长按分支会被 stopImmediatePropagation 阻断，需由原生补足
             if (MotionEvent.ACTION_UP == event.getActionMasked()) {
-                webView.evaluateJavascript("javascript:window.dispatchEvent(new Event('androidPhysicalTouchUp'))", null);
+                webView.evaluateJavascript("javascript:window.dispatchEvent(new Event('nativePhysicalTouchUp'))", null);
             }
             return false;   // 不消费事件，保证 WebView 正常滚动/点击
         });
