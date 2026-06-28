@@ -246,7 +246,10 @@ public class ShortcutActivity extends AppCompatActivity {
                 return;
             }
 
-            finish();
+            // 清空输入框保留界面，使速记作为常驻速记本存在；
+            // 避免后台进入 Recents 时系统捕获到残留内容导致缩略图与实际状态不一致
+            input.setText("");
+            submitButton.setEnabled(false);
         });
     }
 
