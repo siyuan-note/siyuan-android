@@ -27,7 +27,7 @@
             android:layout_height="296dp"
             android:contentDescription="Boot logo"
             android:translationY="16dp"
-            android:visibility="visible"
+            android:visibility="gone"
             app:srcCompat="@drawable/icon" />
 
         <ProgressBar
