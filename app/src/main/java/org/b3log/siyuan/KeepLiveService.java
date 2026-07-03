@@ -23,10 +23,13 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
+import android.os.Build;
 import android.os.IBinder;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.ServiceCompat;
 
 import org.apache.commons.io.FileUtils;
 
@@ -42,7 +45,7 @@ import mobile.Mobile;
  * 保活服务.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.0, Mar 17, 2026
+ * @version 1.1.0.1, Jul 3, 2026
  * @since 1.0.0
  */
 public class KeepLiveService extends Service {
@@ -88,7 +91,15 @@ public class KeepLiveService extends Service {
                 setContentTitle(texts[random.nextInt(texts.length)]).
                 setCategory(Notification.CATEGORY_SERVICE).
                 setContentIntent(resultPendingIntent).build();
-        startForeground(1, notification);
+        // 从 Android 14 (API 34) 起必须显式传入前台服务类型，否则 startForeground
+        // 会以未定义类型校验权限并抛出 SecurityException。
+        final int foregroundServiceType;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            foregroundServiceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE;
+        } else {
+            foregroundServiceType = 0;
+        }
+        ServiceCompat.startForeground(this, 1, notification, foregroundServiceType);
     }
 
     private String[] getNotificationTexts() {

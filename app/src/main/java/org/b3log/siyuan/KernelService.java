@@ -24,12 +24,14 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.ServiceCompat;
 
 /**
  * 内核常驻服务.
@@ -42,7 +44,7 @@ import androidx.core.app.NotificationCompat;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/fayaz-modz">Fayaz Mohammad</a>
- * @version 1.0.0.0, May 6, 2026
+ * @version 1.0.0.1, Jul 3, 2026
  * @since 3.1.0
  */
 public class KernelService extends Service {
@@ -57,7 +59,17 @@ public class KernelService extends Service {
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
-        startForeground(NOTIFICATION_ID, buildNotification());
+        // 从 Android 14 (API 34) 起必须显式传入前台服务类型，否则 startForeground
+        // 会以未定义类型去校验权限并抛出 SecurityException。
+        // specialUse 类型需在 manifest 声明 FOREGROUND_SERVICE_SPECIAL_USE 权限。
+        final int foregroundServiceType;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            foregroundServiceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE;
+        } else {
+            foregroundServiceType = 0;
+        }
+        ServiceCompat.startForeground(
+                this, NOTIFICATION_ID, buildNotification(), foregroundServiceType);
         acquireLocks();
     }
 
