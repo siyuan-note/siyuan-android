@@ -461,25 +461,11 @@ public final class JSAndroid {
     private int parseColor(String str) {
         try {
             str = str.trim();
-            if (str.toLowerCase().contains("rgb")) {
-                String splitStr = str.substring(str.indexOf('(') + 1, str.indexOf(')'));
-                String[] splitString = splitStr.split(",");
-
-                final int[] colorValues = new int[splitString.length];
-                for (int i = 0; i < splitString.length; i++) {
-                    colorValues[i] = Integer.parseInt(splitString[i].trim());
-                }
-                return Color.rgb(colorValues[0], colorValues[1], colorValues[2]);
+            if (9 != str.length() || '#' != str.charAt(0)) {
+                throw new IllegalArgumentException("invalid color format");
             }
-            if (7 > str.length()) {
-                // https://stackoverflow.com/questions/10230331/how-to-convert-3-digit-html-hex-colors-to-6-digit-flex-hex-colors
-                str = str.replaceAll("#([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])", "#$1$1$2$2$3$3");
-            }
-            if (9 == str.length() && '#' == str.charAt(0)) {
-                // The status bar color on Android is incorrect https://github.com/siyuan-note/siyuan/issues/10278
-                // 将 #RRGGBBAA 转换为 #AARRGGBB
-                str = "#" + str.substring(7, 9) + str.substring(1, 7);
-            }
+            // 将 #RRGGBBAA 转换为 #AARRGGBB
+            str = "#" + str.substring(7, 9) + str.substring(1, 7);
             return Color.parseColor(str);
         } catch (final Exception e) {
             Utils.logError("js", "parse color [" + str + "] failed", e);
