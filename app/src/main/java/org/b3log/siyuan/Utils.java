@@ -136,6 +136,14 @@ public final class Utils {
         return configuration.smallestScreenWidthDp >= 600;
     }
 
+    // 移动端容器启用桌面模式时，前端加载的是桌面 bundle（/stage/build/desktop/），
+    // 它依赖 WebView 自身管理软键盘，不会调用 showKeyboard 桥接。此时不能禁用 WebView 焦点，
+    // 否则软键盘收起一次后就再也无法重新获取焦点。https://github.com/siyuan-note/siyuan/issues/18028
+    public static boolean isDesktopMode(final WebView webView) {
+        final String url = webView.getUrl();
+        return null != url && url.contains("/stage/build/desktop/");
+    }
+
     public static boolean isCnChannel(final PackageManager pm) {
         final String channel = getChannel(pm);
         return channel.contains("cn") || channel.equals("huawei");
@@ -195,7 +203,11 @@ public final class Utils {
     public static void hideKeyboardAndToolbar(final WebView webView) {
         webView.post(() -> {
             webView.evaluateJavascript("javascript:hideKeyboardToolbar();document.activeElement.blur();", null);
-            Utils.setWebViewFocusable(webView, false);
+            // 桌面模式依赖 WebView 自身管理软键盘，禁用焦点会导致键盘收起后无法再次获取焦点
+            // https://github.com/siyuan-note/siyuan/issues/18028
+            if (!isDesktopMode(webView)) {
+                Utils.setWebViewFocusable(webView, false);
+            }
         });
     }
 
