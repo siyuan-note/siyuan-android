@@ -55,6 +55,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.window.OnBackInvokedDispatcher;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts.PickMultipleVisualMedia;
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -110,6 +114,12 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private ValueCallback<Uri[]> uploadMessage;
     private static final int REQUEST_SELECT_FILE = 100;
     private static final int REQUEST_CAMERA = 101;
+    private static final String SIYUAN_IMAGE_PICKER_ACCEPT_TYPE = "application/x-siyuan-image-picker";
+    private final ActivityResultLauncher<PickVisualMediaRequest> selectImageLauncher = registerForActivityResult(
+            new PickVisualMedia(), uri -> completeFileSelection(null == uri ? null : new Uri[]{uri}));
+    private final ActivityResultLauncher<PickVisualMediaRequest> selectImagesLauncher = registerForActivityResult(
+            new PickMultipleVisualMedia(), uris -> completeFileSelection(
+                    uris.isEmpty() ? null : uris.toArray(new Uri[0])));
 
     static int serverPort = 6906;
     static String webViewVer;
@@ -348,6 +358,22 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
                     openCamera();
                     return true;
+                }
+
+                if (requestsSiyuanImagePicker(fileChooserParams.getAcceptTypes())) {
+                    try {
+                        final PickVisualMediaRequest request = new PickVisualMediaRequest.Builder()
+                                .setMediaType(PickVisualMedia.ImageOnly.INSTANCE)
+                                .build();
+                        if (fileChooserParams.getMode() == FileChooserParams.MODE_OPEN_MULTIPLE) {
+                            selectImagesLauncher.launch(request);
+                        } else {
+                            selectImageLauncher.launch(request);
+                        }
+                        return true;
+                    } catch (final Exception e) {
+                        Utils.logError("file chooser", "open photo picker failed", e);
+                    }
                 }
 
                 final Intent intent = fileChooserParams.createIntent();
@@ -697,8 +723,50 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         }
     }
 
+    private static boolean requestsSiyuanImagePicker(final String[] acceptTypes) {
+        if (null == acceptTypes || 0 == acceptTypes.length) {
+            return false;
+        }
+
+        boolean acceptsImages = false;
+        boolean requestsImagePicker = false;
+        for (final String acceptTypeGroup : acceptTypes) {
+            if (null == acceptTypeGroup) {
+                continue;
+            }
+            for (final String acceptType : acceptTypeGroup.split(",")) {
+                final String normalizedType = acceptType.trim();
+                if (normalizedType.isEmpty()) {
+                    continue;
+                }
+                if ("image/*".equalsIgnoreCase(normalizedType)) {
+                    acceptsImages = true;
+                } else if (SIYUAN_IMAGE_PICKER_ACCEPT_TYPE.equalsIgnoreCase(normalizedType)) {
+                    requestsImagePicker = true;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return acceptsImages && requestsImagePicker;
+    }
+
+    private void completeFileSelection(final Uri[] uris) {
+        if (null == uploadMessage) {
+            return;
+        }
+        final ValueCallback<Uri[]> callback = uploadMessage;
+        uploadMessage = null;
+        callback.onReceiveValue(uris);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (REQUEST_CAMERA != requestCode && REQUEST_SELECT_FILE != requestCode) {
+            super.onActivityResult(requestCode, resultCode, intent);
+            return;
+        }
+
         if (null == uploadMessage) {
             super.onActivityResult(requestCode, resultCode, intent);
             return;
