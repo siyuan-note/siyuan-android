@@ -28,6 +28,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -52,6 +54,11 @@ import com.blankj.utilcode.util.StringUtils;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLDecoder;
 
 import mobile.Mobile;
@@ -61,7 +68,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/Soltus">绛亽</a>
- * @version 1.6.0.6, Apr 30, 2026
+ * @version 1.6.0.7, Jul 17, 2026
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -249,9 +256,60 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void writeImageClipboard(final String uri) {
-        final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-        final ClipData clip = ClipData.newUri(activity.getContentResolver(), "Copied img from SiYuan", Uri.parse("http://127.0.0.1:6806/" + uri));
-        clipboard.setPrimaryClip(clip);
+        HttpURLConnection connection = null;
+        try {
+            final InputStream inputStream;
+            if (uri.startsWith("assets/")) {
+                final String workspacePath = Mobile.getCurrentWorkspacePath();
+                final String assetAbsPath = Mobile.getAssetAbsPath(uri);
+                final File asset;
+                if (assetAbsPath.contains(workspacePath)) {
+                    asset = new File(workspacePath, assetAbsPath.substring(workspacePath.length() + 1));
+                } else {
+                    asset = new File(workspacePath, "data/" + URLDecoder.decode(uri, "UTF-8"));
+                }
+                inputStream = new FileInputStream(asset);
+            } else {
+                final String imageURL = uri.startsWith("http://") || uri.startsWith("https://")
+                        ? uri : "http://127.0.0.1:6806/" + uri.replaceFirst("^/", "");
+                connection = (HttpURLConnection) new URL(imageURL).openConnection();
+                connection.setConnectTimeout(10000);
+                connection.setReadTimeout(30000);
+                connection.connect();
+                inputStream = connection.getInputStream();
+            }
+
+            final File clipboardDir = new File(activity.getExternalFilesDir(null), "clipboard");
+            if (!clipboardDir.exists() && !clipboardDir.mkdirs()) {
+                throw new IllegalStateException("create clipboard directory failed");
+            }
+            final File imageFile = new File(clipboardDir, "image.png");
+            try (final InputStream input = inputStream;
+                 final FileOutputStream output = new FileOutputStream(imageFile)) {
+                final Bitmap bitmap = BitmapFactory.decodeStream(input);
+                if (null == bitmap) {
+                    throw new IllegalArgumentException("decode clipboard image failed");
+                }
+                try {
+                    if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)) {
+                        throw new IllegalStateException("encode clipboard image failed");
+                    }
+                } finally {
+                    bitmap.recycle();
+                }
+            }
+
+            final Uri contentUri = FileProvider.getUriForFile(activity, BuildConfig.APPLICATION_ID, imageFile);
+            final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+            final ClipData clip = ClipData.newUri(activity.getContentResolver(), "Copied img from SiYuan", contentUri);
+            clipboard.setPrimaryClip(clip);
+        } catch (final Exception e) {
+            Utils.logError("JSAndroid", "write image clipboard failed", e);
+        } finally {
+            if (null != connection) {
+                connection.disconnect();
+            }
+        }
     }
 
     @JavascriptInterface
