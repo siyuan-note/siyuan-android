@@ -65,7 +65,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/wwxiaoqi">Jane Haring</a>
- * @version 1.5.0.6, Feb 21, 2026
+ * @version 1.5.0.7, Jul 20, 2026
  * @since 1.0.0
  */
 public final class Utils {
@@ -299,6 +299,15 @@ public final class Utils {
                 Log.e("logging", "Write mobile log failed", ex);
             }
         }
+    }
+
+    public static String formatInputConfiguration(final Configuration configuration) {
+        return "keyboard [" + configuration.keyboard + "], keyboard hidden [" + configuration.keyboardHidden
+                + "], hard keyboard hidden [" + configuration.hardKeyboardHidden + "], navigation ["
+                + configuration.navigation + "], navigation hidden [" + configuration.navigationHidden
+                + "], touchscreen [" + configuration.touchscreen + "], ui mode [0x"
+                + Integer.toHexString(configuration.uiMode) + "], screen layout [0x"
+                + Integer.toHexString(configuration.screenLayout) + "]";
     }
 
     /**
