@@ -36,6 +36,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.InputDevice;
@@ -62,6 +63,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts.PickMultipleVisualMedia;
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia;
+import androidx.activity.result.contract.ActivityResultContracts.RequestPermission;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -122,11 +124,18 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private static final int REQUEST_SELECT_FILE = 100;
     private static final int REQUEST_CAMERA = 101;
     private static final String SIYUAN_IMAGE_PICKER_ACCEPT_TYPE = "application/x-siyuan-image-picker";
+    private static final String SIYUAN_WEBVIEW_SCHEME = "http";
+    private static final String SIYUAN_WEBVIEW_HOST = "127.0.0.1";
+    private static final int SIYUAN_WEBVIEW_PORT = 6806;
+    private PermissionRequest pendingAudioPermissionRequest;
+    private AlertDialog microphonePermissionDialog;
     private final ActivityResultLauncher<PickVisualMediaRequest> selectImageLauncher = registerForActivityResult(
             new PickVisualMedia(), uri -> completeFileSelection(null == uri ? null : new Uri[]{uri}));
     private final ActivityResultLauncher<PickVisualMediaRequest> selectImagesLauncher = registerForActivityResult(
             new PickMultipleVisualMedia(), uris -> completeFileSelection(
                     uris.isEmpty() ? null : uris.toArray(new Uri[0])));
+    private final ActivityResultLauncher<String> recordAudioPermissionLauncher = registerForActivityResult(
+            new RequestPermission(), this::onRecordAudioPermissionResult);
 
     static int serverPort = 6906;
     static String webViewVer;
@@ -454,7 +463,12 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
             @Override
             public void onPermissionRequest(final PermissionRequest request) {
-                request.grant(request.getResources());
+                runOnUiThread(() -> handleAudioPermissionRequest(request));
+            }
+
+            @Override
+            public void onPermissionRequestCanceled(final PermissionRequest request) {
+                runOnUiThread(() -> cancelAudioPermissionRequest(request));
             }
         });
 
@@ -485,6 +499,117 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             ContextCompat.startForegroundService(this, kernelServiceIntent);
         } catch (final Exception e) {
             Utils.logError("boot", "start kernel service failed", e);
+        }
+    }
+
+    private void handleAudioPermissionRequest(final PermissionRequest request) {
+        if (!isTrustedAudioPermissionRequest(request)) {
+            Utils.logInfo("webview", "Deny permission request from origin [" + request.getOrigin() + "]");
+            request.deny();
+            return;
+        }
+        if (null != pendingAudioPermissionRequest) {
+            request.deny();
+            return;
+        }
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO)
+                == PackageManager.PERMISSION_GRANTED) {
+            request.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
+            return;
+        }
+
+        pendingAudioPermissionRequest = request;
+        if (ActivityCompat.shouldShowRequestPermissionRationale(
+                this, android.Manifest.permission.RECORD_AUDIO)) {
+            showMicrophonePermissionRationale();
+        } else {
+            recordAudioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO);
+        }
+    }
+
+    private boolean isTrustedAudioPermissionRequest(final PermissionRequest request) {
+        final Uri origin = request.getOrigin();
+        final String[] resources = request.getResources();
+        return null != origin
+                && SIYUAN_WEBVIEW_SCHEME.equalsIgnoreCase(origin.getScheme())
+                && SIYUAN_WEBVIEW_HOST.equals(origin.getHost())
+                && SIYUAN_WEBVIEW_PORT == origin.getPort()
+                && null != resources
+                && 1 == resources.length
+                && PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resources[0]);
+    }
+
+    private void showMicrophonePermissionRationale() {
+        microphonePermissionDialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.permission_request)
+                .setMessage(R.string.microphone_permission_rationale)
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                    if (null != pendingAudioPermissionRequest) {
+                        recordAudioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO);
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, (dialog, which) -> denyAudioPermissionRequest(true))
+                .setOnCancelListener(dialog -> denyAudioPermissionRequest(true))
+                .create();
+        microphonePermissionDialog.setOnDismissListener(dialog -> microphonePermissionDialog = null);
+        microphonePermissionDialog.show();
+    }
+
+    private void onRecordAudioPermissionResult(final Boolean granted) {
+        final PermissionRequest request = pendingAudioPermissionRequest;
+        pendingAudioPermissionRequest = null;
+        if (null == request) {
+            return;
+        }
+        if (Boolean.TRUE.equals(granted)) {
+            request.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
+            return;
+        }
+
+        request.deny();
+        if (ActivityCompat.shouldShowRequestPermissionRationale(
+                this, android.Manifest.permission.RECORD_AUDIO)) {
+            Utils.showToast(this, getString(R.string.microphone_permission_denied));
+        } else {
+            showMicrophonePermissionSettings();
+        }
+    }
+
+    private void showMicrophonePermissionSettings() {
+        microphonePermissionDialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.permission_request)
+                .setMessage(R.string.microphone_permission_settings)
+                .setPositiveButton(R.string.open_settings, (dialog, which) -> {
+                    final Intent intent = new Intent(
+                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.fromParts("package", getPackageName(), null));
+                    startActivity(intent);
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .create();
+        microphonePermissionDialog.setOnDismissListener(dialog -> microphonePermissionDialog = null);
+        microphonePermissionDialog.show();
+    }
+
+    private void denyAudioPermissionRequest(final boolean showMessage) {
+        final PermissionRequest request = pendingAudioPermissionRequest;
+        pendingAudioPermissionRequest = null;
+        if (null != request) {
+            request.deny();
+        }
+        if (showMessage) {
+            Utils.showToast(this, getString(R.string.microphone_permission_denied));
+        }
+    }
+
+    private void cancelAudioPermissionRequest(final PermissionRequest request) {
+        if (pendingAudioPermissionRequest != request) {
+            return;
+        }
+        pendingAudioPermissionRequest = null;
+        if (null != microphonePermissionDialog) {
+            microphonePermissionDialog.dismiss();
+            microphonePermissionDialog = null;
         }
     }
 
@@ -925,6 +1050,14 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 + "], finishing [" + isFinishing() + "], task root [" + isTaskRoot()
                 + "], changing configurations [" + isChangingConfigurations() + "], changes [0x"
                 + Integer.toHexString(getChangingConfigurations()) + "]");
+        if (null != pendingAudioPermissionRequest) {
+            pendingAudioPermissionRequest.deny();
+            pendingAudioPermissionRequest = null;
+        }
+        if (null != microphonePermissionDialog) {
+            microphonePermissionDialog.dismiss();
+            microphonePermissionDialog = null;
+        }
         super.onDestroy();
         exit();
     }

@@ -8,4 +8,9 @@
     <string name="add_to_home_failed">快捷方式添加到桌面失败，请确认已经授予相关权限</string>
     <string name="paste">粘贴</string>
     <string name="adding_to_home">正在添加快捷方式到桌面，请稍等片刻...</string>
+    <string name="permission_request">权限申请</string>
+    <string name="microphone_permission_rationale">需要麦克风权限才能录制音频并插入当前文档</string>
+    <string name="microphone_permission_denied">麦克风权限已被拒绝</string>
+    <string name="microphone_permission_settings">麦克风权限已被禁用，请在应用设置中启用</string>
+    <string name="open_settings">打开设置</string>
 </resources>

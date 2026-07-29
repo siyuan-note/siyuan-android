@@ -8,4 +8,9 @@
     <string name="add_to_home_failed">Failed to add shortcut to home, please make sure you have granted the necessary permissions</string>
     <string name="paste">Paste</string>
     <string name="adding_to_home">Adding to home, please wait a second...</string>
+    <string name="permission_request">Permission request</string>
+    <string name="microphone_permission_rationale">Microphone access is required to record audio and insert it into the current document</string>
+    <string name="microphone_permission_denied">Microphone permission was denied</string>
+    <string name="microphone_permission_settings">Microphone permission is disabled. Open app settings to enable it</string>
+    <string name="open_settings">Open settings</string>
 </resources>
