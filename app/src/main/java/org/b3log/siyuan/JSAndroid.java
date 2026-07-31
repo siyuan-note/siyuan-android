@@ -53,6 +53,8 @@ import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.StringUtils;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -374,19 +376,28 @@ public final class JSAndroid {
         new Thread(() -> {
             java.io.FileInputStream inputStream = null;
             java.io.OutputStream outputStream = null;
+            String leaseID = "";
             try {
-                final String srcPath = Mobile.getExportFilePath(url);
-                if (null == srcPath || srcPath.isEmpty()) {
+                final String leaseJSON = Mobile.acquireExportFile(url);
+                if (null == leaseJSON || leaseJSON.isEmpty()) {
+                    Mobile.showMsg(Mobile.language(291), 5000);
+                    return;
+                }
+                final JSONObject lease = new JSONObject(leaseJSON);
+                leaseID = lease.optString("leaseID");
+                final String srcPath = lease.optString("path");
+                final String exportFileName = lease.optString("name", finalFileName);
+                if (srcPath.isEmpty() || leaseID.isEmpty()) {
                     Mobile.showMsg(Mobile.language(291), 5000);
                     return;
                 }
 
-                final String mimeType = Mobile.getMimeTypeByExt(finalFileName);
+                final String mimeType = Mobile.getMimeTypeByExt(exportFileName);
                 inputStream = new java.io.FileInputStream(srcPath);
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     final ContentValues values = new ContentValues();
-                    values.put(MediaStore.Downloads.DISPLAY_NAME, finalFileName);
+                    values.put(MediaStore.Downloads.DISPLAY_NAME, exportFileName);
                     values.put(MediaStore.Downloads.MIME_TYPE, mimeType);
                     values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
 
@@ -406,7 +417,7 @@ public final class JSAndroid {
                     if (!downloadsDir.exists()) {
                         downloadsDir.mkdirs();
                     }
-                    final File outFile = new File(downloadsDir, finalFileName);
+                    final File outFile = new File(downloadsDir, exportFileName);
                     outputStream = new java.io.FileOutputStream(outFile);
                 }
 
@@ -424,6 +435,9 @@ public final class JSAndroid {
             } finally {
                 try { if (null != inputStream) { inputStream.close(); } } catch (final Exception ignored) {}
                 try { if (null != outputStream) { outputStream.close(); } } catch (final Exception ignored) {}
+                if (!leaseID.isEmpty()) {
+                    Mobile.releaseExportFile(leaseID);
+                }
             }
         }).start();
     }
