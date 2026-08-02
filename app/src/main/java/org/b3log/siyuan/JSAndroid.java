@@ -67,7 +67,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.Locale;
 
 import mobile.Mobile;
 
@@ -562,7 +561,6 @@ public final class JSAndroid {
             }
             if (succeeded) {
                 notifyExportFileResult(request.requestID, "success", savedName);
-                showExportFileSaved(savedName, false);
             } else {
                 notifyExportFileResult(request.requestID, "error", "");
                 Mobile.showMsg(Mobile.language(290), 5000);
@@ -629,12 +627,6 @@ public final class JSAndroid {
             }
             if (succeeded) {
                 notifyExportFileResult(request.requestID, "success", savedName);
-                if (null != destinationURI) {
-                    showExportFileSaved(savedName, true);
-                } else {
-                    Mobile.showMsg(String.format(Locale.getDefault(), Mobile.language(360),
-                            Environment.DIRECTORY_DOWNLOADS + "/" + savedName), 5000);
-                }
             } else {
                 notifyExportFileResult(request.requestID, "error", "");
                 Mobile.showMsg(Mobile.language(290), 5000);
@@ -676,14 +668,6 @@ public final class JSAndroid {
             Utils.logError("JSAndroid", "query export file name failed", e);
         }
         return fallback;
-    }
-
-    private void showExportFileSaved(final String name, final boolean showDownloadPath) {
-        final String message = showDownloadPath
-                ? String.format(Locale.getDefault(), Mobile.language(360),
-                Environment.DIRECTORY_DOWNLOADS + "/" + name)
-                : String.format(Locale.getDefault(), Mobile.language(359), name);
-        activity.runOnUiThread(() -> Utils.showToast(activity, message));
     }
 
     private void notifyExportFileResult(final String requestID, final String status, final String name) {
