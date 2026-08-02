@@ -61,6 +61,7 @@ import android.window.OnBackInvokedDispatcher;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.activity.result.contract.ActivityResultContracts.PickMultipleVisualMedia;
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia;
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission;
@@ -129,6 +130,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private static final int SIYUAN_WEBVIEW_PORT = 6806;
     private PermissionRequest pendingAudioPermissionRequest;
     private AlertDialog microphonePermissionDialog;
+    private JSAndroid jsAndroid;
     private final ActivityResultLauncher<PickVisualMediaRequest> selectImageLauncher = registerForActivityResult(
             new PickVisualMedia(), uri -> completeFileSelection(null == uri ? null : new Uri[]{uri}));
     private final ActivityResultLauncher<PickVisualMediaRequest> selectImagesLauncher = registerForActivityResult(
@@ -136,6 +138,12 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                     uris.isEmpty() ? null : uris.toArray(new Uri[0])));
     private final ActivityResultLauncher<String> recordAudioPermissionLauncher = registerForActivityResult(
             new RequestPermission(), this::onRecordAudioPermissionResult);
+    private final ActivityResultLauncher<Intent> saveExportFileLauncher = registerForActivityResult(
+            new StartActivityForResult(), result -> {
+                if (null != jsAndroid) {
+                    jsAndroid.onSaveExportFileResult(result);
+                }
+            });
 
     static int serverPort = 6906;
     static String webViewVer;
@@ -472,8 +480,8 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             }
         });
 
-        final JSAndroid JSAndroid = new JSAndroid(this);
-        webView.addJavascriptInterface(JSAndroid, "JSAndroid");
+        jsAndroid = new JSAndroid(this);
+        webView.addJavascriptInterface(jsAndroid, "JSAndroid");
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
         final WebSettings ws = webView.getSettings();
         ws.setJavaScriptEnabled(true);
@@ -500,6 +508,10 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         } catch (final Exception e) {
             Utils.logError("boot", "start kernel service failed", e);
         }
+    }
+
+    void launchSaveExportFile(final Intent intent) {
+        saveExportFileLauncher.launch(intent);
     }
 
     private void handleAudioPermissionRequest(final PermissionRequest request) {
