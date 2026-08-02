@@ -88,7 +88,8 @@ public final class JSAndroid {
     private static final class PendingExportFile {
         private final String url;
         private final String requestID;
-        private final String suggestedName;
+        private String suggestedName;
+        private ExportFileLease lease;
 
         private PendingExportFile(final String url, final String requestID, final String suggestedName) {
             this.url = url;
@@ -399,10 +400,7 @@ public final class JSAndroid {
             return;
         }
 
-        String fileName = Mobile.getExportFileName(url);
-        if (StringUtils.isEmpty(fileName)) {
-            fileName = url.substring(url.lastIndexOf('/') + 1);
-        }
+        String fileName = url.substring(url.lastIndexOf('/') + 1);
         final int queryIdx = fileName.indexOf('?');
         if (-1 != queryIdx) {
             fileName = fileName.substring(0, queryIdx);
@@ -419,31 +417,44 @@ public final class JSAndroid {
         final PendingExportFile request = new PendingExportFile(url, requestID, fileName);
         synchronized (exportFileLock) {
             if (null != pendingExportFile) {
-                Mobile.showMsg(Mobile.language(290), 5000);
                 notifyExportFileResult(requestID, "error", "");
+                Mobile.showMsg(Mobile.language(290), 5000);
                 return;
             }
             pendingExportFile = request;
         }
 
-        final String mimeType = Mobile.getMimeTypeByExt(fileName);
-        activity.runOnUiThread(() -> {
-            final Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            intent.setType(StringUtils.isEmpty(mimeType) ? "application/octet-stream" : mimeType);
-            intent.putExtra(Intent.EXTRA_TITLE, request.suggestedName);
+        new Thread(() -> {
             try {
-                activity.launchSaveExportFile(intent);
-            } catch (final ActivityNotFoundException e) {
-                clearPendingExportFile(request);
-                saveExportFileToDownloads(request);
+                request.lease = acquireExportFileLease(request);
+                request.suggestedName = request.lease.name;
+                activity.runOnUiThread(() -> {
+                    try {
+                        final Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                        intent.addCategory(Intent.CATEGORY_OPENABLE);
+                        final String mimeType = Mobile.getMimeTypeByExt(request.suggestedName);
+                        intent.setType(StringUtils.isEmpty(mimeType) ? "application/octet-stream" : mimeType);
+                        intent.putExtra(Intent.EXTRA_TITLE, request.suggestedName);
+                        activity.launchSaveExportFile(intent);
+                    } catch (final ActivityNotFoundException e) {
+                        clearPendingExportFile(request);
+                        saveExportFileToDownloads(request);
+                    } catch (final Exception e) {
+                        clearPendingExportFile(request);
+                        releaseExportFileLease(request);
+                        Utils.logError("JSAndroid", "open export file picker failed", e);
+                        notifyExportFileResult(request.requestID, "error", "");
+                        Mobile.showMsg(Mobile.language(290), 5000);
+                    }
+                });
             } catch (final Exception e) {
                 clearPendingExportFile(request);
-                Utils.logError("JSAndroid", "open export file picker failed", e);
-                Mobile.showMsg(Mobile.language(290), 5000);
+                releaseExportFileLease(request);
+                Utils.logError("JSAndroid", "prepare export file failed", e);
                 notifyExportFileResult(request.requestID, "error", "");
+                Mobile.showMsg(Mobile.language(290), 5000);
             }
-        });
+        }).start();
     }
 
     void onSaveExportFileResult(final ActivityResult result) {
@@ -457,6 +468,7 @@ public final class JSAndroid {
         }
         if (Activity.RESULT_OK != result.getResultCode() || null == result.getData()
                 || null == result.getData().getData()) {
+            releaseExportFileLease(request);
             notifyExportFileResult(request.requestID, "canceled", "");
             return;
         }
@@ -494,6 +506,18 @@ public final class JSAndroid {
         return new ExportFileLease(leaseID, srcPath, exportFileName, expectedSize);
     }
 
+    private void releaseExportFileLease(final PendingExportFile request) {
+        final ExportFileLease lease = request.lease;
+        request.lease = null;
+        if (null != lease) {
+            try {
+                Mobile.releaseExportFile(lease.id);
+            } catch (final Exception e) {
+                Utils.logError("JSAndroid", "release export file failed", e);
+            }
+        }
+    }
+
     private long copyExportFile(final ExportFileLease lease, final java.io.OutputStream outputStream) throws Exception {
         long writtenSize = 0;
         try (java.io.FileInputStream inputStream = new java.io.FileInputStream(lease.path);
@@ -514,11 +538,13 @@ public final class JSAndroid {
 
     private void saveExportFileToURI(final PendingExportFile request, final Uri destinationURI) {
         new Thread(() -> {
-            ExportFileLease lease = null;
             boolean succeeded = false;
             String savedName = request.suggestedName;
             try {
-                lease = acquireExportFileLease(request);
+                final ExportFileLease lease = request.lease;
+                if (null == lease) {
+                    throw new IllegalStateException("Export file lease is unavailable");
+                }
                 final java.io.OutputStream outputStream = activity.getContentResolver().openOutputStream(destinationURI, "w");
                 if (null == outputStream) {
                     throw new IllegalStateException("Cannot open export destination");
@@ -528,35 +554,35 @@ public final class JSAndroid {
                 succeeded = true;
             } catch (final Exception e) {
                 Utils.logError("JSAndroid", "saveExportFile failed", e);
-                Mobile.showMsg(Mobile.language(290), 5000);
                 try {
                     activity.getContentResolver().delete(destinationURI, null, null);
                 } catch (final Exception ignored) {
                 }
             } finally {
-                if (null != lease) {
-                    Mobile.releaseExportFile(lease.id);
-                }
+                releaseExportFileLease(request);
             }
             if (succeeded) {
+                notifyExportFileResult(request.requestID, "success", savedName);
                 final String mimeType = Mobile.getMimeTypeByExt(savedName);
                 showExportFileSaved(savedName, destinationURI, mimeType, false);
-                notifyExportFileResult(request.requestID, "success", savedName);
             } else {
                 notifyExportFileResult(request.requestID, "error", "");
+                Mobile.showMsg(Mobile.language(290), 5000);
             }
         }).start();
     }
 
     private void saveExportFileToDownloads(final PendingExportFile request) {
         new Thread(() -> {
-            ExportFileLease lease = null;
             Uri destinationURI = null;
             File destinationFile = null;
             boolean succeeded = false;
             String savedName = request.suggestedName;
             try {
-                lease = acquireExportFileLease(request);
+                final ExportFileLease lease = request.lease;
+                if (null == lease) {
+                    throw new IllegalStateException("Export file lease is unavailable");
+                }
                 savedName = lease.name;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     final ContentValues values = new ContentValues();
@@ -585,13 +611,13 @@ public final class JSAndroid {
                     if (!downloadsDir.exists() && !downloadsDir.mkdirs()) {
                         throw new IllegalStateException("Cannot create downloads directory");
                     }
-                    destinationFile = new File(downloadsDir, lease.name);
+                    destinationFile = createUniqueDownloadFile(downloadsDir, lease.name);
+                    savedName = destinationFile.getName();
                     copyExportFile(lease, new java.io.FileOutputStream(destinationFile));
                 }
                 succeeded = true;
             } catch (final Exception e) {
                 Utils.logError("JSAndroid", "saveExportFile fallback failed", e);
-                Mobile.showMsg(Mobile.language(290), 5000);
                 try {
                     if (null != destinationURI) {
                         activity.getContentResolver().delete(destinationURI, null, null);
@@ -601,22 +627,39 @@ public final class JSAndroid {
                 } catch (final Exception ignored) {
                 }
             } finally {
-                if (null != lease) {
-                    Mobile.releaseExportFile(lease.id);
-                }
+                releaseExportFileLease(request);
             }
             if (succeeded) {
+                notifyExportFileResult(request.requestID, "success", savedName);
                 if (null != destinationURI) {
                     showExportFileSaved(savedName, destinationURI, Mobile.getMimeTypeByExt(savedName), true);
                 } else {
                     Mobile.showMsg(String.format(Locale.getDefault(), Mobile.language(360),
                             Environment.DIRECTORY_DOWNLOADS + "/" + savedName), 5000);
                 }
-                notifyExportFileResult(request.requestID, "success", savedName);
             } else {
                 notifyExportFileResult(request.requestID, "error", "");
+                Mobile.showMsg(Mobile.language(290), 5000);
             }
         }).start();
+    }
+
+    private File createUniqueDownloadFile(final File downloadsDir, final String requestedName) throws Exception {
+        String safeName = new File(requestedName).getName();
+        if (StringUtils.isEmpty(safeName)) {
+            safeName = "export";
+        }
+        final int extensionIndex = safeName.lastIndexOf('.');
+        final String baseName = extensionIndex > 0 ? safeName.substring(0, extensionIndex) : safeName;
+        final String extension = extensionIndex > 0 ? safeName.substring(extensionIndex) : "";
+        for (int index = 0; index < 10000; index++) {
+            final String candidateName = 0 == index ? safeName : baseName + " (" + index + ")" + extension;
+            final File candidate = new File(downloadsDir, candidateName);
+            if (candidate.createNewFile()) {
+                return candidate;
+            }
+        }
+        throw new IllegalStateException("Cannot create a unique export destination");
     }
 
     private String queryExportFileName(final Uri uri, final String fallback) {
