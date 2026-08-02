@@ -683,7 +683,7 @@ public final class JSAndroid {
                 ? String.format(Locale.getDefault(), Mobile.language(360),
                 Environment.DIRECTORY_DOWNLOADS + "/" + name)
                 : String.format(Locale.getDefault(), Mobile.language(359), name);
-        Mobile.showMsg(message, 5000);
+        activity.runOnUiThread(() -> Utils.showToast(activity, message));
     }
 
     private void notifyExportFileResult(final String requestID, final String status, final String name) {
