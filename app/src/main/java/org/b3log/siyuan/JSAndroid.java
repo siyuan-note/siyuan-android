@@ -56,7 +56,6 @@ import androidx.core.content.FileProvider;
 import com.blankj.utilcode.util.BarUtils;
 import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.StringUtils;
-import com.google.android.material.snackbar.Snackbar;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import org.json.JSONObject;
@@ -563,8 +562,7 @@ public final class JSAndroid {
             }
             if (succeeded) {
                 notifyExportFileResult(request.requestID, "success", savedName);
-                final String mimeType = Mobile.getMimeTypeByExt(savedName);
-                showExportFileSaved(savedName, destinationURI, mimeType, false);
+                showExportFileSaved(savedName, false);
             } else {
                 notifyExportFileResult(request.requestID, "error", "");
                 Mobile.showMsg(Mobile.language(290), 5000);
@@ -632,7 +630,7 @@ public final class JSAndroid {
             if (succeeded) {
                 notifyExportFileResult(request.requestID, "success", savedName);
                 if (null != destinationURI) {
-                    showExportFileSaved(savedName, destinationURI, Mobile.getMimeTypeByExt(savedName), true);
+                    showExportFileSaved(savedName, true);
                 } else {
                     Mobile.showMsg(String.format(Locale.getDefault(), Mobile.language(360),
                             Environment.DIRECTORY_DOWNLOADS + "/" + savedName), 5000);
@@ -680,28 +678,12 @@ public final class JSAndroid {
         return fallback;
     }
 
-    private void showExportFileSaved(final String name, final Uri uri, final String mimeType,
-                                     final boolean showDownloadPath) {
-        activity.runOnUiThread(() -> {
-            final String message = showDownloadPath
-                    ? String.format(Locale.getDefault(), Mobile.language(360),
-                    Environment.DIRECTORY_DOWNLOADS + "/" + name)
-                    : String.format(Locale.getDefault(), Mobile.language(359), name);
-            final Snackbar snackbar = Snackbar.make(activity.webView, message, Snackbar.LENGTH_LONG);
-            snackbar.setAction(Mobile.language(357), view -> openExportFile(uri, mimeType));
-            snackbar.show();
-        });
-    }
-
-    private void openExportFile(final Uri uri, final String mimeType) {
-        final Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(uri, StringUtils.isEmpty(mimeType) ? "application/octet-stream" : mimeType);
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        try {
-            activity.startActivity(intent);
-        } catch (final ActivityNotFoundException e) {
-            Mobile.showMsg(Mobile.language(358), 5000);
-        }
+    private void showExportFileSaved(final String name, final boolean showDownloadPath) {
+        final String message = showDownloadPath
+                ? String.format(Locale.getDefault(), Mobile.language(360),
+                Environment.DIRECTORY_DOWNLOADS + "/" + name)
+                : String.format(Locale.getDefault(), Mobile.language(359), name);
+        Mobile.showMsg(message, 5000);
     }
 
     private void notifyExportFileResult(final String requestID, final String status, final String name) {
