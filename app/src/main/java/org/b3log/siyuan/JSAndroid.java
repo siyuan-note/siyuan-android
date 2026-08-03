@@ -75,7 +75,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/Soltus">绛亽</a>
- * @version 1.6.0.7, Jul 17, 2026
+ * @version 1.6.0.8, Aug 3, 2026
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -112,6 +112,14 @@ public final class JSAndroid {
 
     public JSAndroid(final MainActivity activity) {
         this.activity = activity;
+    }
+
+    @JavascriptInterface
+    public void logInputEvent(final String details) {
+        if (StringUtils.isEmpty(details)) {
+            return;
+        }
+        Utils.logInfo("input", "DOM input event [" + details.substring(0, Math.min(details.length(), 2048)) + "]");
     }
 
     @JavascriptInterface

@@ -35,6 +35,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
@@ -107,7 +108,7 @@ import mobile.Mobile;
  * 主程序.
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
- * @version 1.2.0.3, Jul 20, 2026
+ * @version 1.2.0.4, Aug 3, 2026
  * @since 1.0.0
  */
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener,
@@ -120,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private TextView bootDetailsText;
     private InputManager inputManager;
     private final Map<Integer, String> inputDeviceDetails = new HashMap<>();
+    private long lastHoverMoveLogTime;
 
     private ValueCallback<Uri[]> uploadMessage;
     private static final int REQUEST_SELECT_FILE = 100;
@@ -128,6 +130,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private static final String SIYUAN_WEBVIEW_SCHEME = "http";
     private static final String SIYUAN_WEBVIEW_HOST = "127.0.0.1";
     private static final int SIYUAN_WEBVIEW_PORT = 6806;
+    private static final long HOVER_MOVE_LOG_INTERVAL = 250;
     private PermissionRequest pendingAudioPermissionRequest;
     private AlertDialog microphonePermissionDialog;
     private JSAndroid jsAndroid;
@@ -305,6 +308,11 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             return DragEvent.ACTION_DRAG_ENDED != event.getAction();
         });
 
+        webView.setOnHoverListener((v, event) -> {
+            logHoverEvent(event);
+            return false;
+        });
+
         webView.setOnTouchListener((v, event) -> {
             // 手指抬起（整个手势结束）时通知前端，用于清除长按多选定时器
             // 前端的 touchend 在多选/长按分支会被 stopImmediatePropagation 阻断，需由原生补足
@@ -318,6 +326,31 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         checkWebViewVer(ws);
         userAgent = ws.getUserAgentString();
         Log.i("boot", "User agent [" + userAgent + "]");
+    }
+
+    private void logHoverEvent(final MotionEvent event) {
+        final int action = event.getActionMasked();
+        final long now = SystemClock.uptimeMillis();
+        if (MotionEvent.ACTION_HOVER_MOVE == action && now - lastHoverMoveLogTime < HOVER_MOVE_LOG_INTERVAL) {
+            return;
+        }
+        if (MotionEvent.ACTION_HOVER_MOVE == action) {
+            lastHoverMoveLogTime = now;
+        }
+        if (0 == event.getPointerCount()) {
+            return;
+        }
+        int pointerIndex = event.getActionIndex();
+        if (pointerIndex < 0 || event.getPointerCount() <= pointerIndex) {
+            pointerIndex = 0;
+        }
+        final int toolType = event.getToolType(pointerIndex);
+        Utils.logInfo("input", "Native hover event [action=" + MotionEvent.actionToString(action) + "(" + action
+                + "), tool=" + toolType + ", source=0x" + Integer.toHexString(event.getSource())
+                + ", buttons=0x" + Integer.toHexString(event.getButtonState()) + ", pressure="
+                + event.getPressure(pointerIndex) + ", pointer=" + event.getPointerId(pointerIndex) + ", device="
+                + event.getDeviceId() + ", position=(" + Math.round(event.getX(pointerIndex)) + ","
+                + Math.round(event.getY(pointerIndex)) + ")]");
     }
 
     @SuppressLint("SetJavaScriptEnabled")
