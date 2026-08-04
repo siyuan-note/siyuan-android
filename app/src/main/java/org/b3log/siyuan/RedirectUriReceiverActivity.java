@@ -24,7 +24,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * OIDC redirect receiver activity.
+ * 思源 URI 分派入口。
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @version 1.0.0.0, Jan 30, 2026
@@ -55,9 +55,16 @@ public class RedirectUriReceiverActivity extends AppCompatActivity {
             return;
         }
 
-        final Intent target = new Intent(this, MainActivity.class);
-        target.putExtra("oidcCallback", data.toString());
-        target.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        final Intent target;
+        if ("siyuan".equalsIgnoreCase(data.getScheme()) && null == data.getHost()
+                && "/oidc-callback".equals(data.getPath())) {
+            target = new Intent(this, MainActivity.class);
+            target.putExtra("oidcCallback", data.toString());
+            target.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        } else {
+            target = new Intent(this, BootActivity.class);
+            target.setData(data);
+        }
 
         startActivity(target);
 

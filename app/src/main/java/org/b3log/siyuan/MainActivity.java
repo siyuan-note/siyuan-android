@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         try {
             final String script;
             if (!StringUtils.isEmpty(intent.getStringExtra("oidcCallback"))) {
-                script = "window.handleOidcCallbackLink(" + JSONObject.quote(intent.getStringExtra("oidcCallback")) + ");";
+                script = "window.handleOIDCCallback(" + JSONObject.quote(intent.getStringExtra("oidcCallback")) + ");";
             } else if (!StringUtils.isEmpty(intent.getStringExtra("blockURL"))) {
                 script = "window.openFileByURL(" + JSONObject.quote(intent.getStringExtra("blockURL")) + ");";
             } else {

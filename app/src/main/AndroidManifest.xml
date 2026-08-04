@@ -71,17 +71,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="blocks"
-                    android:scheme="siyuan" />
-            </intent-filter>
-
             <meta-data
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
@@ -99,9 +88,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data
-                    android:host="oidc-callback"
-                    android:scheme="siyuan" />
+                <!-- Android 会在未声明 host 时忽略 path，因此统一接收 siyuan: 链接并在代码中精确分派。 -->
+                <data android:scheme="siyuan" />
             </intent-filter>
         </activity>
 

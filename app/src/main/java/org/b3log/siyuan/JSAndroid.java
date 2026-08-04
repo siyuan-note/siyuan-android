@@ -771,6 +771,13 @@ public final class JSAndroid {
     }
 
     @JavascriptInterface
+    public String getOIDCCallback() {
+        final String callback = activity.getIntent().getStringExtra("oidcCallback");
+        activity.getIntent().removeExtra("oidcCallback");
+        return StringUtils.isEmpty(callback) ? "" : callback;
+    }
+
+    @JavascriptInterface
     public void changeStatusBarColor(final String color, final int appearanceMode) {
         if (Utils.isTablet(activity)) {
             return;
