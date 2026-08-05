@@ -763,7 +763,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 final String appDir = getFilesDir().getAbsolutePath() + "/app";
                 final String workspaceBaseDir = getExternalFilesDir(null).getAbsolutePath();
                 final String timezone = TimeZone.getDefault().getID();
-                final String localIPs = Utils.getIPAddressList();
+                final String localIPs = Utils.getLANIPAddressList(this);
                 final String langCode = Utils.getLanguage();
                 Mobile.startKernel("android", appDir, workspaceBaseDir, timezone, localIPs, langCode,
                         Build.VERSION.RELEASE +

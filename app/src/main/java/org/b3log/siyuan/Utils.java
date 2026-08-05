@@ -23,6 +23,11 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.net.ConnectivityManager;
+import android.net.LinkAddress;
+import android.net.LinkProperties;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.os.LocaleList;
 import android.print.PrintDocumentAdapter;
@@ -50,9 +55,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -219,23 +222,55 @@ public final class Utils {
         }
     }
 
-    public static String getIPAddressList() {
+    public static String getLANIPAddressList(final Context context) {
         final List<String> list = new ArrayList<>();
         try {
-            for (final Enumeration<NetworkInterface> enNetI = NetworkInterface.getNetworkInterfaces(); enNetI.hasMoreElements(); ) {
-                final NetworkInterface netI = enNetI.nextElement();
-                for (final Enumeration<InetAddress> enumIpAddr = netI.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
-                    final InetAddress inetAddress = enumIpAddr.nextElement();
-                    if (inetAddress instanceof Inet4Address && !inetAddress.isLoopbackAddress()) {
-                        list.add(inetAddress.getHostAddress());
+            final ConnectivityManager manager =
+                    (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (manager != null) {
+                final Network activeNetwork = manager.getActiveNetwork();
+                if (!addLANNetworkAddresses(manager, activeNetwork, list)) {
+                    for (final Network network : manager.getAllNetworks()) {
+                        if (network.equals(activeNetwork)) {
+                            continue;
+                        }
+                        if (addLANNetworkAddresses(manager, network, list)) {
+                            break;
+                        }
                     }
                 }
             }
         } catch (final Exception e) {
-            logError("network", "get IP list failed, returns 127.0.0.1", e);
+            logError("network", "get LAN IP list failed", e);
         }
         list.add("127.0.0.1");
         return TextUtils.join(",", list);
+    }
+
+    private static boolean addLANNetworkAddresses(final ConnectivityManager manager, final Network network,
+                                                  final List<String> addresses) {
+        if (network == null) {
+            return false;
+        }
+        final NetworkCapabilities capabilities = manager.getNetworkCapabilities(network);
+        if (capabilities == null ||
+                (!capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) &&
+                        !capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET))) {
+            return false;
+        }
+        final LinkProperties properties = manager.getLinkProperties(network);
+        if (properties == null) {
+            return false;
+        }
+        final int initialSize = addresses.size();
+        for (final LinkAddress linkAddress : properties.getLinkAddresses()) {
+            final InetAddress address = linkAddress.getAddress();
+            if (address instanceof Inet4Address && !address.isLoopbackAddress() &&
+                    !addresses.contains(address.getHostAddress())) {
+                addresses.add(address.getHostAddress());
+            }
+        }
+        return addresses.size() > initialSize;
     }
 
     public static void logError(final String tag, final String msg) {
