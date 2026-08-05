@@ -14,6 +14,9 @@
     <!-- Keep Wi-Fi alive for background kernel service -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
+    <!-- 接收局域网设备发现所需的组播数据 -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+
     <!--
         Fix the problem that notifications cannot be allowed on Android 13
         https://github.com/siyuan-note/siyuan/issues/7960

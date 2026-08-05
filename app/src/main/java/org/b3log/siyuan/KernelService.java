@@ -27,11 +27,15 @@ import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.PowerManager;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.ServiceCompat;
+
+import mobile.Mobile;
 
 /**
  * 内核常驻服务.
@@ -54,6 +58,15 @@ public class KernelService extends Service {
 
     private PowerManager.WakeLock wakeLock;
     private WifiManager.WifiLock wifiLock;
+    private WifiManager.MulticastLock multicastLock;
+    private final Handler multicastHandler = new Handler(Looper.getMainLooper());
+    private final Runnable refreshMulticastLock = new Runnable() {
+        @Override
+        public void run() {
+            updateMulticastLock();
+            multicastHandler.postDelayed(this, 5000);
+        }
+    };
 
     @Override
     public void onCreate() {
@@ -71,6 +84,7 @@ public class KernelService extends Service {
         ServiceCompat.startForeground(
                 this, NOTIFICATION_ID, buildNotification(), foregroundServiceType);
         acquireLocks();
+        multicastHandler.post(refreshMulticastLock);
     }
 
     @Override
@@ -86,6 +100,7 @@ public class KernelService extends Service {
 
     @Override
     public void onDestroy() {
+        multicastHandler.removeCallbacks(refreshMulticastLock);
         releaseLocks();
         super.onDestroy();
     }
@@ -172,6 +187,29 @@ public class KernelService extends Service {
         }
     }
 
+    private void updateMulticastLock() {
+        try {
+            if (Mobile.lanSyncActive()) {
+                if (multicastLock == null) {
+                    final WifiManager wm = (WifiManager) getApplicationContext()
+                            .getSystemService(Context.WIFI_SERVICE);
+                    if (wm != null) {
+                        multicastLock = wm.createMulticastLock("siyuan:KernelMulticastLock");
+                        multicastLock.setReferenceCounted(false);
+                    }
+                }
+                if (multicastLock != null && !multicastLock.isHeld()) {
+                    multicastLock.acquire();
+                }
+            } else if (multicastLock != null && multicastLock.isHeld()) {
+                multicastLock.release();
+                multicastLock = null;
+            }
+        } catch (final Exception e) {
+            Utils.logError("kernel-service", "update multicast lock failed", e);
+        }
+    }
+
     /**
      * Release all held locks.
      */
@@ -183,6 +221,15 @@ public class KernelService extends Service {
             }
         } catch (final Exception e) {
             Utils.logError("kernel-service", "release wake lock failed", e);
+        }
+
+        try {
+            if (multicastLock != null && multicastLock.isHeld()) {
+                multicastLock.release();
+                multicastLock = null;
+            }
+        } catch (final Exception e) {
+            Utils.logError("kernel-service", "release multicast lock failed", e);
         }
 
         try {
