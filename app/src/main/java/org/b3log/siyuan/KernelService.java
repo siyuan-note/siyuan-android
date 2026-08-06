@@ -25,6 +25,10 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ServiceInfo;
+import android.net.ConnectivityManager;
+import android.net.LinkProperties;
+import android.net.Network;
+import android.net.NetworkRequest;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Handler;
@@ -59,12 +63,24 @@ public class KernelService extends Service {
     private PowerManager.WakeLock wakeLock;
     private WifiManager.WifiLock wifiLock;
     private WifiManager.MulticastLock multicastLock;
+    private ConnectivityManager connectivityManager;
+    private ConnectivityManager.NetworkCallback networkCallback;
     private final Handler multicastHandler = new Handler(Looper.getMainLooper());
     private final Runnable refreshMulticastLock = new Runnable() {
         @Override
         public void run() {
             updateMulticastLock();
             multicastHandler.postDelayed(this, 5000);
+        }
+    };
+    private final Runnable refreshLANSyncNetwork = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                Mobile.updateLocalIPs(Utils.getLANIPAddressList(KernelService.this));
+            } catch (final Exception e) {
+                Utils.logError("kernel-service", "refresh LAN sync network failed", e);
+            }
         }
     };
 
@@ -85,6 +101,7 @@ public class KernelService extends Service {
                 this, NOTIFICATION_ID, buildNotification(), foregroundServiceType);
         acquireLocks();
         multicastHandler.post(refreshMulticastLock);
+        registerNetworkCallback();
     }
 
     @Override
@@ -100,7 +117,9 @@ public class KernelService extends Service {
 
     @Override
     public void onDestroy() {
+        unregisterNetworkCallback();
         multicastHandler.removeCallbacks(refreshMulticastLock);
+        multicastHandler.removeCallbacks(refreshLANSyncNetwork);
         releaseLocks();
         super.onDestroy();
     }
@@ -208,6 +227,59 @@ public class KernelService extends Service {
         } catch (final Exception e) {
             Utils.logError("kernel-service", "update multicast lock failed", e);
         }
+    }
+
+    private void registerNetworkCallback() {
+        try {
+            connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (connectivityManager == null) {
+                return;
+            }
+            networkCallback = new ConnectivityManager.NetworkCallback() {
+                @Override
+                public void onAvailable(final Network network) {
+                    scheduleLANSyncNetworkRefresh();
+                }
+
+                @Override
+                public void onLinkPropertiesChanged(final Network network, final LinkProperties linkProperties) {
+                    scheduleLANSyncNetworkRefresh();
+                }
+
+                @Override
+                public void onLost(final Network network) {
+                    scheduleLANSyncNetworkRefresh();
+                }
+            };
+            final NetworkRequest request = new NetworkRequest.Builder()
+                    .addTransportType(android.net.NetworkCapabilities.TRANSPORT_WIFI)
+                    .addTransportType(android.net.NetworkCapabilities.TRANSPORT_ETHERNET)
+                    .build();
+            connectivityManager.registerNetworkCallback(request, networkCallback);
+        } catch (final Exception e) {
+            Utils.logError("kernel-service", "register network callback failed", e);
+        }
+    }
+
+    private void scheduleLANSyncNetworkRefresh() {
+        if (networkCallback == null) {
+            return;
+        }
+        multicastHandler.removeCallbacks(refreshLANSyncNetwork);
+        multicastHandler.postDelayed(refreshLANSyncNetwork, 500);
+    }
+
+    private void unregisterNetworkCallback() {
+        if (connectivityManager == null || networkCallback == null) {
+            return;
+        }
+        try {
+            connectivityManager.unregisterNetworkCallback(networkCallback);
+        } catch (final Exception e) {
+            Utils.logError("kernel-service", "unregister network callback failed", e);
+        }
+        networkCallback = null;
+        connectivityManager = null;
     }
 
     /**
