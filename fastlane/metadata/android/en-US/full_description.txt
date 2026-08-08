@@ -1,4 +1,4 @@
-SiYuan is a privacy-first personal knowledge management system, support fine-grained block-level reference and Markdown WYSIWYG.
+SiYuan is an open-source, privacy-first, self-hosted knowledge workspace where humans and AI agents work together.
 
 <h3>Features</h3>
 Most features are free, even for commercial use.

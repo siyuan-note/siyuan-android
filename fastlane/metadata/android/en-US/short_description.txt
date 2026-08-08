@@ -1,1 +1,1 @@
-A privacy-first, self-hosted knowledge management app
+Open-source knowledge workspace for humans and AI agents
