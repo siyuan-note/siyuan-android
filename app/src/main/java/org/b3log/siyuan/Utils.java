@@ -191,7 +191,7 @@ public final class Utils {
             if (KeyboardUtils.isSoftInputVisible(activity)) {
                 showKeyboardAndToolbar(webView);
             } else {
-                hideKeyboardAndToolbar(webView);
+                hideKeyboardAndToolbar(activity, webView);
             }
         });
     }
@@ -203,9 +203,12 @@ public final class Utils {
         });
     }
 
-    public static void hideKeyboardAndToolbar(final WebView webView) {
+    public static void hideKeyboardAndToolbar(final Activity activity, final WebView webView) {
         webView.post(() -> {
             webView.evaluateJavascript("javascript:hideKeyboardToolbar();document.activeElement.blur();", null);
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).finishWebViewActionMode();
+            }
             // 桌面模式依赖 WebView 自身管理软键盘，禁用焦点会导致键盘收起后无法再次获取焦点
             // https://github.com/siyuan-note/siyuan/issues/18028
             if (!isDesktopMode(webView)) {

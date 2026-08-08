@@ -39,6 +39,7 @@ import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.DragEvent;
 import android.view.InputDevice;
 import android.view.MotionEvent;
@@ -120,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private ProgressBar bootProgressBar;
     private TextView bootDetailsText;
     private InputManager inputManager;
+    private ActionMode webViewActionMode;
     private final Map<Integer, String> inputDeviceDetails = new HashMap<>();
     private long lastHoverMoveLogTime;
 
@@ -203,6 +205,30 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         final String details = inputDeviceDetails.remove(deviceId);
         Utils.logInfo("input", "Remove input device, id [" + deviceId + "], details ["
                 + (null == details ? "unavailable" : details) + "]");
+    }
+
+    @Override
+    public void onActionModeStarted(final ActionMode mode) {
+        super.onActionModeStarted(mode);
+        if (null != webView && webView.hasFocus()) {
+            webViewActionMode = mode;
+        }
+    }
+
+    @Override
+    public void onActionModeFinished(final ActionMode mode) {
+        super.onActionModeFinished(mode);
+        if (webViewActionMode == mode) {
+            webViewActionMode = null;
+        }
+    }
+
+    void finishWebViewActionMode() {
+        final ActionMode actionMode = webViewActionMode;
+        webViewActionMode = null;
+        if (null != actionMode) {
+            actionMode.finish();
+        }
     }
 
     @Override
