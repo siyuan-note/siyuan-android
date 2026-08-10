@@ -115,6 +115,21 @@ public final class JSAndroid {
     }
 
     @JavascriptInterface
+    public void reportStartupStage(final String stage) {
+        switch (stage) {
+            case "frontend-entry":
+            case "lute-ready":
+            case "plugins-ready":
+            case "loading-removed":
+            case "frontend-ready":
+                StartupTiming.mark(stage);
+                break;
+            default:
+                break;
+        }
+    }
+
+    @JavascriptInterface
     public void logInputEvent(final String details) {
         if (StringUtils.isEmpty(details)) {
             return;
