@@ -236,7 +236,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        StartupTiming.mark("activity-main");
         Utils.logInfo("boot", "Create main activity, process [" + android.os.Process.myPid()
                 + "], instance [" + System.identityHashCode(this) + "], task [" + getTaskId()
                 + "], saved state [" + (null != savedInstanceState) + "]");
@@ -257,14 +256,12 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
         // 初始化 UI 元素
         initUIElements();
-        StartupTiming.mark("webview-view-initialized");
 
         // 拉起内核
         startKernel();
 
         // 初始化外观资源
         initAppearance();
-        StartupTiming.mark("appearance-ready");
 
         AppUtils.registerAppStatusChangedListener(this);
 
@@ -411,11 +408,8 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
             @Override
             public void onPageFinished(WebView view, String url) {
-                if (null != url && url.contains("/appearance/boot/")) {
-                    StartupTiming.mark("boot-page-loaded");
-                } else if (null != url && url.contains("/stage/build/")) {
+                if (null != url && url.contains("/stage/build/")) {
                     appStatusSyncEnabled = true;
-                    StartupTiming.mark("frontend-page-loaded");
                 }
                 runOnUiThread(() -> {
                     bootLogo.setVisibility(View.GONE);
@@ -564,9 +558,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         ws.setUserAgentString("SiYuan/" + Utils.version + " https://b3log.org/siyuan Android " + ws.getUserAgentString());
 
         waitFotKernelHttpServing();
-        StartupTiming.mark("kernel-http-serving");
         webView.loadUrl("http://127.0.0.1:6806/appearance/boot/index.html?v=" + Utils.version);
-        StartupTiming.mark("boot-page-requested");
 
         keepLiveActive = true;
         keepLiveThread = new Thread(this::keepLive, "KeepLiveThread");
@@ -804,7 +796,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 final String timezone = TimeZone.getDefault().getID();
                 final String localIPs = Utils.getLANIPAddressList(this);
                 final String langCode = Utils.getLanguage();
-                StartupTiming.mark("kernel-start-requested");
                 Mobile.startKernel("android", appDir, workspaceBaseDir, timezone, localIPs, langCode,
                         Build.VERSION.RELEASE +
                                 "/SDK " + Build.VERSION.SDK_INT +
@@ -1149,7 +1140,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
     @Override
     public void onForeground(Activity activity) {
-        startSyncDataIfReady("foreground");
+        startSyncDataIfReady();
         if (null != webView) {
             webView.evaluateJavascript("javascript:window.reconnectWebSocket()", null);
         }
@@ -1157,12 +1148,11 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
     @Override
     public void onBackground(Activity activity) {
-        startSyncDataIfReady("background");
+        startSyncDataIfReady();
     }
 
-    private void startSyncDataIfReady(final String appStatus) {
+    private void startSyncDataIfReady() {
         if (!appStatusSyncEnabled) {
-            Utils.logInfo("sync", "Skip " + appStatus + " sync before the main page is loaded");
             return;
         }
         startSyncData();

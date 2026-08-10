@@ -55,7 +55,6 @@ public class BootActivity extends AppCompatActivity {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        StartupTiming.start("activity-boot");
         Utils.logInfo("boot", "Create boot activity, process [" + android.os.Process.myPid()
                 + "], instance [" + System.identityHashCode(this) + "], task [" + getTaskId()
                 + "], saved state [" + (null != savedInstanceState) + "]");
