@@ -786,11 +786,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
         try {
             new Thread(() -> {
-                if (Utils.isCnChannel(this.getPackageManager())) {
-                    // Apps in Chinese mainland app stores no longer provide AI access settings https://github.com/siyuan-note/siyuan/issues/13051
-                    Mobile.disableFeature("ai");
-                }
-
                 final String appDir = getFilesDir().getAbsolutePath() + "/app";
                 final String workspaceBaseDir = getExternalFilesDir(null).getAbsolutePath();
                 final String timezone = TimeZone.getDefault().getID();

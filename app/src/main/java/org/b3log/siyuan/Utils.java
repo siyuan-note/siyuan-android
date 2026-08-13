@@ -147,11 +147,6 @@ public final class Utils {
         return null != url && url.contains("/stage/build/desktop/");
     }
 
-    public static boolean isCnChannel(final PackageManager pm) {
-        final String channel = getChannel(pm);
-        return channel.contains("cn") || channel.equals("huawei");
-    }
-
     public static String getChannel(final PackageManager pm) {
         // Privacy policy solicitation will no longer pop up when Android starts for the first time
         // https://github.com/siyuan-note/siyuan/issues/10348
