@@ -194,7 +194,7 @@ public final class JSAndroid {
     public void hideKeyboard() {
         activity.runOnUiThread(() -> {
             final WebView webView = activity.findViewById(R.id.webView);
-            Utils.hideKeyboardAndToolbar(activity, webView);
+            Utils.hideKeyboardAndToolbar(activity, webView, false);
             KeyboardUtils.hideSoftInput(activity);
         });
     }
