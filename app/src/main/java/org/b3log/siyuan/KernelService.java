@@ -65,22 +65,20 @@ public class KernelService extends Service {
     private WifiManager.MulticastLock multicastLock;
     private ConnectivityManager connectivityManager;
     private ConnectivityManager.NetworkCallback networkCallback;
+    private String localIPs = "";
     private final Handler multicastHandler = new Handler(Looper.getMainLooper());
     private final Runnable refreshMulticastLock = new Runnable() {
         @Override
         public void run() {
             updateMulticastLock();
+            updateLocalIPs();
             multicastHandler.postDelayed(this, 5000);
         }
     };
-    private final Runnable refreshLANSyncNetwork = new Runnable() {
+    private final Runnable refreshLocalIPs = new Runnable() {
         @Override
         public void run() {
-            try {
-                Mobile.updateLocalIPs(Utils.getLANIPAddressList(KernelService.this));
-            } catch (final Exception e) {
-                Utils.logError("kernel-service", "refresh LAN sync network failed", e);
-            }
+            updateLocalIPs();
         }
     };
 
@@ -119,7 +117,7 @@ public class KernelService extends Service {
     public void onDestroy() {
         unregisterNetworkCallback();
         multicastHandler.removeCallbacks(refreshMulticastLock);
-        multicastHandler.removeCallbacks(refreshLANSyncNetwork);
+        multicastHandler.removeCallbacks(refreshLocalIPs);
         releaseLocks();
         super.onDestroy();
     }
@@ -229,6 +227,19 @@ public class KernelService extends Service {
         }
     }
 
+    private void updateLocalIPs() {
+        try {
+            final String currentLocalIPs = Utils.getLANIPAddressList(this);
+            if (currentLocalIPs.equals(localIPs)) {
+                return;
+            }
+            Mobile.updateLocalIPs(currentLocalIPs);
+            localIPs = currentLocalIPs;
+        } catch (final Exception e) {
+            Utils.logError("kernel-service", "refresh local IP addresses failed", e);
+        }
+    }
+
     private void registerNetworkCallback() {
         try {
             connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -254,6 +265,7 @@ public class KernelService extends Service {
             final NetworkRequest request = new NetworkRequest.Builder()
                     .addTransportType(android.net.NetworkCapabilities.TRANSPORT_WIFI)
                     .addTransportType(android.net.NetworkCapabilities.TRANSPORT_ETHERNET)
+                    .addTransportType(android.net.NetworkCapabilities.TRANSPORT_CELLULAR)
                     .build();
             connectivityManager.registerNetworkCallback(request, networkCallback);
         } catch (final Exception e) {
@@ -265,8 +277,8 @@ public class KernelService extends Service {
         if (networkCallback == null) {
             return;
         }
-        multicastHandler.removeCallbacks(refreshLANSyncNetwork);
-        multicastHandler.postDelayed(refreshLANSyncNetwork, 500);
+        multicastHandler.removeCallbacks(refreshLocalIPs);
+        multicastHandler.postDelayed(refreshLocalIPs, 500);
     }
 
     private void unregisterNetworkCallback() {

@@ -55,11 +55,17 @@ import java.io.File;
 import java.io.FileWriter;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import mobile.Mobile;
 
@@ -234,19 +240,19 @@ public final class Utils {
         try {
             final ConnectivityManager manager =
                     (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            final Set<String> cellularAddresses = new HashSet<>();
             if (manager != null) {
                 final Network activeNetwork = manager.getActiveNetwork();
-                if (!addLANNetworkAddresses(manager, activeNetwork, list)) {
-                    for (final Network network : manager.getAllNetworks()) {
-                        if (network.equals(activeNetwork)) {
-                            continue;
-                        }
-                        if (addLANNetworkAddresses(manager, network, list)) {
-                            break;
-                        }
+                addLANNetworkAddresses(manager, activeNetwork, list);
+                addCellularNetworkAddresses(manager, activeNetwork, cellularAddresses);
+                for (final Network network : manager.getAllNetworks()) {
+                    if (!network.equals(activeNetwork)) {
+                        addLANNetworkAddresses(manager, network, list);
                     }
+                    addCellularNetworkAddresses(manager, network, cellularAddresses);
                 }
             }
+            addPrivateInterfaceAddresses(cellularAddresses, list);
         } catch (final Exception e) {
             logError("network", "get LAN IP list failed", e);
         }
@@ -265,6 +271,22 @@ public final class Utils {
                         !capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET))) {
             return false;
         }
+        return addNetworkAddresses(manager, network, addresses);
+    }
+
+    private static void addCellularNetworkAddresses(final ConnectivityManager manager, final Network network,
+                                                    final Set<String> addresses) {
+        if (network == null) {
+            return;
+        }
+        final NetworkCapabilities capabilities = manager.getNetworkCapabilities(network);
+        if (capabilities != null && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+            addNetworkAddresses(manager, network, addresses);
+        }
+    }
+
+    private static boolean addNetworkAddresses(final ConnectivityManager manager, final Network network,
+                                               final Collection<String> addresses) {
         final LinkProperties properties = manager.getLinkProperties(network);
         if (properties == null) {
             return false;
@@ -278,6 +300,29 @@ public final class Utils {
             }
         }
         return addresses.size() > initialSize;
+    }
+
+    private static void addPrivateInterfaceAddresses(final Set<String> excludedAddresses,
+                                                     final List<String> addresses) throws SocketException {
+        final Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+        if (interfaces == null) {
+            return;
+        }
+        while (interfaces.hasMoreElements()) {
+            final NetworkInterface networkInterface = interfaces.nextElement();
+            if (!networkInterface.isUp() || networkInterface.isLoopback() || networkInterface.isPointToPoint()) {
+                continue;
+            }
+            final Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
+            while (interfaceAddresses.hasMoreElements()) {
+                final InetAddress address = interfaceAddresses.nextElement();
+                final String hostAddress = address.getHostAddress();
+                if (address instanceof Inet4Address && address.isSiteLocalAddress() &&
+                        !excludedAddresses.contains(hostAddress) && !addresses.contains(hostAddress)) {
+                    addresses.add(hostAddress);
+                }
+            }
+        }
     }
 
     public static void logError(final String tag, final String msg) {
