@@ -79,6 +79,10 @@ import mobile.Mobile;
  */
 public final class Utils {
 
+    // 与前端 KeyboardHideResult 保持一致。
+    private static final String KEYBOARD_HIDE_RESULT_PRESERVE_SELECTION = "1";
+    private static final String KEYBOARD_HIDE_RESULT_RESTORE_TABLE_CELL_SELECTION = "2";
+
     /**
      * App version.
      */
@@ -205,13 +209,16 @@ public final class Utils {
     }
 
     public static void hideKeyboardAndToolbar(final Activity activity, final WebView webView,
-                                              final boolean preserveTableCellSelectAll) {
+                                              final boolean preserveSelection) {
         webView.post(() -> {
-            final String script = "javascript:hideKeyboardToolbar(" + preserveTableCellSelectAll + ");";
+            final String script = "javascript:hideKeyboardToolbar(" + preserveSelection + ");";
             webView.evaluateJavascript(script, result -> {
-                if ("true".equals(result)) {
+                if (KEYBOARD_HIDE_RESULT_RESTORE_TABLE_CELL_SELECTION.equals(result) || "true".equals(result)) {
                     showKeyboardAndToolbar(webView);
                     KeyboardUtils.showSoftInput(activity);
+                    return;
+                }
+                if (KEYBOARD_HIDE_RESULT_PRESERVE_SELECTION.equals(result)) {
                     return;
                 }
                 webView.evaluateJavascript("javascript:document.activeElement.blur();", null);
