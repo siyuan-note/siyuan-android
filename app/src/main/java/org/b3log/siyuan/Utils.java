@@ -171,6 +171,10 @@ public final class Utils {
         return applicationInfo.metaData.getString("CHANNEL");
     }
 
+    public static boolean isHuaweiChannel(final PackageManager pm) {
+        return "huawei".equals(getChannel(pm));
+    }
+
     public static void setWebViewFocusable(final WebView webView, final boolean focusable) {
         // 禁止 WebView 获取焦点以防止自动弹出软键盘，软键盘弹出由前端控制
         // Improve soft keyboard toolbar pop-up https://github.com/siyuan-note/siyuan/issues/16548

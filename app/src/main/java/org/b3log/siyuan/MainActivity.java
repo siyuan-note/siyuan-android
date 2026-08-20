@@ -786,6 +786,10 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
         try {
             new Thread(() -> {
+                if (Utils.isHuaweiChannel(this.getPackageManager())) {
+                    Mobile.disableFeature("ai");
+                }
+
                 final String appDir = getFilesDir().getAbsolutePath() + "/app";
                 final String workspaceBaseDir = getExternalFilesDir(null).getAbsolutePath();
                 final String timezone = TimeZone.getDefault().getID();
