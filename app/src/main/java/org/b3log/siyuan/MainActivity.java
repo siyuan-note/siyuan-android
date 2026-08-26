@@ -48,8 +48,10 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.PermissionRequest;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -134,10 +136,27 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private static final String SIYUAN_WEBVIEW_SCHEME = "http";
     private static final String SIYUAN_WEBVIEW_HOST = "127.0.0.1";
     private static final int SIYUAN_WEBVIEW_PORT = 6806;
+    private static final String SIYUAN_MAIN_PAGE_URL = "http://127.0.0.1:6806/";
+    private static final String SIYUAN_BOOT_PAGE_URL =
+            "http://127.0.0.1:6806/appearance/boot/index.html?v=" + Utils.version;
+    private static final String SIYUAN_BOOT_PROGRESS_URL =
+            "http://127.0.0.1:6806/api/system/bootProgress";
+    private static final long BOOT_PROGRESS_POLL_INTERVAL = 200;
+    private static final long MAIN_PAGE_LOAD_TIMEOUT = 30000;
     private static final long HOVER_MOVE_LOG_INTERVAL = 250;
     private PermissionRequest pendingAudioPermissionRequest;
     private AlertDialog microphonePermissionDialog;
     private JSAndroid jsAndroid;
+    private final AtomicBoolean bootNavigationCompleted = new AtomicBoolean(false);
+    private final AtomicBoolean mainFrameRecoveryScheduled = new AtomicBoolean(false);
+    private final AtomicBoolean webViewRecoveryInProgress = new AtomicBoolean(false);
+    private volatile boolean kernelBootCompleted;
+    private volatile boolean mainPageReady;
+    private volatile boolean bootProgressMonitorActive;
+    private volatile boolean forceDefaultBootAppearance;
+    private Thread bootProgressMonitorThread;
+    private final Handler mainPageWatchdogHandler = new Handler(Looper.getMainLooper());
+    private final Runnable mainPageWatchdog = this::handleMainPageWatchdog;
     private final ActivityResultLauncher<PickVisualMediaRequest> selectImageLauncher = registerForActivityResult(
             new PickVisualMedia(), uri -> completeFileSelection(null == uri ? null : new Uri[]{uri}));
     private final ActivityResultLauncher<PickVisualMediaRequest> selectImagesLauncher = registerForActivityResult(
@@ -383,6 +402,11 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
     @SuppressLint("SetJavaScriptEnabled")
     private void showBootIndex() {
+        showBootIndex(false);
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    private void showBootIndex(final boolean loadMainPageDirectly) {
         if (null == webView) {
             return;
         }
@@ -407,15 +431,64 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             }
 
             @Override
+            public void onPageStarted(final WebView view, final String url, final Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                if (view != webView) {
+                    return;
+                }
+                if (isMainPageNavigation(url)) {
+                    mainPageReady = false;
+                    bootNavigationCompleted.set(true);
+                    view.getSettings().setMediaPlaybackRequiresUserGesture(true);
+                }
+            }
+
+            @Override
             public void onPageFinished(WebView view, String url) {
+                if (view != webView) {
+                    return;
+                }
                 if (null != url && url.contains("/stage/build/")) {
                     appStatusSyncEnabled = true;
+                }
+                if (isReadyMainPage(url)) {
+                    kernelBootCompleted = true;
+                    mainPageReady = true;
+                    bootNavigationCompleted.set(true);
+                    forceDefaultBootAppearance = false;
+                    stopBootProgressMonitor();
+                    cancelMainPageWatchdog();
                 }
                 runOnUiThread(() -> {
                     bootLogo.setVisibility(View.GONE);
                     bootProgressBar.setVisibility(View.GONE);
                     bootDetailsText.setVisibility(View.GONE);
                 });
+            }
+
+            @Override
+            public void onReceivedError(final WebView view, final WebResourceRequest request,
+                                        final WebResourceError error) {
+                super.onReceivedError(view, request, error);
+                if (request.isForMainFrame()) {
+                    handleMainFrameLoadError(view, request.getUrl().toString(), error.getDescription().toString());
+                }
+            }
+
+            @Override
+            public void onReceivedHttpError(final WebView view, final WebResourceRequest request,
+                                            final WebResourceResponse errorResponse) {
+                super.onReceivedHttpError(view, request, errorResponse);
+                if (request.isForMainFrame()) {
+                    handleMainFrameLoadError(view, request.getUrl().toString(),
+                            "HTTP " + errorResponse.getStatusCode());
+                }
+            }
+
+            @Override
+            public boolean onRenderProcessGone(final WebView view, final RenderProcessGoneDetail detail) {
+                recoverWebView(view, detail.didCrash());
+                return true;
             }
 
             @Override
@@ -558,11 +631,23 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         ws.setUserAgentString("SiYuan/" + Utils.version + " https://b3log.org/siyuan Android " + ws.getUserAgentString());
 
         waitFotKernelHttpServing();
-        webView.loadUrl("http://127.0.0.1:6806/appearance/boot/index.html?v=" + Utils.version);
+        if (loadMainPageDirectly) {
+            forceDefaultBootAppearance = false;
+            mainPageReady = false;
+            bootNavigationCompleted.set(true);
+            ws.setMediaPlaybackRequiresUserGesture(true);
+            webView.loadUrl(SIYUAN_MAIN_PAGE_URL);
+            scheduleMainPageWatchdog();
+        } else {
+            loadBootPage();
+            startBootProgressMonitor();
+        }
 
-        keepLiveActive = true;
-        keepLiveThread = new Thread(this::keepLive, "KeepLiveThread");
-        keepLiveThread.start();
+        if (null == keepLiveThread || !keepLiveThread.isAlive()) {
+            keepLiveActive = true;
+            keepLiveThread = new Thread(this::keepLive, "KeepLiveThread");
+            keepLiveThread.start();
+        }
 
         // Start the kernel background service to keep the Go server alive
         // when the app is backgrounded or the screen is off
@@ -571,6 +656,206 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             ContextCompat.startForegroundService(this, kernelServiceIntent);
         } catch (final Exception e) {
             Utils.logError("boot", "start kernel service failed", e);
+        }
+    }
+
+    private void loadBootPage() {
+        if (null == webView) {
+            return;
+        }
+        webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
+        mainPageReady = false;
+        bootNavigationCompleted.set(false);
+        final String safeParameter = forceDefaultBootAppearance ? "&appearance=0" : "";
+        webView.loadUrl(SIYUAN_BOOT_PAGE_URL + safeParameter);
+    }
+
+    private synchronized void startBootProgressMonitor() {
+        if (kernelBootCompleted) {
+            runOnUiThread(this::navigateToMainPage);
+            return;
+        }
+        if (null != bootProgressMonitorThread && bootProgressMonitorThread.isAlive()) {
+            return;
+        }
+
+        bootProgressMonitorActive = true;
+        bootProgressMonitorThread = new Thread(() -> {
+            try {
+                while (bootProgressMonitorActive && !isFinishing()) {
+                    if (isKernelBootCompleted()) {
+                        kernelBootCompleted = true;
+                        bootProgressMonitorActive = false;
+                        runOnUiThread(this::navigateToMainPage);
+                        return;
+                    }
+                    try {
+                        Thread.sleep(BOOT_PROGRESS_POLL_INTERVAL);
+                    } catch (final InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                }
+            } finally {
+                synchronized (MainActivity.this) {
+                    if (Thread.currentThread() == bootProgressMonitorThread) {
+                        bootProgressMonitorThread = null;
+                    }
+                }
+            }
+        }, "BootProgressMonitorThread");
+        bootProgressMonitorThread.start();
+    }
+
+    private void stopBootProgressMonitor() {
+        bootProgressMonitorActive = false;
+        final Thread monitorThread = bootProgressMonitorThread;
+        if (null != monitorThread) {
+            monitorThread.interrupt();
+        }
+    }
+
+    private boolean isKernelBootCompleted() {
+        HttpURLConnection connection = null;
+        try {
+            connection = (HttpURLConnection) new URL(SIYUAN_BOOT_PROGRESS_URL).openConnection();
+            connection.setConnectTimeout(1000);
+            connection.setReadTimeout(1000);
+            connection.setUseCaches(false);
+            if (HttpURLConnection.HTTP_OK != connection.getResponseCode()) {
+                return false;
+            }
+            try (InputStream input = connection.getInputStream()) {
+                final JSONObject response = new JSONObject(IOUtils.toString(input, StandardCharsets.UTF_8));
+                final JSONObject data = response.optJSONObject("data");
+                return null != data && 100 <= data.optInt("progress");
+            }
+        } catch (final Exception e) {
+            return false;
+        } finally {
+            if (null != connection) {
+                connection.disconnect();
+            }
+        }
+    }
+
+    private void navigateToMainPage() {
+        if (null == webView || isFinishing()) {
+            return;
+        }
+        scheduleMainPageWatchdog();
+        if (mainPageReady) {
+            bootNavigationCompleted.set(true);
+            cancelMainPageWatchdog();
+            return;
+        }
+        if (!bootNavigationCompleted.compareAndSet(false, true)) {
+            return;
+        }
+
+        forceDefaultBootAppearance = false;
+        mainPageReady = false;
+        webView.getSettings().setMediaPlaybackRequiresUserGesture(true);
+        webView.loadUrl(SIYUAN_MAIN_PAGE_URL);
+    }
+
+    private boolean isMainPageNavigation(final String url) {
+        return null != url && url.startsWith(SIYUAN_MAIN_PAGE_URL)
+                && !url.contains("/appearance/boot/");
+    }
+
+    private boolean isReadyMainPage(final String url) {
+        return null != url && (url.contains("/stage/build/") || url.contains("/check-auth"));
+    }
+
+    private void scheduleMainPageWatchdog() {
+        if (!kernelBootCompleted || isFinishing()) {
+            return;
+        }
+        mainPageWatchdogHandler.removeCallbacks(mainPageWatchdog);
+        mainPageWatchdogHandler.postDelayed(mainPageWatchdog, MAIN_PAGE_LOAD_TIMEOUT);
+    }
+
+    private void cancelMainPageWatchdog() {
+        mainPageWatchdogHandler.removeCallbacks(mainPageWatchdog);
+    }
+
+    private void handleMainPageWatchdog() {
+        if (!kernelBootCompleted || null == webView || isFinishing()) {
+            return;
+        }
+        if (mainPageReady) {
+            return;
+        }
+
+        Utils.logInfo("webview", "Main page load timed out, rebuilding WebView");
+        recoverWebView(webView, false);
+    }
+
+    private void handleMainFrameLoadError(final WebView failedWebView, final String url,
+                                          final String description) {
+        if (failedWebView != webView || isFinishing()) {
+            return;
+        }
+        Utils.logInfo("webview", "Main frame load failed [url=" + url + ", error=" + description + "]");
+        forceDefaultBootAppearance = true;
+        mainPageReady = false;
+        if (!mainFrameRecoveryScheduled.compareAndSet(false, true)) {
+            return;
+        }
+
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            mainFrameRecoveryScheduled.set(false);
+            if (failedWebView != webView || null == webView || isFinishing()) {
+                return;
+            }
+            bootNavigationCompleted.set(false);
+            if (kernelBootCompleted) {
+                navigateToMainPage();
+            } else {
+                loadBootPage();
+                startBootProgressMonitor();
+            }
+        }, 300);
+    }
+
+    private void recoverWebView(final WebView failedWebView, final boolean didCrash) {
+        if (failedWebView != webView || isFinishing()
+                || !webViewRecoveryInProgress.compareAndSet(false, true)) {
+            return;
+        }
+
+        cancelMainPageWatchdog();
+        Utils.logInfo("webview", "Recover WebView [render process crashed=" + didCrash + "]");
+        forceDefaultBootAppearance = !kernelBootCompleted;
+        mainPageReady = false;
+        bootNavigationCompleted.set(false);
+        mainFrameRecoveryScheduled.set(false);
+        try {
+            if (!(failedWebView.getParent() instanceof ViewGroup)) {
+                return;
+            }
+            final ViewGroup parent = (ViewGroup) failedWebView.getParent();
+            final int childIndex = parent.indexOfChild(failedWebView);
+            final ViewGroup.LayoutParams layoutParams = failedWebView.getLayoutParams();
+            parent.removeView(failedWebView);
+            failedWebView.destroy();
+
+            final WebView replacement = new WebView(this);
+            replacement.setId(R.id.webView);
+            parent.addView(replacement, childIndex, layoutParams);
+            webView = replacement;
+            initUIElements();
+            KeyboardUtils.unregisterSoftInputChangedListener(getWindow());
+            Utils.registerSoftKeyboardToolbar(this, webView);
+            if (Utils.isTablet(this)) {
+                Utils.setWebViewFocusable(webView, true);
+            }
+            showBootIndex(kernelBootCompleted);
+        } catch (final Exception e) {
+            Utils.logError("webview", "recover render process failed", e);
+        } finally {
+            webViewRecoveryInProgress.set(false);
         }
     }
 
@@ -1189,6 +1474,12 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     }
 
     private void release() {
+        cancelMainPageWatchdog();
+        stopBootProgressMonitor();
+        if (null != bootProgressMonitorThread) {
+            bootProgressMonitorThread = null;
+        }
+
         try {
             if (null != inputManager) {
                 inputManager.unregisterInputDeviceListener(this);
