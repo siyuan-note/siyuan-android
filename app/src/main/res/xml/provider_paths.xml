@@ -3,4 +3,7 @@
     <external-files-path
         name="share"
         path="/" />
+    <cache-path
+        name="clipboard"
+        path="clipboard/" />
 </paths>

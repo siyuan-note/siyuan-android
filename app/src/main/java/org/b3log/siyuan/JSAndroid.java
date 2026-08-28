@@ -75,7 +75,7 @@ import mobile.Mobile;
  *
  * @author <a href="https://88250.b3log.org">Liang Ding</a>
  * @author <a href="https://github.com/Soltus">绛亽</a>
- * @version 1.6.0.8, Aug 3, 2026
+ * @version 1.6.0.9, Aug 28, 2026
  * @since 1.0.0
  */
 public final class JSAndroid {
@@ -323,7 +323,7 @@ public final class JSAndroid {
                 inputStream = connection.getInputStream();
             }
 
-            final File clipboardDir = new File(activity.getExternalFilesDir(null), "clipboard");
+            final File clipboardDir = new File(activity.getCacheDir(), "clipboard");
             if (!clipboardDir.exists() && !clipboardDir.mkdirs()) {
                 throw new IllegalStateException("create clipboard directory failed");
             }
@@ -347,12 +347,42 @@ public final class JSAndroid {
             final ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
             final ClipData clip = ClipData.newUri(activity.getContentResolver(), "Copied img from SiYuan", contentUri);
             clipboard.setPrimaryClip(clip);
+            cleanupLegacyImageClipboard();
         } catch (final Exception e) {
             Utils.logError("JSAndroid", "write image clipboard failed", e);
         } finally {
             if (null != connection) {
                 connection.disconnect();
             }
+        }
+    }
+
+    private void cleanupLegacyImageClipboard() {
+        final File externalFilesDir = activity.getExternalFilesDir(null);
+        if (null == externalFilesDir) {
+            return;
+        }
+
+        final File legacyClipboardDir = new File(externalFilesDir, "clipboard");
+        final File[] entries = legacyClipboardDir.listFiles();
+        if (null == entries) {
+            return;
+        }
+        if (0 == entries.length) {
+            if (!legacyClipboardDir.delete()) {
+                Log.w("JSAndroid", "delete legacy clipboard directory failed");
+            }
+            return;
+        }
+        if (1 != entries.length || !entries[0].isFile() || !"image.png".equals(entries[0].getName())) {
+            return;
+        }
+        if (!entries[0].delete()) {
+            Log.w("JSAndroid", "delete legacy clipboard image failed");
+            return;
+        }
+        if (!legacyClipboardDir.delete()) {
+            Log.w("JSAndroid", "delete legacy clipboard directory failed");
         }
     }
 
