@@ -742,11 +742,6 @@ public final class JSAndroid {
     }
 
     @JavascriptInterface
-    public float getStatusBarHeight() {
-        return BarUtils.getStatusBarHeight() / activity.getResources().getDisplayMetrics().density;
-    }
-
-    @JavascriptInterface
     public void openExternal(String url) {
         if (!url.startsWith("assets/")) {
             Utils.openByDefaultBrowser(url, activity);
@@ -820,7 +815,7 @@ public final class JSAndroid {
 
         activity.runOnUiThread(() -> {
             final int colorVal = parseColor(color);
-            UltimateBarX.statusBarOnly(activity).transparent().light(appearanceMode == 0).apply();
+            UltimateBarX.statusBarOnly(activity).transparent().light(appearanceMode == 0).color(colorVal).apply();
             BarUtils.setNavBarVisibility(activity, false);
             activity.webView.getRootView().setBackgroundColor(colorVal);
         });

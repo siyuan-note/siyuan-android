@@ -27,6 +27,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.hardware.input.InputManager;
 import android.net.Uri;
 import android.os.Build;
@@ -298,7 +299,8 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             Utils.setWebViewFocusable(webView, true);
         } else {
             // 沉浸式状态栏设置
-            UltimateBarX.statusBarOnly(this).transparent().light(false).apply();
+            UltimateBarX.statusBarOnly(this).transparent().light(false).color(Color.parseColor("#1e1e1e")).apply();
+            ((ViewGroup) webView.getParent()).setPadding(0, UltimateBarX.getStatusBarHeight(), 0, 0);
         }
 
         BarUtils.setNavBarVisibility(this, false);
