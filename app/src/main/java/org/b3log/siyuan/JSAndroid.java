@@ -820,7 +820,7 @@ public final class JSAndroid {
 
         activity.runOnUiThread(() -> {
             final int colorVal = parseColor(color);
-            UltimateBarX.statusBarOnly(activity).transparent().light(appearanceMode == 0).color(colorVal).apply();
+            UltimateBarX.statusBarOnly(activity).transparent().light(appearanceMode == 0).apply();
             BarUtils.setNavBarVisibility(activity, false);
             activity.webView.getRootView().setBackgroundColor(colorVal);
         });
