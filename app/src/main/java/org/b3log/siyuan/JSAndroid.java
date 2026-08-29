@@ -742,6 +742,11 @@ public final class JSAndroid {
     }
 
     @JavascriptInterface
+    public float getStatusBarHeight() {
+        return BarUtils.getStatusBarHeight() / activity.getResources().getDisplayMetrics().density;
+    }
+
+    @JavascriptInterface
     public void openExternal(String url) {
         if (!url.startsWith("assets/")) {
             Utils.openByDefaultBrowser(url, activity);

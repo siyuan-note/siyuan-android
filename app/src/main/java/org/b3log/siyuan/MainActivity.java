@@ -300,7 +300,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         } else {
             // 沉浸式状态栏设置
             UltimateBarX.statusBarOnly(this).transparent().light(false).color(Color.parseColor("#1e1e1e")).apply();
-            ((ViewGroup) webView.getParent()).setPadding(0, UltimateBarX.getStatusBarHeight(), 0, 0);
         }
 
         BarUtils.setNavBarVisibility(this, false);
