@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import mobile.Mobile;
 
@@ -205,9 +206,34 @@ public final class Utils {
         });
     }
 
+    // 状态仅在主线程访问，按 WebView 隔离，避免不同窗口的键盘回调互相覆盖。
+    private static final Map<WebView, KeyboardToolbarRequest> keyboardToolbarRequests = new WeakHashMap<>();
+
+    private static final class KeyboardToolbarRequest {
+        private Runnable pendingShow;
+    }
+
+    private static KeyboardToolbarRequest beginKeyboardToolbarRequest(final WebView webView) {
+        final KeyboardToolbarRequest request = new KeyboardToolbarRequest();
+        final KeyboardToolbarRequest previous = keyboardToolbarRequests.put(webView, request);
+        if (previous != null && previous.pendingShow != null) {
+            webView.removeCallbacks(previous.pendingShow);
+            previous.pendingShow = null;
+        }
+        return request;
+    }
+
     public static void showKeyboardAndToolbar(final WebView webView) {
         webView.post(() -> {
-            webView.postDelayed(() -> webView.evaluateJavascript("javascript:showKeyboardToolbar();", null), 288);
+            final KeyboardToolbarRequest request = beginKeyboardToolbarRequest(webView);
+            request.pendingShow = () -> {
+                request.pendingShow = null;
+                if (keyboardToolbarRequests.get(webView) != request) {
+                    return;
+                }
+                webView.evaluateJavascript("javascript:showKeyboardToolbar();", null);
+            };
+            webView.postDelayed(request.pendingShow, 288);
             Utils.setWebViewFocusable(webView, true);
         });
     }
@@ -215,8 +241,13 @@ public final class Utils {
     public static void hideKeyboardAndToolbar(final Activity activity, final WebView webView,
                                               final boolean preserveSelection) {
         webView.post(() -> {
+            final KeyboardToolbarRequest request = beginKeyboardToolbarRequest(webView);
             final String script = "javascript:hideKeyboardToolbar(" + preserveSelection + ");";
             webView.evaluateJavascript(script, result -> {
+                // 只处理当前关闭请求的结果，避免过期回调恢复键盘或清除新一轮输入的焦点。
+                if (keyboardToolbarRequests.get(webView) != request) {
+                    return;
+                }
                 if (KEYBOARD_HIDE_RESULT_RESTORE_TABLE_CELL_SELECTION.equals(result) || "true".equals(result)) {
                     showKeyboardAndToolbar(webView);
                     KeyboardUtils.showSoftInput(activity);
