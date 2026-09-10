@@ -1,6 +1,7 @@
 package org.b3log.siyuan;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Rect;
@@ -8,9 +9,15 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.WindowInsets;
+import android.view.WindowInsetsAnimation;
 import android.widget.FrameLayout;
 
 import com.blankj.utilcode.util.BarUtils;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Android small window mode soft keyboard black occlusion <a href="https://github.com/siyuan-note/siyuan-android/pull/7">siyuan-note/siyuan-android#7</a>
@@ -42,28 +49,90 @@ public class AndroidBug5497Workaround {
         this.view = this.frameLayout.getChildAt(0);
         this.frameLayoutParams = (FrameLayout.LayoutParams) (this.view.getLayoutParams());
 
-        this.view.setOnApplyWindowInsetsListener((v, insets) -> {
-            int imeHeight = 0;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                imeHeight = insets.getInsets(android.view.WindowInsets.Type.ime()).bottom;
-            }
-
-            if (imeHeight > 0) { // imeHeight > 0 说明键盘弹出
-                frameLayoutParams.height = frameLayout.getHeight() - imeHeight;
-            } else {
-                frameLayoutParams.height = -1;
-            }
-            view.requestLayout();
-            return v.onApplyWindowInsets(insets);
-        });
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S_V2) {
+            registerKeyboardAnimation();
+        } else {
+            this.view.setOnApplyWindowInsetsListener((v, insets) -> {
+                int imeHeight = 0;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                    imeHeight = insets.getInsets(WindowInsets.Type.ime()).bottom;
+                }
+                frameLayoutParams.height = imeHeight > 0 ? frameLayout.getHeight() - imeHeight : -1;
+                view.requestLayout();
+                return v.onApplyWindowInsets(insets);
+            });
+        }
 
         // 兼容旧逻辑
         this.frameLayout.getViewTreeObserver().addOnGlobalLayoutListener(this::possiblyResizeChildOfContent);
     }
 
+    @TargetApi(android.os.Build.VERSION_CODES.S_V2)
+    private void registerKeyboardAnimation() {
+        final Set<WindowInsetsAnimation> animations = new HashSet<>();
+        final WindowInsets[] currentInsets = new WindowInsets[1];
+        this.view.setOnApplyWindowInsetsListener((v, insets) -> {
+            // 动画开始时分发的是终点高度，逐帧高度由动画回调处理。
+            if (animations.isEmpty()) {
+                currentInsets[0] = insets;
+                resizeForKeyboard(insets);
+            }
+            return v.onApplyWindowInsets(insets);
+        });
+        this.view.setWindowInsetsAnimationCallback(new WindowInsetsAnimation.Callback(
+                WindowInsetsAnimation.Callback.DISPATCH_MODE_CONTINUE_ON_SUBTREE) {
+            @Override
+            public void onPrepare(WindowInsetsAnimation animation) {
+                if ((animation.getTypeMask() & WindowInsets.Type.ime()) != 0) {
+                    animations.add(animation);
+                }
+            }
+
+            @Override
+            public WindowInsets onProgress(WindowInsets insets, List<WindowInsetsAnimation> runningAnimations) {
+                currentInsets[0] = insets;
+                resizeForKeyboard(insets);
+                return insets;
+            }
+
+            @Override
+            public void onEnd(WindowInsetsAnimation animation) {
+                if (animations.remove(animation) && animations.isEmpty()) {
+                    // 动画完成或被取消后，以窗口当前状态恢复布局。
+                    currentInsets[0] = view.getRootWindowInsets();
+                    if (currentInsets[0] != null) {
+                        resizeForKeyboard(currentInsets[0]);
+                    }
+                }
+            }
+        });
+        this.frameLayout.addOnLayoutChangeListener((v, left, top, right, bottom,
+                                                    oldLeft, oldTop, oldRight, oldBottom) -> {
+            if (currentInsets[0] != null) {
+                resizeForKeyboard(currentInsets[0]);
+            }
+        });
+    }
+
+    @TargetApi(android.os.Build.VERSION_CODES.S_V2)
+    private void resizeForKeyboard(WindowInsets insets) {
+        if (frameLayout.getHeight() <= 0) {
+            return;
+        }
+        final int[] location = new int[2];
+        frameLayout.getLocationInWindow(location);
+        // 只扣除键盘与内容容器重叠的部分，兼容系统缩放、导航栏和分屏窗口。
+        final int height = KeyboardContentHeight.calculate(frameLayout.getHeight(), location[1],
+                frameLayout.getRootView().getHeight(), insets.getInsets(WindowInsets.Type.ime()).bottom);
+        if (frameLayoutParams.height != height) {
+            frameLayoutParams.height = height;
+            view.requestLayout();
+        }
+    }
+
     private void possiblyResizeChildOfContent() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S_V2) {
-            // Android 13 (33) 及以上用 WindowInsets 处理
+            // Android 12L（32）及以上用 WindowInsets 处理。
             return;
         }
 
