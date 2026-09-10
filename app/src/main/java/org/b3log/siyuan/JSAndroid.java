@@ -34,6 +34,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -42,6 +43,7 @@ import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
@@ -817,7 +819,11 @@ public final class JSAndroid {
             final int colorVal = parseColor(color);
             UltimateBarX.statusBarOnly(activity).transparent().light(appearanceMode == 0).color(colorVal).apply();
             BarUtils.setNavBarVisibility(activity, false);
-            activity.webView.getRootView().setBackgroundColor(colorVal);
+            // 窗口缩放和 WebView 重绘期间，各层背景均与页面主题保持一致。
+            activity.getWindow().setBackgroundDrawable(new ColorDrawable(colorVal));
+            activity.findViewById(android.R.id.content).setBackgroundColor(colorVal);
+            ((View) activity.webView.getParent()).setBackgroundColor(colorVal);
+            activity.webView.setBackgroundColor(colorVal);
         });
     }
 

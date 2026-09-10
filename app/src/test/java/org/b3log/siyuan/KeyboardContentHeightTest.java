@@ -9,12 +9,12 @@ public final class KeyboardContentHeightTest {
         check("multi window", 350, 500, 50, 600, 200);
         check("floating keyboard", -1, 900, 50, 1000, 0);
         check("clamped", 0, 500, 50, 600, 600);
-        // 收起过程中可用高度连续增长，键盘离开内容区域后恢复自动布局。
-        check("closing start", 650, 900, 50, 1000, 300);
-        check("closing middle", 800, 900, 50, 1000, 150);
-        check("closing end", -1, 900, 50, 1000, 0);
-        // 中断收起并重新弹出时，按当前高度计算，不保留上一轮终点。
-        check("reopened", 650, 900, 50, 1000, 300);
+        // 状态栏占位由原生容器保留，WebView 高度不重复包含该区域。
+        check("status bar padding", 1273, 2273, 127, 2400, 1000);
+        check("status bar and resized window", -1, 1273, 127, 2400, 1000);
+        // 收起目标状态在父容器恢复高度前到达时，也应立即解除 WebView 的固定高度。
+        check("hide before parent layout", -1, 1273, 127, 2400, 0);
+        check("hide after parent layout", -1, 2273, 127, 2400, 0);
     }
 
     private static void check(String name, int expected, int contentHeight, int contentTop,

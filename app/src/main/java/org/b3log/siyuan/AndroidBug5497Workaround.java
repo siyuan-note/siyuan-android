@@ -10,14 +10,9 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.WindowInsets;
-import android.view.WindowInsetsAnimation;
 import android.widget.FrameLayout;
 
 import com.blankj.utilcode.util.BarUtils;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Android small window mode soft keyboard black occlusion <a href="https://github.com/siyuan-note/siyuan-android/pull/7">siyuan-note/siyuan-android#7</a>
@@ -50,7 +45,7 @@ public class AndroidBug5497Workaround {
         this.frameLayoutParams = (FrameLayout.LayoutParams) (this.view.getLayoutParams());
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S_V2) {
-            registerKeyboardAnimation();
+            registerKeyboardInsets();
         } else {
             this.view.setOnApplyWindowInsetsListener((v, insets) -> {
                 int imeHeight = 0;
@@ -68,65 +63,43 @@ public class AndroidBug5497Workaround {
     }
 
     @TargetApi(android.os.Build.VERSION_CODES.S_V2)
-    private void registerKeyboardAnimation() {
-        final Set<WindowInsetsAnimation> animations = new HashSet<>();
+    private void registerKeyboardInsets() {
+        final FrameLayout container = (FrameLayout) this.view;
         final WindowInsets[] currentInsets = new WindowInsets[1];
         this.view.setOnApplyWindowInsetsListener((v, insets) -> {
-            // 动画开始时分发的是终点高度，逐帧高度由动画回调处理。
-            if (animations.isEmpty()) {
-                currentInsets[0] = insets;
-                resizeForKeyboard(insets);
-            }
+            // 在键盘动画开始前按目标高度布局，确保退场时露出的是已恢复的页面。
+            currentInsets[0] = insets;
+            resizeForKeyboard(container, insets);
             return v.onApplyWindowInsets(insets);
         });
-        this.view.setWindowInsetsAnimationCallback(new WindowInsetsAnimation.Callback(
-                WindowInsetsAnimation.Callback.DISPATCH_MODE_CONTINUE_ON_SUBTREE) {
-            @Override
-            public void onPrepare(WindowInsetsAnimation animation) {
-                if ((animation.getTypeMask() & WindowInsets.Type.ime()) != 0) {
-                    animations.add(animation);
-                }
-            }
-
-            @Override
-            public WindowInsets onProgress(WindowInsets insets, List<WindowInsetsAnimation> runningAnimations) {
-                currentInsets[0] = insets;
-                resizeForKeyboard(insets);
-                return insets;
-            }
-
-            @Override
-            public void onEnd(WindowInsetsAnimation animation) {
-                if (animations.remove(animation) && animations.isEmpty()) {
-                    // 动画完成或被取消后，以窗口当前状态恢复布局。
-                    currentInsets[0] = view.getRootWindowInsets();
-                    if (currentInsets[0] != null) {
-                        resizeForKeyboard(currentInsets[0]);
-                    }
-                }
-            }
-        });
-        this.frameLayout.addOnLayoutChangeListener((v, left, top, right, bottom,
-                                                    oldLeft, oldTop, oldRight, oldBottom) -> {
+        container.addOnLayoutChangeListener((v, left, top, right, bottom,
+                                             oldLeft, oldTop, oldRight, oldBottom) -> {
             if (currentInsets[0] != null) {
-                resizeForKeyboard(currentInsets[0]);
+                resizeForKeyboard(container, currentInsets[0]);
             }
         });
     }
 
     @TargetApi(android.os.Build.VERSION_CODES.S_V2)
-    private void resizeForKeyboard(WindowInsets insets) {
-        if (frameLayout.getHeight() <= 0) {
+    private void resizeForKeyboard(FrameLayout container, WindowInsets insets) {
+        // 页面加载失败时可能替换 WebView，每次布局都获取当前实例。
+        final View webView = activity.findViewById(R.id.webView);
+        if (webView == null || webView.getParent() != container) {
+            return;
+        }
+        final int contentHeight = container.getHeight() - container.getPaddingTop() - container.getPaddingBottom();
+        if (contentHeight <= 0) {
             return;
         }
         final int[] location = new int[2];
-        frameLayout.getLocationInWindow(location);
-        // 只扣除键盘与内容容器重叠的部分，兼容系统缩放、导航栏和分屏窗口。
-        final int height = KeyboardContentHeight.calculate(frameLayout.getHeight(), location[1],
-                frameLayout.getRootView().getHeight(), insets.getInsets(WindowInsets.Type.ime()).bottom);
-        if (frameLayoutParams.height != height) {
-            frameLayoutParams.height = height;
-            view.requestLayout();
+        container.getLocationInWindow(location);
+        // 背景容器始终铺满窗口，仅调整 WebView，并扣除状态栏占位和键盘实际重叠区域。
+        final int height = KeyboardContentHeight.calculate(contentHeight, location[1] + container.getPaddingTop(),
+                container.getRootView().getHeight(), insets.getInsets(WindowInsets.Type.ime()).bottom);
+        final FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) webView.getLayoutParams();
+        if (params.height != height) {
+            params.height = height;
+            webView.requestLayout();
         }
     }
 
