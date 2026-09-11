@@ -194,7 +194,8 @@ public final class Utils {
         }
 
         KeyboardUtils.registerSoftInputChangedListener(activity, height -> {
-            if (activity.isInMultiWindowMode()) {
+            // 应用切换引起的键盘变化不清理编辑焦点，返回窗口后由系统恢复输入状态。
+            if (activity.isInMultiWindowMode() || !webView.hasWindowFocus()) {
                 return;
             }
 
@@ -242,10 +243,18 @@ public final class Utils {
                                               final boolean preserveSelection) {
         webView.post(() -> {
             final KeyboardToolbarRequest request = beginKeyboardToolbarRequest(webView);
+            // 系统隐藏通知可能排队到窗口失焦后才执行，主动收起键盘仍正常处理。
+            if (preserveSelection && !webView.hasWindowFocus()) {
+                return;
+            }
             final String script = "javascript:hideKeyboardToolbar(" + preserveSelection + ");";
             webView.evaluateJavascript(script, result -> {
                 // 只处理当前关闭请求的结果，避免过期回调恢复键盘或清除新一轮输入的焦点。
                 if (keyboardToolbarRequests.get(webView) != request) {
+                    return;
+                }
+                // 等待前端返回期间切入后台时，保留 WebView 焦点和键盘恢复条件。
+                if (preserveSelection && !webView.hasWindowFocus()) {
                     return;
                 }
                 if (KEYBOARD_HIDE_RESULT_RESTORE_TABLE_CELL_SELECTION.equals(result) || "true".equals(result)) {
