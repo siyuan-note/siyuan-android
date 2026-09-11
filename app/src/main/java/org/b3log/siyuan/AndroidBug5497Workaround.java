@@ -65,11 +65,19 @@ public class AndroidBug5497Workaround {
     @TargetApi(android.os.Build.VERSION_CODES.S_V2)
     private void registerKeyboardInsets() {
         final FrameLayout container = (FrameLayout) this.view;
+        // 高度由窗口边衬统一处理，关闭沉浸式状态栏库对父容器的重复缩放。
+        com.zackratos.kblistener.kblistener.ViewKt.onKeyboardOpen(container, null);
+        com.zackratos.kblistener.kblistener.ViewKt.onKeyboardClose(container, null);
         final WindowInsets[] currentInsets = new WindowInsets[1];
         this.view.setOnApplyWindowInsetsListener((v, insets) -> {
             // 在键盘动画开始前按目标高度布局，确保退场时露出的是已恢复的页面。
             currentInsets[0] = insets;
             resizeForKeyboard(container, insets);
+            final View webView = activity.findViewById(R.id.webView);
+            if (webView instanceof android.webkit.WebView) {
+                Utils.onKeyboardVisibilityChanged(activity, (android.webkit.WebView) webView,
+                        insets.isVisible(WindowInsets.Type.ime()));
+            }
             return v.onApplyWindowInsets(insets);
         });
         container.addOnLayoutChangeListener((v, left, top, right, bottom,

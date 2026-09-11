@@ -1435,6 +1435,14 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         startSyncDataIfReady();
     }
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (webView != null) {
+            Utils.onKeyboardWindowFocusChanged(this, webView, hasFocus);
+        }
+    }
+
     private void startSyncDataIfReady() {
         if (!appStatusSyncEnabled) {
             return;

@@ -205,8 +205,7 @@ public final class JSAndroid {
     public void showKeyboard() {
         activity.runOnUiThread(() -> {
             final WebView webView = activity.findViewById(R.id.webView);
-            Utils.showKeyboardAndToolbar(webView);
-            KeyboardUtils.showSoftInput(activity);
+            Utils.showSoftKeyboard(activity, webView);
         });
     }
 

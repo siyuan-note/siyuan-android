@@ -30,10 +30,13 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.os.LocaleList;
+import android.os.Build;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintManager;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.WindowInsets;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -189,22 +192,102 @@ public final class Utils {
     }
 
     public static void registerSoftKeyboardToolbar(final Activity activity, final WebView webView) {
+        keyboardFocusStates.put(webView, new KeyboardFocusState());
+        keyboardFocusStates.get(webView).windowFocusChanged(webView.hasWindowFocus(), webView.hasFocus());
         if (Utils.isTablet(activity)) {
             return;
         }
-
+        // 新版 Android 直接使用窗口边衬通知，避免可见矩形在应用切换时滞后。
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S_V2) {
+            return;
+        }
         KeyboardUtils.registerSoftInputChangedListener(activity, height -> {
-            // 应用切换引起的键盘变化不清理编辑焦点，返回窗口后由系统恢复输入状态。
-            if (activity.isInMultiWindowMode() || !webView.hasWindowFocus()) {
+            onKeyboardVisibilityChanged(activity, webView, height > 0);
+        });
+    }
+
+    private static final Map<WebView, KeyboardFocusState> keyboardFocusStates = new WeakHashMap<>();
+
+    public static void onKeyboardVisibilityChanged(final Activity activity, final WebView webView,
+                                                    final boolean visible) {
+        final KeyboardFocusState state = keyboardFocusStates.get(webView);
+        if (state == null || Utils.isTablet(activity) || activity.isInMultiWindowMode() ||
+                !webView.hasWindowFocus() || !state.visibilityChanged(visible)) {
+            return;
+        }
+        if (visible) {
+            showKeyboardAndToolbar(webView);
+        } else {
+            hideKeyboardAndToolbar(activity, webView, true);
+        }
+    }
+
+    public static void onKeyboardWindowFocusChanged(final Activity activity, final WebView webView,
+                                                     final boolean focused) {
+        final KeyboardFocusState state = keyboardFocusStates.get(webView);
+        if (state == null || Utils.isTablet(activity)) {
+            return;
+        }
+        state.windowFocusChanged(focused, webView.hasFocus());
+        // 每次窗口切换都作废已排队的工具栏回调，避免返回前台后继续清理旧焦点。
+        final KeyboardToolbarRequest request = beginKeyboardToolbarRequest(webView);
+        if (!state.shouldRestore() || activity.isInMultiWindowMode()) {
+            return;
+        }
+        webView.post(() -> {
+            if (keyboardToolbarRequests.get(webView) != request || !state.shouldRestore()) {
                 return;
             }
+            webView.evaluateJavascript("document.activeElement && (document.activeElement.isContentEditable || " +
+                    "/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName))", result -> {
+                if (keyboardToolbarRequests.get(webView) != request || !state.shouldRestore() ||
+                        !webView.hasWindowFocus()) {
+                    return;
+                }
+                if (!"true".equals(result) || !webView.hasFocus()) {
+                    state.hideRequested();
+                    webView.evaluateJavascript("javascript:hideKeyboardToolbar();", null);
+                    return;
+                }
+                requestSoftKeyboard(activity, webView);
+                // 输入法不可用时只收起工具栏，不清除仍在编辑的光标，也不无限等待恢复。
+                webView.postDelayed(() -> {
+                    if (keyboardToolbarRequests.get(webView) == request && state.shouldRestore()) {
+                        final WindowInsets insets = webView.getRootWindowInsets();
+                        final boolean visible = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && insets != null ?
+                                insets.isVisible(WindowInsets.Type.ime()) : KeyboardUtils.isSoftInputVisible(activity);
+                        if (visible) {
+                            onKeyboardVisibilityChanged(activity, webView, true);
+                        } else {
+                            state.hideRequested();
+                            webView.evaluateJavascript("javascript:hideKeyboardToolbar();", null);
+                        }
+                    }
+                }, 1000);
+            });
+        });
+    }
 
-            if (KeyboardUtils.isSoftInputVisible(activity)) {
-                showKeyboardAndToolbar(webView);
-            } else {
-                hideKeyboardAndToolbar(activity, webView, true);
+    public static void showSoftKeyboard(final Activity activity, final WebView webView) {
+        showKeyboardAndToolbar(webView);
+        final KeyboardToolbarRequest request = keyboardToolbarRequests.get(webView);
+        // 按明确的显示请求唤起输入法，重复请求不切换成隐藏。
+        webView.post(() -> {
+            if (keyboardToolbarRequests.get(webView) == request) {
+                requestSoftKeyboard(activity, webView);
             }
         });
+    }
+
+    private static void requestSoftKeyboard(final Activity activity, final WebView webView) {
+        if (!webView.hasWindowFocus()) {
+            return;
+        }
+        final InputMethodManager inputMethodManager =
+                (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (inputMethodManager != null) {
+            inputMethodManager.showSoftInput(webView, InputMethodManager.SHOW_IMPLICIT);
+        }
     }
 
     // 状态仅在主线程访问，按 WebView 隔离，避免不同窗口的键盘回调互相覆盖。
@@ -225,11 +308,14 @@ public final class Utils {
     }
 
     public static void showKeyboardAndToolbar(final WebView webView) {
+        final KeyboardToolbarRequest request = beginKeyboardToolbarRequest(webView);
         webView.post(() -> {
-            final KeyboardToolbarRequest request = beginKeyboardToolbarRequest(webView);
+            if (keyboardToolbarRequests.get(webView) != request || !webView.hasWindowFocus()) {
+                return;
+            }
             request.pendingShow = () -> {
                 request.pendingShow = null;
-                if (keyboardToolbarRequests.get(webView) != request) {
+                if (keyboardToolbarRequests.get(webView) != request || !webView.hasWindowFocus()) {
                     return;
                 }
                 webView.evaluateJavascript("javascript:showKeyboardToolbar();", null);
@@ -241,10 +327,22 @@ public final class Utils {
 
     public static void hideKeyboardAndToolbar(final Activity activity, final WebView webView,
                                               final boolean preserveSelection) {
+        final KeyboardFocusState state = keyboardFocusStates.get(webView);
+        if (!preserveSelection && state != null) {
+            state.hideRequested();
+        }
+        if (preserveSelection && (!webView.hasWindowFocus() ||
+                (state != null && state.shouldIgnoreSystemHide()))) {
+            return;
+        }
+        final KeyboardToolbarRequest request = beginKeyboardToolbarRequest(webView);
         webView.post(() -> {
-            final KeyboardToolbarRequest request = beginKeyboardToolbarRequest(webView);
+            if (keyboardToolbarRequests.get(webView) != request) {
+                return;
+            }
             // 系统隐藏通知可能排队到窗口失焦后才执行，主动收起键盘仍正常处理。
-            if (preserveSelection && !webView.hasWindowFocus()) {
+            if (preserveSelection && (!webView.hasWindowFocus() ||
+                    (state != null && state.shouldIgnoreSystemHide()))) {
                 return;
             }
             final String script = "javascript:hideKeyboardToolbar(" + preserveSelection + ");";
@@ -254,12 +352,12 @@ public final class Utils {
                     return;
                 }
                 // 等待前端返回期间切入后台时，保留 WebView 焦点和键盘恢复条件。
-                if (preserveSelection && !webView.hasWindowFocus()) {
+                if (preserveSelection && (!webView.hasWindowFocus() ||
+                        (state != null && state.shouldIgnoreSystemHide()))) {
                     return;
                 }
                 if (KEYBOARD_HIDE_RESULT_RESTORE_TABLE_CELL_SELECTION.equals(result) || "true".equals(result)) {
-                    showKeyboardAndToolbar(webView);
-                    KeyboardUtils.showSoftInput(activity);
+                    showSoftKeyboard(activity, webView);
                     return;
                 }
                 if (KEYBOARD_HIDE_RESULT_PRESERVE_SELECTION.equals(result)) {
