@@ -10,9 +10,15 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.WindowInsets;
+import android.view.WindowInsetsAnimation;
+import android.webkit.WebView;
 import android.widget.FrameLayout;
 
 import com.blankj.utilcode.util.BarUtils;
+
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Android small window mode soft keyboard black occlusion <a href="https://github.com/siyuan-note/siyuan-android/pull/7">siyuan-note/siyuan-android#7</a>
@@ -69,14 +75,51 @@ public class AndroidBug5497Workaround {
         com.zackratos.kblistener.kblistener.ViewKt.onKeyboardOpen(container, null);
         com.zackratos.kblistener.kblistener.ViewKt.onKeyboardClose(container, null);
         final WindowInsets[] currentInsets = new WindowInsets[1];
+        this.view.setWindowInsetsAnimationCallback(new WindowInsetsAnimation.Callback(
+                WindowInsetsAnimation.Callback.DISPATCH_MODE_CONTINUE_ON_SUBTREE) {
+            private final Map<WindowInsetsAnimation, WebView> targets = new HashMap<>();
+
+            @Override
+            public void onPrepare(WindowInsetsAnimation animation) {
+                if ((animation.getTypeMask() & WindowInsets.Type.ime()) != 0) {
+                    final WebView target = activity.findViewById(R.id.webView);
+                    if (target != null) {
+                        targets.put(animation, target);
+                        Utils.keyboardHideState(target).animationStarted(animation);
+                    }
+                }
+            }
+
+            @Override
+            public WindowInsets onProgress(WindowInsets insets, List<WindowInsetsAnimation> animations) {
+                return insets;
+            }
+
+            @Override
+            public void onEnd(WindowInsetsAnimation animation) {
+                final WebView webView = targets.remove(animation);
+                if (webView != null) {
+                    final KeyboardHideState state = Utils.keyboardHideState(webView);
+                    state.animationEnded(animation);
+                    final WindowInsets insets = webView.getRootWindowInsets();
+                    if (insets != null) {
+                        state.visibilityChanged(insets.isVisible(WindowInsets.Type.ime()));
+                    }
+                    webView.post(state::flush);
+                }
+            }
+        });
         this.view.setOnApplyWindowInsetsListener((v, insets) -> {
             // 在键盘动画开始前按目标高度布局，确保退场时露出的是已恢复的页面。
             currentInsets[0] = insets;
             resizeForKeyboard(container, insets);
             final View webView = activity.findViewById(R.id.webView);
             if (webView instanceof android.webkit.WebView) {
+                final KeyboardHideState state = Utils.keyboardHideState((WebView) webView);
+                state.visibilityChanged(insets.isVisible(WindowInsets.Type.ime()));
                 Utils.onKeyboardVisibilityChanged(activity, (android.webkit.WebView) webView,
                         insets.isVisible(WindowInsets.Type.ime()));
+                webView.post(state::flush);
             }
             return v.onApplyWindowInsets(insets);
         });

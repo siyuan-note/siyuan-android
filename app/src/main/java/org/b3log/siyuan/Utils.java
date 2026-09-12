@@ -292,12 +292,18 @@ public final class Utils {
 
     // 状态仅在主线程访问，按 WebView 隔离，避免不同窗口的键盘回调互相覆盖。
     private static final Map<WebView, KeyboardToolbarRequest> keyboardToolbarRequests = new WeakHashMap<>();
+    private static final Map<WebView, KeyboardHideState> keyboardHideStates = new WeakHashMap<>();
+
+    static KeyboardHideState keyboardHideState(final WebView webView) {
+        return keyboardHideStates.computeIfAbsent(webView, key -> new KeyboardHideState());
+    }
 
     private static final class KeyboardToolbarRequest {
         private Runnable pendingShow;
     }
 
     private static KeyboardToolbarRequest beginKeyboardToolbarRequest(final WebView webView) {
+        keyboardHideState(webView).cancel();
         final KeyboardToolbarRequest request = new KeyboardToolbarRequest();
         final KeyboardToolbarRequest previous = keyboardToolbarRequests.put(webView, request);
         if (previous != null && previous.pendingShow != null) {
@@ -327,6 +333,22 @@ public final class Utils {
 
     public static void hideKeyboardAndToolbar(final Activity activity, final WebView webView,
                                               final boolean preserveSelection) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S_V2) {
+            final KeyboardFocusState state = keyboardFocusStates.get(webView);
+            if (!preserveSelection && state != null) {
+                state.hideRequested();
+            }
+            final KeyboardHideState hideState = keyboardHideState(webView);
+            hideState.request(!preserveSelection, () -> finishKeyboardHide(activity, webView, preserveSelection));
+            // 等待同一轮窗口边衬和动画准备通知完成，无动画时也能清理。
+            webView.post(hideState::flush);
+            return;
+        }
+        finishKeyboardHide(activity, webView, preserveSelection);
+    }
+
+    private static void finishKeyboardHide(final Activity activity, final WebView webView,
+                                          final boolean preserveSelection) {
         final KeyboardFocusState state = keyboardFocusStates.get(webView);
         if (!preserveSelection && state != null) {
             state.hideRequested();
