@@ -228,7 +228,7 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void setWebViewDebuggingEnabled(final boolean debuggable) {
-        activity.setWebViewDebuggable(debuggable);
+        activity.runOnUiThread(() -> activity.setWebViewDebuggable(debuggable));
     }
 
     @JavascriptInterface
