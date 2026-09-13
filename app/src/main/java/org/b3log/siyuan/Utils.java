@@ -335,9 +335,15 @@ public final class Utils {
                                               final boolean preserveSelection) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S_V2) {
             final KeyboardFocusState state = keyboardFocusStates.get(webView);
+            if (preserveSelection && (!webView.hasWindowFocus() ||
+                    (state != null && state.shouldIgnoreSystemHide()))) {
+                return;
+            }
             if (!preserveSelection && state != null) {
                 state.hideRequested();
             }
+            // 页面恢复高度前先隐藏工具栏，焦点和选区仍等退场动画完成后清理。
+            webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('siyuan-mobile-keyboard-hiding'));", null);
             final KeyboardHideState hideState = keyboardHideState(webView);
             hideState.request(!preserveSelection, () -> finishKeyboardHide(activity, webView, preserveSelection));
             // 等待同一轮窗口边衬和动画准备通知完成，无动画时也能清理。
