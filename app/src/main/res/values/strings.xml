@@ -3,6 +3,8 @@
     <string name="shortcut_shorthand">Flash shorthand</string>
     <string name="enter_your_text">Enter text and submit. Content will be saved to Settings - Document - Default shorthand save path</string>
     <string name="submit">Submit</string>
+    <string name="saved">✓</string>
+    <string name="saved_accessibility">Saved</string>
     <string name="add_to_home">Add to Home</string>
     <string name="add_to_home_success">Added to home successfully</string>
     <string name="add_to_home_failed">Failed to add shortcut to home, please make sure you have granted the necessary permissions</string>

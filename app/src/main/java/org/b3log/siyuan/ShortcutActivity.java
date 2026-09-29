@@ -70,6 +70,19 @@ public class ShortcutActivity extends AppCompatActivity {
 
     private boolean inputSetupDone = false;
     private boolean suppressDraftSave = false;
+    private boolean showingSubmitSuccess = false;
+    private Button submitButton;
+    private final Runnable resetSubmitSuccess = () -> {
+        showingSubmitSuccess = false;
+        if (null == submitButton) {
+            return;
+        }
+        submitButton.setText(R.string.submit);
+        submitButton.setContentDescription(null);
+        submitButton.setSelected(false);
+        submitButton.setScaleX(1.0f);
+        submitButton.setScaleY(1.0f);
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -247,7 +260,7 @@ public class ShortcutActivity extends AppCompatActivity {
             input.setText(draft);
             input.setSelection(draft.length());
         }
-        final Button submitButton = findViewById(R.id.submit_button);
+        submitButton = findViewById(R.id.submit_button);
         submitButton.setEnabled(!StringUtils.isEmpty(input.getText().toString().trim()));
         input.addTextChangedListener(new TextWatcher() {
             @Override
@@ -256,6 +269,10 @@ public class ShortcutActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (showingSubmitSuccess) {
+                    submitButton.removeCallbacks(resetSubmitSuccess);
+                    resetSubmitSuccess.run();
+                }
                 submitButton.setEnabled(!StringUtils.isEmpty(s.toString().trim()));
             }
 
@@ -298,7 +315,29 @@ public class ShortcutActivity extends AppCompatActivity {
                 Utils.showToast(this, "Failed to clear shorthand draft");
             }
             submitButton.setEnabled(false);
+            showSubmitSuccess();
         });
+    }
+
+    private void showSubmitSuccess() {
+        showingSubmitSuccess = true;
+        submitButton.setText(R.string.saved);
+        submitButton.setContentDescription(getString(R.string.saved_accessibility));
+        submitButton.setSelected(true);
+        submitButton.setScaleX(0.92f);
+        submitButton.setScaleY(0.92f);
+        submitButton.animate().scaleX(1.0f).scaleY(1.0f).setDuration(180).start();
+        submitButton.announceForAccessibility(getString(R.string.saved_accessibility));
+        submitButton.postDelayed(resetSubmitSuccess, 1200);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (null != submitButton) {
+            submitButton.removeCallbacks(resetSubmitSuccess);
+            submitButton.animate().cancel();
+        }
+        super.onDestroy();
     }
 
     private void appendInput(final EditText input, final String content) {
