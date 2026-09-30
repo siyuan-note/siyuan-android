@@ -110,6 +110,7 @@ android {
 }
 
 dependencies {
+    implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.24.3'
     implementation 'androidx.activity:activity:1.12.4'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.10.0'
