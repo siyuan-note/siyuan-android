@@ -2,7 +2,7 @@
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
     <shortcut
         android:enabled="true"
-        android:icon="@drawable/shorthand_icon"
+        android:icon="@mipmap/shorthand_icon"
         android:shortcutId="shorthand"
         android:shortcutLongLabel="@string/shortcut_shorthand"
         android:shortcutShortLabel="@string/shortcut_shorthand">

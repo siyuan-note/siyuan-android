@@ -107,7 +107,7 @@ public class ShortcutActivity extends AppCompatActivity {
             }
             return null;
         });
-        UltimateBarX.statusBarOnly(this).transparent().apply();
+        UltimateBarX.statusBarOnly(this).transparent().light(true).apply();
         BarUtils.setNavBarVisibility(this, false);
         ((ViewGroup) input.getParent()).setPadding(0, UltimateBarX.getStatusBarHeight(), 0, 0);
         BarUtils.setNavBarVisibility(this, false);
@@ -427,7 +427,7 @@ public class ShortcutActivity extends AppCompatActivity {
         final ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(this, "shortcut_shorthand")
                 .setShortLabel(getString(R.string.shortcut_shorthand))
                 .setLongLabel(getString(R.string.shortcut_shorthand))
-                .setIcon(Icon.createWithResource(this, R.drawable.shorthand_icon))
+                .setIcon(Icon.createWithResource(this, R.mipmap.shorthand_icon))
                 .setIntent(shortcutIntent)
                 .build();
         final Intent pinnedShortcutCallbackIntent = shortcutManager.createShortcutResultIntent(shortcutInfo);
