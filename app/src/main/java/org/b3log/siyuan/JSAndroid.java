@@ -218,6 +218,16 @@ public final class JSAndroid {
     }
 
     @JavascriptInterface
+    public String getWordSelection(final String text, final int start, final int end) {
+        try {
+            return WordSelection.expand(text, start, end);
+        } catch (final RuntimeException e) {
+            // 系统词典不可用时保留当前选区，不记录正文内容。
+            return "";
+        }
+    }
+
+    @JavascriptInterface
     public String getBlockURL() {
         String blockURL = activity.getIntent().getStringExtra("blockURL");
         if (StringUtils.isEmpty(blockURL)) {
