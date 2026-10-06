@@ -345,6 +345,11 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         webView = findViewById(R.id.webView);
 
         webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
+            final String assetPath = AssetDownload.toAssetPath(url, SIYUAN_MAIN_PAGE_URL);
+            if (null != assetPath) {
+                jsAndroid.saveExportFile(assetPath);
+                return;
+            }
             final Uri uri = Uri.parse(url);
             final Intent intent = new Intent(Intent.ACTION_VIEW, uri);
             startActivity(intent);
