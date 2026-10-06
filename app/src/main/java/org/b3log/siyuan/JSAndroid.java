@@ -82,6 +82,7 @@ import mobile.Mobile;
  */
 public final class JSAndroid {
     private MainActivity activity;
+    private final WordSelectionController wordSelection;
     private final Object exportFileLock = new Object();
     private PendingExportFile pendingExportFile;
 
@@ -114,6 +115,7 @@ public final class JSAndroid {
 
     public JSAndroid(final MainActivity activity) {
         this.activity = activity;
+        this.wordSelection = WordSelectionController.install(activity.webView);
     }
 
     @JavascriptInterface
@@ -194,6 +196,9 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void hideKeyboard() {
+        if (wordSelection != null) {
+            wordSelection.cancel();
+        }
         activity.runOnUiThread(() -> {
             final WebView webView = activity.findViewById(R.id.webView);
             Utils.hideKeyboardAndToolbar(activity, webView, false);
@@ -211,6 +216,9 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void setWebViewFocusable(final boolean focusable) {
+        if (wordSelection != null) {
+            wordSelection.cancel();
+        }
         activity.runOnUiThread(() -> {
             final WebView webView = activity.findViewById(R.id.webView);
             Utils.setWebViewFocusable(webView, focusable);
@@ -225,6 +233,11 @@ public final class JSAndroid {
             // 系统词典不可用时保留当前选区，不记录正文内容。
             return "";
         }
+    }
+
+    @JavascriptInterface
+    public boolean prepareWordSelection(final String word, final int startAdjust, final int endAdjust) {
+        return wordSelection != null && wordSelection.prepare(word, startAdjust, endAdjust);
     }
 
     @JavascriptInterface
