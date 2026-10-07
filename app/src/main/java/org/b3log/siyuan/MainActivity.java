@@ -648,11 +648,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             startBootProgressMonitor();
         }
 
-        if (null == keepLiveThread || !keepLiveThread.isAlive()) {
-            keepLiveActive = true;
-            keepLiveThread = new Thread(this::keepLive, "KeepLiveThread");
-            keepLiveThread.start();
-        }
+        keepLive();
 
         // Start the kernel background service to keep the Go server alive
         // when the app is backgrounded or the screen is off
@@ -1127,9 +1123,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         }
     }
 
-    private volatile boolean keepLiveActive = true;
-    private Thread keepLiveThread;
-
     /**
      * 通知栏保活。
      */
@@ -1139,7 +1132,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             return;
         }
 
-        Utils.logInfo("keeplive", "Keep live service is enabled, starting keep live thread");
+        Utils.logInfo("keeplive", "Keep live service is enabled");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -1147,16 +1140,11 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             }
         }
 
-        while (keepLiveActive) {
-            try {
-                final Intent intent = new Intent(MainActivity.this, KeepLiveService.class);
-                ContextCompat.startForegroundService(this, intent);
-                sleep(45 * 1000);
-                stopService(intent);
-            } catch (final Throwable t) {
-                Utils.logError("keeplive", "keep live failed", t);
-                break;
-            }
+        try {
+            final Intent intent = new Intent(this, KeepLiveService.class);
+            ContextCompat.startForegroundService(this, intent);
+        } catch (final Exception e) {
+            Utils.logError("keeplive", "start keep live service failed", e);
         }
     }
 
@@ -1545,13 +1533,9 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         }
 
         try {
-            keepLiveActive = false;
-            if (keepLiveThread != null) {
-                keepLiveThread.interrupt();
-                keepLiveThread = null;
-            }
+            stopService(new Intent(this, KeepLiveService.class));
         } catch (final Exception e) {
-            Utils.logError("runtime", "stop keep live thread failed", e);
+            Utils.logError("runtime", "stop keep live service failed", e);
         }
 
         try {

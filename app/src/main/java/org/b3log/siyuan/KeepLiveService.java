@@ -25,7 +25,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -50,6 +52,30 @@ import mobile.Mobile;
  */
 public class KeepLiveService extends Service {
 
+    private final Handler refreshHandler = new Handler(Looper.getMainLooper());
+    private final Runnable refreshNotification = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                if (!isKeepLiveEnabled() || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                        ActivityCompat.checkSelfPermission(KeepLiveService.this, Manifest.permission.POST_NOTIFICATIONS)
+                                != PackageManager.PERMISSION_GRANTED)) {
+                    stopSelf();
+                    return;
+                }
+                if (!startMyOwnForeground()) {
+                    stopSelf();
+                    return;
+                }
+                // 保持前台服务运行，仅更新通知，避免在后台反复启动服务。
+                refreshHandler.postDelayed(this, 45 * 1000);
+            } catch (final Exception e) {
+                Utils.logError("keeplive", "update foreground notification failed", e);
+                stopSelf();
+            }
+        }
+    };
+
     @Override
     public IBinder onBind(Intent intent) {
         throw new UnsupportedOperationException("Not yet implemented");
@@ -57,30 +83,31 @@ public class KeepLiveService extends Service {
 
     @Override
     public void onCreate() {
-        try {
-            super.onCreate();
-            startMyOwnForeground();
-        } catch (final Throwable e) {
-            Utils.logError("keeplive", "start foreground service failed", e);
-        }
+        super.onCreate();
+        refreshNotification.run();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_NOT_STICKY;
+    }
+
+    @Override
+    public void onDestroy() {
+        refreshHandler.removeCallbacks(refreshNotification);
+        stopForeground(STOP_FOREGROUND_REMOVE);
+        super.onDestroy();
     }
 
     private Random random = new Random();
 
-    private void startMyOwnForeground() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-
+    private boolean startMyOwnForeground() {
         final String channel = "Keep Live Service";
         if (!NotificationReceiver.createNotificationChannel(this, channel)) {
-            return;
+            return false;
         }
 
         final String[] texts = getNotificationTexts();
-        if (null == texts || 1 > texts.length) {
-            return;
-        }
 
         final NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channel);
         final PendingIntent resultPendingIntent = NotificationReceiver.createNotificationPendingIntent(this);
@@ -100,16 +127,13 @@ public class KeepLiveService extends Service {
             foregroundServiceType = 0;
         }
         ServiceCompat.startForeground(this, 1, notification, foregroundServiceType);
+        return true;
     }
 
     private String[] getNotificationTexts() {
         try {
             final String notificationTxtPath = getNotificationTxtPath();
             final File notificationTxtFile = new File(notificationTxtPath);
-            if (!notificationTxtFile.exists()) {
-                return null;
-            }
-
             final List<String> tmp = FileUtils.readLines(notificationTxtFile, StandardCharsets.UTF_8);
             final List<String> lines = new ArrayList<>();
             for (final String line : tmp) {
@@ -118,22 +142,20 @@ public class KeepLiveService extends Service {
                 }
                 lines.add(line);
             }
-            if (lines.isEmpty()) {
-                return null;
+            if (!lines.isEmpty()) {
+                return lines.toArray(new String[0]);
             }
-
-            final String[] ret = new String[lines.size()];
-            return lines.toArray(ret);
         } catch (final Exception e) {
             Utils.logError("keeplive", "get notification texts failed", e);
-            return null;
         }
+        // 空文件也可作为保活开关，缺少可用文本时显示应用名称。
+        return new String[]{getString(R.string.app_name)};
     }
 
     public static boolean isKeepLiveEnabled() {
         final String notificationTxtPath = getNotificationTxtPath();
         final File notificationTxtFile = new File(notificationTxtPath);
-        return notificationTxtFile.exists();
+        return notificationTxtFile.isFile();
     }
 
     private static String getNotificationTxtPath() {
