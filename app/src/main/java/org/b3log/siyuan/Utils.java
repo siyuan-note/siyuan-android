@@ -194,9 +194,6 @@ public final class Utils {
     public static void registerSoftKeyboardToolbar(final Activity activity, final WebView webView) {
         keyboardFocusStates.put(webView, new KeyboardFocusState());
         keyboardFocusStates.get(webView).windowFocusChanged(webView.hasWindowFocus(), webView.hasFocus());
-        if (Utils.isTablet(activity)) {
-            return;
-        }
         // 新版 Android 直接使用窗口边衬通知，避免可见矩形在应用切换时滞后。
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S_V2) {
             return;
@@ -211,7 +208,7 @@ public final class Utils {
     public static void onKeyboardVisibilityChanged(final Activity activity, final WebView webView,
                                                     final boolean visible) {
         final KeyboardFocusState state = keyboardFocusStates.get(webView);
-        if (state == null || Utils.isTablet(activity) || activity.isInMultiWindowMode() ||
+        if (state == null || isDesktopMode(webView) || activity.isInMultiWindowMode() ||
                 !webView.hasWindowFocus() || !state.visibilityChanged(visible)) {
             return;
         }
@@ -225,7 +222,7 @@ public final class Utils {
     public static void onKeyboardWindowFocusChanged(final Activity activity, final WebView webView,
                                                      final boolean focused) {
         final KeyboardFocusState state = keyboardFocusStates.get(webView);
-        if (state == null || Utils.isTablet(activity)) {
+        if (state == null || isDesktopMode(webView)) {
             return;
         }
         state.windowFocusChanged(focused, webView.hasFocus());
@@ -397,7 +394,8 @@ public final class Utils {
                 }
                 // 桌面模式依赖 WebView 自身管理软键盘，禁用焦点会导致键盘收起后无法再次获取焦点
                 // https://github.com/siyuan-note/siyuan/issues/18028
-                if (!isDesktopMode(webView)) {
+                // 平板保持 WebView 可聚焦，以支持触摸和外接键盘继续输入。
+                if (!isDesktopMode(webView) && !Utils.isTablet(activity)) {
                     Utils.setWebViewFocusable(webView, false);
                 }
             });
