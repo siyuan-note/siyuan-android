@@ -1,7 +1,7 @@
 (function () {
     "use strict";
     if (window !== window.top || location.origin !== "http://127.0.0.1:6806" ||
-        !["/", "/check-auth", "/appearance/boot/index.html", "/stage/build/app/", "/stage/build/app/index.html",
+        !["/", "/check-auth", "/appearance/boot/", "/appearance/boot/index.html", "/stage/build/app/", "/stage/build/app/index.html",
           "/stage/build/mobile/", "/stage/build/mobile/index.html", "/stage/build/desktop/", "/stage/build/desktop/index.html"].includes(location.pathname)) return;
     const transport = window.SiYuanNativeTransport;
     if (!transport || typeof transport.postMessage !== "function") return;

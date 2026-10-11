@@ -28,6 +28,14 @@ function harness({child = false, origin = 'http://127.0.0.1:6806', pathname = '/
 }
 const tick = () => new Promise(resolve => setImmediate(resolve));
 (async () => {
+    for (const pathname of ['/appearance/boot/', '/appearance/boot/index.html']) {
+        const boot = harness({pathname});
+        assert.equal(boot.sent[0]?.method, 'hello', pathname);
+        assert.ok(boot.window.JSAndroid, pathname);
+        const child = harness({pathname, child: true});
+        assert.equal(child.window.JSAndroid, undefined);
+        assert.equal(child.sent.length, 0);
+    }
     for (const options of [{child: true}, {origin: 'https://evil.example'}, {pathname: '/assets/evil.html'}, {pathname: '/stage/map/wrapper.html'}, {pathname: '/stage/map/index.html'}, {transport: false}]) {
         const h = harness(options);
         assert.equal(h.window.JSAndroid, undefined);

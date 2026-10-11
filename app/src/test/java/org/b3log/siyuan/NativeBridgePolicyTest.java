@@ -3,6 +3,7 @@ package org.b3log.siyuan;
 public final class NativeBridgePolicyTest {
     public static void main(String[] args) {
         for (String path : new String[]{"", "?v=3.8.7", "#boot", "/", "/check-auth", "/appearance/boot/index.html",
+                "/appearance/boot/", "/appearance/boot/?v=3.8.7-alpha.8&appearance=0#boot",
                 "/stage/build/app/", "/stage/build/mobile/", "/stage/build/desktop/",
                 "/stage/build/mobile/index.html?foo=bar#fragment"}) {
             check(NativeBridgePolicy.isTrustedDocument(NativeBridgePolicy.ORIGIN + path));
@@ -11,6 +12,7 @@ public final class NativeBridgePolicyTest {
                 "http://localhost:6806/", "http://127.0.0.1:6806.evil/", "http://127.0.0.1.evil:6806/",
                 "http://127.0.0.1:6806@evil/", "http://user@127.0.0.1:6806/", "http://127.0.0.1/",
                 "http://127.0.0.1:6806/assets/evil.html", "http://127.0.0.1:6806/api/file/getFile",
+                "http://127.0.0.1:6806/appearance/boot/evil.html", "https://evil.example/appearance/boot/",
                 "http://127.0.0.1:6806/stage/build/mobile/../evil", "http://127.0.0.1:6806/%2f",
                 "http://127.0.0.1:6806/stage/build/mobile/%69ndex.html", "file:///index.html",
                 "javascript:alert(1)", "data:text/html,test"}) {
@@ -30,6 +32,9 @@ public final class NativeBridgePolicyTest {
         for (String url : new String[]{null, "http://127.0.0.1:6806", "http://127.0.0.1:6806?v=3.8.7",
                 "http://127.0.0.1:6806#boot", "http://127.0.0.1:6806/", "http://127.0.0.1:6806/check-auth",
                 "http://127.0.0.1:6806/check-auth/", "http://127.0.0.1:6806//stage/build/mobile/",
+                "http://127.0.0.1:6806/appearance/boot/?v=3.8.7-alpha.8",
+                "http://127.0.0.1:6806/appearance/boot/index.html",
+                "http://127.0.0.1:6806/appearance/boot", "http://127.0.0.1:6806/appearance/%62oot/",
                 "http://127.0.0.1:6806/stage/build/mobile",
                 "http://127.0.0.1:6806/stage/build/mobile/", "http://127.0.0.1:6806/stage/build/app/index.html",
                 "http://127.0.0.1:6806/assets/../stage/build/mobile/",
