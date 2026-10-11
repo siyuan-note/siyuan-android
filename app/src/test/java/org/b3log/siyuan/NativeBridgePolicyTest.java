@@ -2,7 +2,7 @@ package org.b3log.siyuan;
 
 public final class NativeBridgePolicyTest {
     public static void main(String[] args) {
-        for (String path : new String[]{"/", "/check-auth", "/appearance/boot/index.html",
+        for (String path : new String[]{"", "?v=3.8.7", "#boot", "/", "/check-auth", "/appearance/boot/index.html",
                 "/stage/build/app/", "/stage/build/mobile/", "/stage/build/desktop/",
                 "/stage/build/mobile/index.html?foo=bar#fragment"}) {
             check(NativeBridgePolicy.isTrustedDocument(NativeBridgePolicy.ORIGIN + path));
@@ -27,7 +27,8 @@ public final class NativeBridgePolicyTest {
             check(NativeBridgePolicy.allowSubframeNavigation(url));
         }
         // The same policy is evaluated for iframe redirects, never view.loadUrl().
-        for (String url : new String[]{null, "http://127.0.0.1:6806", "http://127.0.0.1:6806/", "http://127.0.0.1:6806/check-auth",
+        for (String url : new String[]{null, "http://127.0.0.1:6806", "http://127.0.0.1:6806?v=3.8.7",
+                "http://127.0.0.1:6806#boot", "http://127.0.0.1:6806/", "http://127.0.0.1:6806/check-auth",
                 "http://127.0.0.1:6806/check-auth/", "http://127.0.0.1:6806//stage/build/mobile/",
                 "http://127.0.0.1:6806/stage/build/mobile",
                 "http://127.0.0.1:6806/stage/build/mobile/", "http://127.0.0.1:6806/stage/build/app/index.html",

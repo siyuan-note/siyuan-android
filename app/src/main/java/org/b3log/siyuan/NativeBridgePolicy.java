@@ -23,7 +23,8 @@ final class NativeBridgePolicy {
         }
         try {
             final String path = new URI(value).getRawPath();
-            return "/".equals(path) || "/check-auth".equals(path)
+            // 启动页跳转到不带末尾斜杠的内核地址时，空路径与根路径表示同一主页面。
+            return "".equals(path) || "/".equals(path) || "/check-auth".equals(path)
                     || "/appearance/boot/index.html".equals(path)
                     || "/stage/build/app/".equals(path) || "/stage/build/app/index.html".equals(path)
                     || "/stage/build/mobile/".equals(path) || "/stage/build/mobile/index.html".equals(path)
