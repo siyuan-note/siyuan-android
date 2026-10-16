@@ -147,7 +147,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private PermissionRequest pendingAudioPermissionRequest;
     private AlertDialog microphonePermissionDialog;
     private JSAndroid jsAndroid;
-    private NativeBridgeBoundary nativeBridgeBoundary;
     private final AtomicBoolean bootNavigationCompleted = new AtomicBoolean(false);
     private final AtomicBoolean mainFrameRecoveryScheduled = new AtomicBoolean(false);
     private final AtomicBoolean webViewRecoveryInProgress = new AtomicBoolean(false);
@@ -423,15 +422,15 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             public boolean shouldOverrideUrlLoading(final WebView view, final WebResourceRequest request) {
                 final Uri uri = request.getUrl();
                 final String url = uri.toString();
-                // Never promote an iframe navigation into the privileged main WebView.
-                if (!request.isForMainFrame()) {
-                    return !NativeBridgePolicy.allowSubframeNavigation(url);
+                if (url.contains("127.0.0.1") && !url.contains("openExternal")) {
+                    view.loadUrl(url);
+                    return true;
                 }
-                if (NativeBridgePolicy.isTrustedDocument(url)) {
-                    return false;
-                }
-                if ("http".equalsIgnoreCase(uri.getScheme()) || "https".equalsIgnoreCase(uri.getScheme())) {
-                    Utils.openByDefaultBrowser(url, MainActivity.this);
+
+                if (uri.getScheme().toLowerCase().startsWith("http")) {
+                    final Intent i = new Intent(Intent.ACTION_VIEW, uri);
+                    startActivity(i);
+                    return true;
                 }
                 return true;
             }
@@ -440,13 +439,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             public void onPageStarted(final WebView view, final String url, final Bitmap favicon) {
                 super.onPageStarted(view, url, favicon);
                 if (view != webView) {
-                    return;
-                }
-                if (nativeBridgeBoundary != null) {
-                    nativeBridgeBoundary.onNavigation(url);
-                }
-                if (!NativeBridgePolicy.isTrustedDocument(url)) {
-                    view.stopLoading();
                     return;
                 }
                 if (isMainPageNavigation(url)) {
@@ -484,9 +476,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                                         final WebResourceError error) {
                 super.onReceivedError(view, request, error);
                 if (request.isForMainFrame()) {
-                    if (nativeBridgeBoundary != null) {
-                        nativeBridgeBoundary.onNavigation(null);
-                    }
                     handleMainFrameLoadError(view, request.getUrl().toString(), error.getDescription().toString());
                 }
             }
@@ -496,9 +485,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                                             final WebResourceResponse errorResponse) {
                 super.onReceivedHttpError(view, request, errorResponse);
                 if (request.isForMainFrame()) {
-                    if (nativeBridgeBoundary != null) {
-                        nativeBridgeBoundary.onNavigation(null);
-                    }
                     handleMainFrameLoadError(view, request.getUrl().toString(),
                             "HTTP " + errorResponse.getStatusCode());
                 }
@@ -637,15 +623,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         });
 
         jsAndroid = new JSAndroid(this);
-        if (nativeBridgeBoundary != null) {
-            nativeBridgeBoundary.close();
-        }
-        nativeBridgeBoundary = new NativeBridgeBoundary(webView, jsAndroid);
-        if (!nativeBridgeBoundary.install()) {
-            // Preserve existing app functionality on older WebViews. No map capability
-            // is exposed in this mode; shared Web code must keep the map disabled.
-            webView.addJavascriptInterface(jsAndroid, "JSAndroid");
-        }
+        webView.addJavascriptInterface(jsAndroid, "JSAndroid");
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
         final WebSettings ws = webView.getSettings();
         ws.setJavaScriptEnabled(true);
@@ -861,10 +839,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             final ViewGroup parent = (ViewGroup) failedWebView.getParent();
             final int childIndex = parent.indexOfChild(failedWebView);
             final ViewGroup.LayoutParams layoutParams = failedWebView.getLayoutParams();
-            if (nativeBridgeBoundary != null) {
-                nativeBridgeBoundary.close();
-                nativeBridgeBoundary = null;
-            }
             parent.removeView(failedWebView);
             failedWebView.destroy();
 
@@ -1437,10 +1411,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         if (null != microphonePermissionDialog) {
             microphonePermissionDialog.dismiss();
             microphonePermissionDialog = null;
-        }
-        if (nativeBridgeBoundary != null) {
-            nativeBridgeBoundary.close();
-            nativeBridgeBoundary = null;
         }
         super.onDestroy();
         exit();

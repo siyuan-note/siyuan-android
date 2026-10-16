@@ -27,8 +27,3 @@
 -dontwarn org.bouncycastle.**
 -dontwarn org.conscrypt.**
 -dontwarn org.openjsse.**
-
-# The capability-checked synchronous transport is called by the document-start facade.
--keepclassmembers class org.b3log.siyuan.NativeBridgeBoundary$SyncBridge {
-    @android.webkit.JavascriptInterface <methods>;
-}
