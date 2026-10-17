@@ -59,6 +59,7 @@ final class ShorthandDraftStore {
                     available = true;
                     return "";
                 }
+                ShorthandDraftRecovery.recover(file.getBaseFile());
                 final String content = new String(file.readFully(), StandardCharsets.UTF_8);
                 available = true;
                 return content;
