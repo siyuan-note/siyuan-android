@@ -1,0 +1,61 @@
+// 作为初始化脚本验证所有渠道的构建约定，不读取或输出签名凭据。
+gradle.beforeProject { project ->
+    if (project.path != ':app') {
+        return
+    }
+    def variants = []
+    project.tasks.register('verifyBuildConfiguration') {
+        group = 'verification'
+        description = 'Verify channel, APK naming, SDK and signing compatibility'
+        doLast {
+            def android = project.extensions.getByName('android')
+            def version = project.rootProject.siyuanVersionName
+            def channels = ['cn', 'googleplay', 'huawei', 'official']
+            assert variants.collect { it.name }.sort() == channels.collectMany { channel ->
+                ["${channel}Debug".toString(), "${channel}Release".toString()]
+            }.sort()
+            assert android.compileSdk == 36
+            assert android.defaultConfig.minSdk == 26
+            assert android.defaultConfig.targetSdk == 36
+            assert android.compileOptions.sourceCompatibility == JavaVersion.VERSION_17
+            assert android.compileOptions.targetCompatibility == JavaVersion.VERSION_17
+            assert !android.enableKotlin
+            assert android.buildFeatures.resValues
+            assert android.buildTypes.release.signingConfig.name == 'siyuanConfig'
+            assert android.buildTypes.release.minifyEnabled
+            assert android.buildTypes.release.shrinkResources
+            assert project.extensions.getByName('base').archivesName.get() == "siyuan-${version}"
+            android.productFlavors.each { flavor ->
+                assert flavor.ndk.abiFilters == ['arm64-v8a'] as Set
+                assert flavor.manifestPlaceholders.CHANNEL == flavor.name
+            }
+            variants.each { variant ->
+                def debug = variant.buildType == 'debug'
+                assert variant.applicationId.get() == "org.b3log.siyuan${debug ? '.debug' : ''}"
+                assert variant.buildConfigFields.get().CHANNEL.value == "\"${variant.flavorName}\""
+                def appName = variant.resValues.get().find { entry ->
+                    entry.key.type == 'string' && entry.key.name == 'app_name'
+                }.value.value
+                def expectedName = debug ? 'SiYuan-Debug' :
+                        (variant.flavorName in ['cn', 'huawei'] ? '思源笔记' : 'SiYuan')
+                assert appName == expectedName
+                variant.outputs.each { output ->
+                    assert output.versionCode.get() == project.rootProject.siyuanVersionCode
+                    assert output.versionName.get() == version
+                    def base = "siyuan-${version}-${variant.flavorName}-${variant.buildType}"
+                    def name = output.outputFileName.get()
+                    if (debug) {
+                        assert name.startsWith(base + '-') && name.substring(base.length()) ==~ /-\d{14}\.apk/
+                    } else {
+                        assert name == "${base}.apk"
+                    }
+                }
+            }
+            println "Verified ${variants.size()} variants: APK names, channels, labels, SDKs, ABI and signing configuration"
+        }
+    }
+    project.plugins.withId('com.android.application') {
+        def components = project.extensions.getByName('androidComponents')
+        components.onVariants(components.selector().all()) { variant -> variants.add(variant) }
+    }
+}

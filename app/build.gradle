@@ -10,7 +10,7 @@ apply from: rootProject.file('buildRelease.gradle')
 
 // 1. 配置 App Bundle (.aab) 的基础文件名
 base {
-    archivesName = "siyuan-${siyuanVersionName}"
+    archivesName = "siyuan-${rootProject.siyuanVersionName}"
 }
 
 tasks.withType(Copy).configureEach {
@@ -18,45 +18,31 @@ tasks.withType(Copy).configureEach {
 }
 
 android {
-    namespace 'org.b3log.siyuan'
+    namespace = 'org.b3log.siyuan'
     compileSdk = 36
-
-    // 2. 配置 APK 输出文件名
-    applicationVariants.configureEach { variant ->
-        variant.outputs.configureEach { output ->
-            def buildType = variant.buildType.name
-            def flavorName = variant.flavorName
-            def versionName = variant.versionName
-
-            def fileName = "siyuan-${versionName}-${flavorName}-${buildType}"
-
-            if (buildType != "release") {
-                def formattedDate = new Date().format('yyyyMMddHHmmss')
-                fileName += "-${formattedDate}"
-            }
-            output.outputFileName = "${fileName}.apk"
-        }
-    }
+    // 纯 Java 模块无需创建 Kotlin 编译任务或引入 Kotlin 标准库。
+    enableKotlin = false
 
     defaultConfig {
-        applicationId "org.b3log.siyuan"
+        applicationId = "org.b3log.siyuan"
         minSdk = 26
         targetSdk = 36
-        versionCode siyuanVersionCode
-        versionName siyuanVersionName
+        versionCode = rootProject.siyuanVersionCode
+        versionName = rootProject.siyuanVersionName
     }
 
     buildFeatures {
-        buildConfig true
+        buildConfig = true
+        resValues = true
     }
 
     buildTypes {
         release {
             // 正式版打包时指定签名证书
-            signingConfig signingConfigs.siyuanConfig
+            signingConfig = signingConfigs.siyuanConfig
 
-            minifyEnabled true
-            shrinkResources true
+            minifyEnabled = true
+            shrinkResources = true
 
             // 此处优先级太高，渠道处配置 resValue 不会生效，故放到了 productFlavors 多渠道打包处处理
             // resValue "string", "app_name", "SiYuan"
@@ -65,9 +51,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            applicationIdSuffix ".debug"
+            applicationIdSuffix = ".debug"
 
-            minifyEnabled false
+            minifyEnabled = false
 
             resValue "string", "app_name", "SiYuan-Debug"
             resValue "string", "app_package_name", "org.b3log.siyuan.debug"
@@ -76,15 +62,9 @@ android {
         }
     }
 
-    repositories {
-        flatDir {
-            dirs 'libs'
-        }
-    }
-
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     packagingOptions {
@@ -99,14 +79,28 @@ android {
                          'plugin.properties']
         }
         jniLibs {
-            useLegacyPackaging true
+            useLegacyPackaging = true
         }
     }
 
     lint {
-        abortOnError false
+        abortOnError = false
     }
 
+}
+
+// 通过公开的变体接口设置 APK 名称，保留渠道、构建类型和调试时间戳。
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        def buildType = variant.buildType
+        def flavorName = variant.flavorName
+        def suffix = buildType == "release" ? "" : "-${new Date().format('yyyyMMddHHmmss')}"
+        variant.outputs.each { output ->
+            output.outputFileName.set(output.versionName.map { version ->
+                "siyuan-${version}-${flavorName}-${buildType}${suffix}.apk"
+            })
+        }
+    }
 }
 
 dependencies {
@@ -122,5 +116,5 @@ dependencies {
     implementation 'com.gitee.zackratos:KbListener:0.1.3'
     implementation 'com.blankj:utilcodex:1.31.1'
     implementation 'com.koushikdutta.async:androidasync:3.1.0'
-    implementation(name: 'kernel', ext: 'aar')
+    implementation files('libs/kernel.aar')
 }
