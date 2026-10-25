@@ -77,28 +77,19 @@ import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.BarUtils;
 import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.StringUtils;
-import com.koushikdutta.async.AsyncServer;
 import com.koushikdutta.async.http.AsyncHttpClient;
 import com.koushikdutta.async.http.AsyncHttpPost;
 import com.koushikdutta.async.http.body.JSONObjectBody;
-import com.koushikdutta.async.http.server.AsyncHttpServer;
-import com.koushikdutta.async.util.Charsets;
 import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -118,7 +109,6 @@ import mobile.Mobile;
 public class MainActivity extends AppCompatActivity implements com.blankj.utilcode.util.Utils.OnAppStatusChangedListener,
         InputManager.InputDeviceListener {
 
-    private AsyncHttpServer server;
     WebView webView;
     private ImageView bootLogo;
     private ProgressBar bootProgressBar;
@@ -171,7 +161,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 }
             });
 
-    static int serverPort = 6906;
     static String webViewVer;
     static String userAgent;
 
@@ -269,9 +258,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::goBack);
         }
-
-        // 启动 HTTP Server
-        startHttpServer();
 
         // 初始化 UI 元素
         initUIElements();
@@ -987,83 +973,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         }
     };
 
-    private void startHttpServer() {
-        if (null != server) {
-            server.stop();
-        }
-
-        try {
-            // 解决乱码问题 https://github.com/koush/AndroidAsync/issues/656#issuecomment-523325452
-            final Class<Charsets> charsetClass = Charsets.class;
-            Field usAscii = charsetClass.getDeclaredField("US_ASCII");
-            usAscii.setAccessible(true);
-            usAscii.set(Charsets.class, Charsets.UTF_8);
-        } catch (final Exception e) {
-            Utils.logError("http", "init charset failed", e);
-        }
-
-        server = new AsyncHttpServer();
-        server.post("/api/walkDir", (request, response) -> {
-            try {
-                final long start = System.currentTimeMillis();
-                final JSONObject requestJSON = (JSONObject) request.getBody().get();
-                final String dir = requestJSON.optString("dir");
-                final JSONObject data = new JSONObject();
-                final JSONArray files = new JSONArray();
-                FileUtils.listFilesAndDirs(new File(dir), TrueFileFilter.INSTANCE, DirectoryFileFilter.DIRECTORY).forEach(file -> {
-                    final String path = file.getAbsolutePath();
-                    final JSONObject info = new JSONObject();
-                    try {
-                        info.put("path", path);
-                        info.put("name", file.getName());
-                        info.put("size", file.length());
-                        info.put("updated", file.lastModified());
-                        info.put("isDir", file.isDirectory());
-                    } catch (final Exception e) {
-                        Utils.logError("http", "walk dir failed", e);
-                    }
-                    files.put(info);
-                });
-                data.put("files", files);
-                final JSONObject responseJSON = new JSONObject().put("code", 0).put("msg", "").put("data", data);
-                response.send(responseJSON);
-                Utils.logInfo("http", "Walk dir [" + dir + "] in [" + (System.currentTimeMillis() - start) + "] ms");
-            } catch (final Exception e) {
-                Utils.logError("http", "walk dir failed", e);
-                try {
-                    response.send(new JSONObject().put("code", -1).put("msg", e.getMessage()));
-                } catch (final Exception e2) {
-                    Utils.logError("http", "walk dir failed", e2);
-                }
-            }
-        });
-
-        serverPort = getAvailablePort();
-        final AsyncServer s = AsyncServer.getDefault();
-        if (Utils.isDebugPackageAndMode(this)) {
-            // 开发环境绑定所有网卡以便调试
-            s.listen(null, serverPort, server.getListenCallback());
-        } else {
-            // 生产环境绑定 ipv6 回环地址 [::1] 以防止被远程访问
-            s.listen(InetAddress.getLoopbackAddress(), serverPort, server.getListenCallback());
-        }
-        Utils.logInfo("http", "HTTP server is listening on port [" + serverPort + "]");
-    }
-
-    private int getAvailablePort() {
-        int ret = 6906;
-        try {
-            ServerSocket s = new ServerSocket(0);
-            ret = s.getLocalPort();
-            s.close();
-        } catch (final Exception e) {
-            Utils.logError("http", "get available port failed", e);
-        }
-        return ret;
-    }
-
     private void bootKernel() {
-        Mobile.setHttpServerPort(MainActivity.serverPort);
         if (Mobile.isHttpServing()) {
             Log.i("kernel", "Kernel HTTP server is running");
             bootIndex();
@@ -1521,15 +1431,6 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             }
         } catch (final Exception e) {
             Utils.logError("runtime", "destroy webview failed", e);
-        }
-
-        try {
-            if (null != server) {
-                server.stop();
-                server = null;
-            }
-        } catch (final Exception e) {
-            Utils.logError("runtime", "stop http server failed", e);
         }
 
         try {
