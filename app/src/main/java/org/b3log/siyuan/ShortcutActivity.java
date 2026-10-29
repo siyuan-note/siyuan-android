@@ -22,17 +22,15 @@ import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
+import android.content.res.Configuration;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AtomicFile;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -42,10 +40,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ContentInfoCompat;
 import androidx.core.view.ViewCompat;
 
-import com.blankj.utilcode.util.BarUtils;
 import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.StringUtils;
-import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import org.apache.commons.io.FileUtils;
 
@@ -88,6 +84,10 @@ public class ShortcutActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shortcut);
+        final boolean light = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
+                != Configuration.UI_MODE_NIGHT_YES;
+        SystemBars.configure(this, light);
+        SystemBars.fitContent(this);
 
         final EditText input = findViewById(R.id.full_screen_input);
         ViewCompat.setOnReceiveContentListener(input, new String[]{"text/html"}, (view, contentInfo) -> {
@@ -107,16 +107,6 @@ public class ShortcutActivity extends AppCompatActivity {
             }
             return null;
         });
-        UltimateBarX.statusBarOnly(this).transparent().light(true).apply();
-        BarUtils.setNavBarVisibility(this, false);
-        ((ViewGroup) input.getParent()).setPadding(0, UltimateBarX.getStatusBarHeight(), 0, 0);
-        BarUtils.setNavBarVisibility(this, false);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            // Full screen display in landscape mode on Android https://github.com/siyuan-note/siyuan/issues/14448
-            getWindow().getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-        }
-
         setupFullScreenInput();
         if (null == savedInstanceState) {
             handleIntent(getIntent());

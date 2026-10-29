@@ -15,6 +15,13 @@ public final class KeyboardContentHeightTest {
         // 收起目标状态在父容器恢复高度前到达时，也应立即解除 WebView 的固定高度。
         check("hide before parent layout", -1, 1273, 127, 2400, 0);
         check("hide after parent layout", -1, 2273, 127, 2400, 0);
+        // 透明导航栏由容器 padding 避让，不与输入法高度相加。
+        check("gesture navigation and keyboard", 1273, 2249, 127, 2400, 1000);
+        check("three button navigation and keyboard", 1273, 2129, 127, 2400, 1000);
+        check("navigation bar already above floating keyboard", -1, 2129, 127, 2400, 100);
+        check("navigation bar after keyboard hide", -1, 2129, 127, 2400, 0);
+        check("landscape side navigation", 600, 900, 0, 900, 300);
+        check("caption bar in freeform window", 350, 500, 50, 600, 200);
     }
 
     private static void check(String name, int expected, int contentHeight, int contentTop,

@@ -35,8 +35,6 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.blankj.utilcode.util.BarUtils;
-
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -60,7 +58,8 @@ public class BootActivity extends AppCompatActivity {
                 + "], saved state [" + (null != savedInstanceState) + "]");
         setContentView(R.layout.activity_boot);
 
-        BarUtils.setNavBarVisibility(this, false);
+        SystemBars.configure(this, false);
+        SystemBars.fitContent(this);
 
         final String channel = Utils.getChannel(this.getPackageManager());
         final Set<String> showAgreementChannels = new HashSet<>();

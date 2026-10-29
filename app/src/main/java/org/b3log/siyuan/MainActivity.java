@@ -45,7 +45,6 @@ import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.PermissionRequest;
 import android.webkit.RenderProcessGoneDetail;
@@ -80,7 +79,6 @@ import com.blankj.utilcode.util.StringUtils;
 import com.koushikdutta.async.http.AsyncHttpClient;
 import com.koushikdutta.async.http.AsyncHttpPost;
 import com.koushikdutta.async.http.body.JSONObjectBody;
-import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -252,12 +250,8 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 + "], instance [" + System.identityHashCode(this) + "], task [" + getTaskId()
                 + "], saved state [" + (null != savedInstanceState) + "]");
         setContentView(R.layout.activity_main);
+        SystemBars.configure(this, false);
         registerInputDeviceListener();
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            // Full screen display in landscape mode on Android https://github.com/siyuan-note/siyuan/issues/14448
-            getWindow().getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::goBack);
@@ -287,13 +281,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             // 平板上隐藏状态栏 Hide the status bar on tablet https://github.com/siyuan-note/siyuan/issues/12204
             BarUtils.setStatusBarVisibility(this, false);
             Utils.setWebViewFocusable(webView, true);
-        } else {
-            // 沉浸式状态栏设置
-            UltimateBarX.statusBarOnly(this).transparent().light(false).color(Color.parseColor("#1e1e1e")).apply();
-            ((ViewGroup) webView.getParent()).setPadding(0, UltimateBarX.getStatusBarHeight(), 0, 0);
         }
-
-        BarUtils.setNavBarVisibility(this, false);
 
         // Fix https://github.com/siyuan-note/siyuan/issues/9726
         AndroidBug5497Workaround.assistActivity(this);
@@ -504,7 +492,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         webView.setWebChromeClient(new WebChromeClient() {
             private View mCustomView;
             private WebChromeClient.CustomViewCallback mCustomViewCallback;
-            private int mOriginalSystemUiVisibility;
+            private Runnable restoreSystemBars;
 
             @Override
             public void onShowCustomView(final View view, final WebChromeClient.CustomViewCallback callback) {
@@ -514,25 +502,25 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 }
 
                 mCustomView = view;
-                mOriginalSystemUiVisibility = getWindow().getDecorView().getSystemUiVisibility();
+                restoreSystemBars = SystemBars.hideForVideo(MainActivity.this);
                 mCustomViewCallback = callback;
 
                 final FrameLayout decor = (FrameLayout) getWindow().getDecorView();
                 decor.addView(mCustomView, new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT));
-                getWindow().getDecorView().setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_FULLSCREEN |
-                                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
-                                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
             }
 
             @Override
             public void onHideCustomView() {
+                if (mCustomView == null) {
+                    return;
+                }
                 final FrameLayout decor = (FrameLayout) getWindow().getDecorView();
                 decor.removeView(mCustomView);
                 mCustomView = null;
-                getWindow().getDecorView().setSystemUiVisibility(mOriginalSystemUiVisibility);
+                restoreSystemBars.run();
+                restoreSystemBars = null;
                 mCustomViewCallback.onCustomViewHidden();
                 mCustomViewCallback = null;
             }

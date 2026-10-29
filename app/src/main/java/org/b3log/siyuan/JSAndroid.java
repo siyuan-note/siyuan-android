@@ -55,10 +55,8 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.ShareCompat;
 import androidx.core.content.FileProvider;
 
-import com.blankj.utilcode.util.BarUtils;
 import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.StringUtils;
-import com.zackratos.ultimatebarx.ultimatebarx.java.UltimateBarX;
 
 import org.json.JSONObject;
 
@@ -833,14 +831,9 @@ public final class JSAndroid {
 
     @JavascriptInterface
     public void changeStatusBarColor(final String color, final int appearanceMode) {
-        if (Utils.isTablet(activity)) {
-            return;
-        }
-
         activity.runOnUiThread(() -> {
             final int colorVal = parseColor(color);
-            UltimateBarX.statusBarOnly(activity).transparent().light(appearanceMode == 0).color(colorVal).apply();
-            BarUtils.setNavBarVisibility(activity, false);
+            SystemBars.setAppearance(activity, appearanceMode == 0);
             // 窗口缩放和 WebView 重绘期间，各层背景均与页面主题保持一致。
             activity.getWindow().setBackgroundDrawable(new ColorDrawable(colorVal));
             activity.findViewById(android.R.id.content).setBackgroundColor(colorVal);

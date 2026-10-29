@@ -14,6 +14,10 @@ import android.view.WindowInsetsAnimation;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
 import com.blankj.utilcode.util.BarUtils;
 
 import java.util.List;
@@ -53,27 +57,17 @@ public class AndroidBug5497Workaround {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S_V2) {
             registerKeyboardInsets();
         } else {
-            this.view.setOnApplyWindowInsetsListener((v, insets) -> {
-                int imeHeight = 0;
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                    imeHeight = insets.getInsets(WindowInsets.Type.ime()).bottom;
-                }
-                frameLayoutParams.height = imeHeight > 0 ? frameLayout.getHeight() - imeHeight : -1;
-                view.requestLayout();
-                return v.onApplyWindowInsets(insets);
-            });
+            SystemBars.fitContent(activity);
         }
 
         // 兼容旧逻辑
         this.frameLayout.getViewTreeObserver().addOnGlobalLayoutListener(this::possiblyResizeChildOfContent);
+        ViewCompat.requestApplyInsets(view);
     }
 
     @TargetApi(android.os.Build.VERSION_CODES.S_V2)
     private void registerKeyboardInsets() {
         final FrameLayout container = (FrameLayout) this.view;
-        // 高度由窗口边衬统一处理，关闭沉浸式状态栏库对父容器的重复缩放。
-        com.zackratos.kblistener.kblistener.ViewKt.onKeyboardOpen(container, null);
-        com.zackratos.kblistener.kblistener.ViewKt.onKeyboardClose(container, null);
         final WindowInsets[] currentInsets = new WindowInsets[1];
         this.view.setWindowInsetsAnimationCallback(new WindowInsetsAnimation.Callback(
                 WindowInsetsAnimation.Callback.DISPATCH_MODE_CONTINUE_ON_SUBTREE) {
@@ -112,6 +106,7 @@ public class AndroidBug5497Workaround {
         this.view.setOnApplyWindowInsetsListener((v, insets) -> {
             // 在键盘动画开始前按目标高度布局，确保退场时露出的是已恢复的页面。
             currentInsets[0] = insets;
+            SystemBars.applyInsets(container, WindowInsetsCompat.toWindowInsetsCompat(insets, v), Insets.NONE, false);
             resizeForKeyboard(container, insets);
             final View webView = activity.findViewById(R.id.webView);
             if (webView instanceof android.webkit.WebView) {
@@ -121,7 +116,7 @@ public class AndroidBug5497Workaround {
                         insets.isVisible(WindowInsets.Type.ime()));
                 webView.post(state::flush);
             }
-            return v.onApplyWindowInsets(insets);
+            return WindowInsets.CONSUMED;
         });
         container.addOnLayoutChangeListener((v, left, top, right, bottom,
                                              oldLeft, oldTop, oldRight, oldBottom) -> {
@@ -144,7 +139,7 @@ public class AndroidBug5497Workaround {
         }
         final int[] location = new int[2];
         container.getLocationInWindow(location);
-        // 背景容器始终铺满窗口，仅调整 WebView，并扣除状态栏占位和键盘实际重叠区域。
+        // 背景容器始终铺满窗口，仅调整 WebView，并扣除系统栏占位和键盘实际重叠区域。
         final int height = KeyboardContentHeight.calculate(contentHeight, location[1] + container.getPaddingTop(),
                 container.getRootView().getHeight(), insets.getInsets(WindowInsets.Type.ime()).bottom);
         final FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) webView.getLayoutParams();
