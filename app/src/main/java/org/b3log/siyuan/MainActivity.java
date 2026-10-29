@@ -1414,7 +1414,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     public void onForeground(Activity activity) {
         startSyncDataIfReady();
         if (null != webView) {
-            webView.evaluateJavascript("javascript:window.reconnectWebSocket()", null);
+            webView.evaluateJavascript("javascript:typeof window.reconnectWebSocket === 'function' && window.reconnectWebSocket()", null);
         }
     }
 
