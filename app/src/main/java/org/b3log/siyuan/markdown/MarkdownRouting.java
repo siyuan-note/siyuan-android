@@ -5,6 +5,10 @@ import java.util.Locale;
 /** The launcher must preserve non-Markdown external file routes. */
 public final class MarkdownRouting {
     private MarkdownRouting() { }
+    public static boolean genericDocument(String action, String scheme, String mime) {
+        return "android.intent.action.VIEW".equals(action) && "content".equals(scheme) &&
+                ("text/plain".equals(mime) || "application/octet-stream".equals(mime));
+    }
     public static boolean matches(String action, String scheme, String mime, String displayName) {
         if (!"android.intent.action.VIEW".equals(action) || !"content".equals(scheme)) return false;
         if ("text/markdown".equals(mime) || "text/x-markdown".equals(mime)) return true;

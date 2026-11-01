@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="markdown_unsupported">Select a Markdown file (.md or .markdown)</string>
     <string name="markdown_editor">Markdown editor</string>
     <string name="markdown_load_error">Unable to load the Markdown editor</string>
     <string name="markdown_close">Close</string>

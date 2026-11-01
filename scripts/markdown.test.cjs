@@ -65,3 +65,13 @@ test("tree protocol isolates directory reads, document epochs and API 26-safe gr
     assert.doesNotMatch(files + treeFiles, /DocumentsContract\.isChildDocument\(/);
     assert.doesNotMatch(treeFiles, /getExternalStorageDirectory|\.getPath\(\)\.split|new File\(/);
 });
+
+test("system generic MIME routing accepts opaque document IDs then rejects non-Markdown names before workspace boot", () => {
+    const manifest = readFileSync(join(__dirname, "../app/src/main/AndroidManifest.xml"), "utf8");
+    const generic = manifest.match(/<intent-filter>[\s\S]*?<\/intent-filter>/g).find(value => value.includes('mimeType="text/plain"'));
+    assert.ok(generic); assert.doesNotMatch(generic, /pathPattern|pathSuffix/);
+    assert.match(generic, /scheme="content"/);
+    const boot = readFileSync(join(__dirname, "../app/src/main/java/org/b3log/siyuan/BootActivity.java"), "utf8");
+    assert.match(boot, /MarkdownRouting\.genericDocument/);
+    assert.match(boot, /setMessage\(R\.string\.markdown_unsupported\)/);
+});

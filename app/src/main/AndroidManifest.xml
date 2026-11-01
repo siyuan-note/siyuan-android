@@ -89,10 +89,6 @@
                 <data android:scheme="content" android:host="*" />
                 <data android:mimeType="text/plain" />
                 <data android:mimeType="application/octet-stream" />
-                <data android:pathPattern=".*\\.md" />
-                <data android:pathPattern=".*\\.markdown" />
-                <data android:pathPattern=".*\\.MD" />
-                <data android:pathPattern=".*\\.MARKDOWN" />
             </intent-filter>
 
             <meta-data

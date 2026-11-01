@@ -12,6 +12,13 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public final class MarkdownIntentTest {
+    @Test public void genericFileRejectionOnlyAppliesToExplicitContentViewRequests() {
+        assertTrue(MarkdownRouting.genericDocument("android.intent.action.VIEW", "content", "text/plain"));
+        assertTrue(MarkdownRouting.genericDocument("android.intent.action.VIEW", "content", "application/octet-stream"));
+        assertFalse(MarkdownRouting.genericDocument("android.intent.action.SEND", "content", "text/plain"));
+        assertFalse(MarkdownRouting.genericDocument("android.intent.action.VIEW", "https", "text/plain"));
+        assertFalse(MarkdownRouting.genericDocument("android.intent.action.VIEW", "content", "text/markdown"));
+    }
     @Test public void opaqueContentUriUsesProviderNameWithoutCapturingOtherAttachments() {
         Context context = mock(Context.class); ContentResolver resolver = mock(ContentResolver.class);
         when(context.getContentResolver()).thenReturn(resolver);

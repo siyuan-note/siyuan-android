@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="markdown_unsupported">请选择 Markdown 文件（.md 或 .markdown）</string>
     <string name="markdown_editor">Markdown 编辑器</string>
     <string name="markdown_load_error">无法加载 Markdown 编辑器</string>
     <string name="markdown_close">关闭</string>

@@ -113,6 +113,14 @@ public class BootActivity extends AppCompatActivity {
             finish();
             return;
         }
+        // 通用 MIME 的真实文件名只能在取得 URI 后读取；非 Markdown 选择不启动工作空间。
+        if (request.getData() != null && org.b3log.siyuan.markdown.MarkdownRouting.genericDocument(
+                request.getAction(), request.getData().getScheme(), request.getType())) {
+            new AlertDialog.Builder(this).setTitle(R.string.markdown_editor).setMessage(R.string.markdown_unsupported)
+                    .setPositiveButton(R.string.markdown_close, (dialog, which) -> finish())
+                    .setOnCancelListener(dialog -> finish()).show();
+            return;
+        }
         Utils.logInfo("boot", "Start main activity, process [" + android.os.Process.myPid()
                 + "], boot instance [" + System.identityHashCode(this) + "], task [" + getTaskId() + "]");
         final Intent intent = request;
