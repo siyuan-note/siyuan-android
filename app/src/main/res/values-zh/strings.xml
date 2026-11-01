@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="markdown_editor">Markdown 编辑器</string>
+    <string name="markdown_load_error">无法加载 Markdown 编辑器</string>
+    <string name="markdown_close">关闭</string>
     <string name="shortcut_shorthand">闪念速记</string>
     <string name="enter_your_text">请输入文本，提交后内容将被保存到 设置 -  文档 - 新建闪念速记的默认存放路径 下</string>
     <string name="submit">提交</string>

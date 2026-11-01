@@ -96,13 +96,26 @@ public class BootActivity extends AppCompatActivity {
         final String dataDir = getFilesDir().getAbsolutePath();
         final String appDir = dataDir + "/app";
         final File appDirFile = new File(appDir);
-        return !appDirFile.exists();
+        return !appDirFile.exists() && !getSharedPreferences("startup", MODE_PRIVATE).getBoolean("agreementAccepted", false);
     }
 
     private void startMainActivity() {
+        final Intent request = getIntent();
+        java.util.concurrent.CompletableFuture.supplyAsync(() -> MarkdownActivity.isMarkdownIntent(this, request))
+                .thenAccept(markdown -> runOnUiThread(() -> { if (!isFinishing() && !isDestroyed()) startRequestedActivity(request, markdown); }));
+    }
+
+    private void startRequestedActivity(final Intent request, final boolean markdownRequest) {
+        if (markdownRequest) {
+            final Intent markdown = new Intent(request).setClass(this, MarkdownActivity.class);
+            markdown.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(markdown);
+            finish();
+            return;
+        }
         Utils.logInfo("boot", "Start main activity, process [" + android.os.Process.myPid()
                 + "], boot instance [" + System.identityHashCode(this) + "], task [" + getTaskId() + "]");
-        final Intent intent = getIntent();
+        final Intent intent = request;
         String blockURL = "";
         try {
             final Uri blockURLUri = intent.getData();
@@ -130,6 +143,7 @@ public class BootActivity extends AppCompatActivity {
         public void handleMessage(final Message msg) {
             final String cmd = msg.getData().getString("cmd");
             if ("agreement-y".equals(cmd)) {
+                getSharedPreferences("startup", MODE_PRIVATE).edit().putBoolean("agreementAccepted", true).apply();
                 agreementDialog.dismiss();
                 final ProgressBar progressBar = findViewById(R.id.progressBar);
                 runOnUiThread(() -> progressBar.setVisibility(View.VISIBLE));

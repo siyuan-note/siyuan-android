@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="markdown_editor">Редактор Markdown</string>
+    <string name="markdown_load_error">Не удалось загрузить редактор Markdown</string>
+    <string name="markdown_close">Закрыть</string>
     <string name="shortcut_shorthand">Приставка к ярлыкам</string>
     <string name="enter_your_text">Введите текст и отправьте. Содержимое будет сохранено в Настройки - Документ - Путь сохранения сокращений по умолчанию</string>
     <string name="submit">Отправить</string>

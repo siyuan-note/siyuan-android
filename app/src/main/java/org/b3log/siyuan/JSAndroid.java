@@ -193,6 +193,15 @@ public final class JSAndroid {
     }
 
     @JavascriptInterface
+    public void openMarkdownEditor() {
+        this.activity.runOnUiThread(() -> {
+            Intent intent = new Intent(this.activity, MarkdownActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            this.activity.startActivity(intent);
+        });
+    }
+
+    @JavascriptInterface
     public void hideKeyboard() {
         if (wordSelection != null) {
             wordSelection.cancel();

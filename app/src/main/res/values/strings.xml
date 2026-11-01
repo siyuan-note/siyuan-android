@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="markdown_editor">Markdown editor</string>
+    <string name="markdown_load_error">Unable to load the Markdown editor</string>
+    <string name="markdown_close">Close</string>
     <string name="shortcut_shorthand">Flash shorthand</string>
     <string name="enter_your_text">Enter text and submit. Content will be saved to Settings - Document - Default shorthand save path</string>
     <string name="submit">Submit</string>

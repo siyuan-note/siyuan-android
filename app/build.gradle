@@ -112,8 +112,12 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-process:2.6.2'
     implementation 'androidx.work:work-runtime:2.11.1'
     implementation 'androidx.browser:browser:1.7.0'
+    implementation 'androidx.webkit:webkit:1.14.0'
     implementation 'commons-io:commons-io:2.21.0'
     implementation 'com.blankj:utilcodex:1.31.1'
     implementation 'com.koushikdutta.async:androidasync:3.1.0'
     implementation files('libs/kernel.aar')
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.json:json:20250517'
+    testImplementation 'org.mockito:mockito-core:5.18.0'
 }
