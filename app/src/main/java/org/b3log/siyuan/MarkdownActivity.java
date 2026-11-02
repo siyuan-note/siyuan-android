@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.DocumentsContract;
@@ -27,6 +29,7 @@ import androidx.webkit.WebViewCompat;
 import androidx.webkit.WebViewFeature;
 
 import org.b3log.siyuan.markdown.MarkdownCodec;
+import org.b3log.siyuan.markdown.MarkdownTheme;
 import org.b3log.siyuan.markdown.MarkdownIds;
 import org.b3log.siyuan.markdown.MarkdownFiles;
 import org.b3log.siyuan.markdown.MarkdownHost;
@@ -63,6 +66,7 @@ public final class MarkdownActivity extends AppCompatActivity {
     private static final ExecutorService IO = Executors.newSingleThreadExecutor();
     private final ExecutorService treeIO = Executors.newSingleThreadExecutor();
     private WebView web;
+    private TextView loading;
     private volatile MarkdownHost host;
     private MarkdownTree tree;
     private MarkdownTreeFiles treeFiles;
@@ -73,7 +77,7 @@ public final class MarkdownActivity extends AppCompatActivity {
     private File runtime;
     private JSONObject languages = new JSONObject();
     private String language = "en";
-    private String preferredTheme = "system";
+    private volatile String preferredTheme = "system";
     private JavaScriptReplyProxy replyProxy;
     private final Map<String, Runnable> commands = new ConcurrentHashMap<>();
     private final Map<String, Resource> resources = new ConcurrentHashMap<>();
@@ -182,7 +186,7 @@ public final class MarkdownActivity extends AppCompatActivity {
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
         SystemBars.configure(this, !dark());
-        TextView loading = new TextView(this); loading.setText("SiYuan"); setContentView(loading); SystemBars.fitContent(this);
+        loading = new TextView(this); loading.setText("SiYuan"); setContentView(loading); SystemBars.fitContent(this); updateSystemBars();
         try {
             MarkdownRegistry.INSTANCE.attach(activityLease);
             activityLeaseAttached = true;
@@ -203,6 +207,7 @@ public final class MarkdownActivity extends AppCompatActivity {
                 tree = new MarkdownTree(treeFiles, new MarkdownTreeView(new File(getNoBackupFilesDir(), "markdown-v1/tree-view.json")));
                 treeSwitch = new MarkdownTreeSwitch(() -> new MarkdownHost(this), MarkdownRegistry.INSTANCE);
                 preferredTheme = host.preferences(null).optString("theme", "system");
+                runOnUiThread(() -> { if (!destroyed) updateSystemBars(); });
                 if (isMarkdownIntent(this, getIntent())) host.open(getIntent().getData(), getIntent().getFlags());
                 updateTreeTarget(true);
                 if (!destroyed) runOnUiThread(this::loadEditor);
@@ -224,6 +229,7 @@ public final class MarkdownActivity extends AppCompatActivity {
         if (isFinishing() || isDestroyed()) return;
         if (!App.isMarkdownWebViewReady() || !WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) { showFailure(); return; }
         web = new WebView(this);
+        web.setBackgroundColor(surfaceColor());
         WebSettings settings = web.getSettings();
         // The standalone adapter also masks the localStorage API before Vditor starts.
         // Content and preferences have a single native persistence authority.
@@ -258,6 +264,12 @@ public final class MarkdownActivity extends AppCompatActivity {
                 }
                 WebResourceResponse result = loader.shouldInterceptRequest(uri);
                 if (result == null) return denied();
+                if (PAGE.equals(uri.toString())) {
+                    try (InputStream input = result.getData()) {
+                        String html = new String(MarkdownCodec.read(input, 1024 * 1024), StandardCharsets.UTF_8);
+                        result.setData(new ByteArrayInputStream(MarkdownTheme.page(html, effectiveDark()).getBytes(StandardCharsets.UTF_8)));
+                    } catch (Exception error) { return denied(); }
+                }
                 Map<String, String> headers = new HashMap<>();
                 headers.put("X-Content-Type-Options", "nosniff");
                 headers.put("Cache-Control", "no-store");
@@ -303,7 +315,16 @@ public final class MarkdownActivity extends AppCompatActivity {
     }
     private static JSONObject object(String key, Object value) { try { return new JSONObject().put(key, value); } catch (Exception error) { throw new IllegalStateException(error); } }
     private boolean dark() { return (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES; }
-    private void updateSystemBars() { SystemBars.setAppearance(this, !("dark".equals(preferredTheme) || "system".equals(preferredTheme) && dark())); }
+    private boolean effectiveDark() { return MarkdownTheme.dark(preferredTheme, dark()); }
+    private int surfaceColor() { return effectiveDark() ? Color.rgb(30, 30, 30) : Color.WHITE; }
+    private void updateSystemBars() {
+        SystemBars.setAppearance(this, !effectiveDark());
+        int background = surfaceColor();
+        getWindow().setBackgroundDrawable(new ColorDrawable(background));
+        findViewById(android.R.id.content).setBackgroundColor(background);
+        if (loading != null) { loading.setBackgroundColor(background); loading.setTextColor(effectiveDark() ? Color.WHITE : Color.BLACK); }
+        if (web != null) web.setBackgroundColor(background);
+    }
     private String label(String key) {
         if (languages.has(key)) return languages.optString(key);
         // Startup failures can precede extraction of the shared language bundle.

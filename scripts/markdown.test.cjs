@@ -22,7 +22,7 @@ const {tmpdir} = require("node:os");
 test("native Markdown encoding, routing, session reservation, image types and draft storage", () => {
     const output = mkdtempSync(join(tmpdir(), "siyuan-markdown-core-"));
     try {
-        const sources = ["MarkdownIds", "MarkdownCodec", "MarkdownRegistry", "MarkdownStore", "MarkdownRouting", "MarkdownImages", "MarkdownImageImport"].map(name =>
+        const sources = ["MarkdownTheme", "MarkdownIds", "MarkdownCodec", "MarkdownRegistry", "MarkdownStore", "MarkdownRouting", "MarkdownImages", "MarkdownImageImport"].map(name =>
             join(__dirname, "../app/src/main/java/org/b3log/siyuan/markdown", name + ".java"));
         sources.push(join(__dirname, "../app/src/test/java/org/b3log/siyuan/markdown/MarkdownCoreTest.java"));
         execFileSync("javac", ["-encoding", "UTF-8", "-d", output, ...sources], {windowsHide: true});
@@ -88,4 +88,14 @@ test("system generic MIME routing accepts opaque document IDs then rejects non-M
     const boot = readFileSync(join(__dirname, "../app/src/main/java/org/b3log/siyuan/BootActivity.java"), "utf8");
     assert.match(boot, /MarkdownRouting\.genericDocument/);
     assert.match(boot, /setMessage\(R\.string\.markdown_unsupported\)/);
+});
+
+test("native Markdown paints its saved appearance before loading only the trusted themed page", () => {
+    const source = readFileSync(join(__dirname, "../app/src/main/java/org/b3log/siyuan/MarkdownActivity.java"), "utf8");
+    assert.match(source, /if \(PAGE\.equals\(uri\.toString\(\)\)\)/);
+    assert.match(source, /MarkdownCodec\.read\(input, 1024 \* 1024\)/);
+    assert.match(source, /MarkdownTheme\.page\(html, effectiveDark\(\)\)/);
+    assert.ok(source.indexOf("web.setBackgroundColor(surfaceColor())") < source.indexOf("setContentView(frame)"));
+    assert.match(source, /getWindow\(\)\.setBackgroundDrawable\(new ColorDrawable\(background\)\)/);
+    assert.match(source, /if \(web != null\) web\.setBackgroundColor\(background\)/);
 });

@@ -14,6 +14,14 @@ public final class MarkdownCoreTest {
         try { operation.run(); throw new AssertionError(reason); } catch (IOException expected) { }
     }
     public static void main(String[] args) throws Exception {
+        check(MarkdownTheme.dark("dark", false), "Explicit dark overrides light system");
+        check(!MarkdownTheme.dark("light", true), "Explicit light overrides dark system");
+        check(MarkdownTheme.dark("system", true) && !MarkdownTheme.dark("system", false), "System preference tracks system");
+        String initialPage = "<link href=\"./appearance/themes/daylight/theme.css\"><script src=\"./index.js\"></script>";
+        check(MarkdownTheme.page(initialPage, true).equals(initialPage.replace("daylight/theme.css", "midnight/theme.css")), "Dark page selects bundled stylesheet before loading");
+        check(MarkdownTheme.page(initialPage, false).equals(initialPage), "Light page stays unchanged");
+        check(MarkdownTheme.page("<link href=./appearance/themes/daylight/theme.css>", true).contains("midnight/theme.css"), "Minified attribute quoting does not change theme selection");
+        check(MarkdownTheme.page("daylight arbitrary document text", true).equals("daylight arbitrary document text"), "Only the exact stylesheet reference is transformed");
         check(MarkdownIds.newId().matches("[0-9]{14}-[a-z0-9]{7}"), "SiYuan ID format");
         check(MarkdownIds.token().matches("[0-9a-f]{64}"), "Capability tokens retain 256 bits");
         check(!MarkdownIds.token().equals(MarkdownIds.token()), "Fresh capability tokens");
