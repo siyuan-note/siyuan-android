@@ -1,4 +1,18 @@
 const {test} = require("node:test");
+
+test("standalone assets extract one canonical Lute and expose only its exact editor alias", () => {
+    const runtime = readFileSync(join(__dirname, "../app/src/main/java/org/b3log/siyuan/markdown/MarkdownRuntime.java"), "utf8");
+    const container = readFileSync(join(__dirname, "../app/src/main/java/org/b3log/siyuan/MarkdownActivity.java"), "utf8");
+    assert.match(runtime, /name\.equals\("stage\/protyle\/js\/lute\/lute\.min\.js"\)/);
+    assert.match(runtime, /!ready\.isFile\(\) \|\| !parser\.isFile\(\) \|\| legacyParser\.exists\(\)/);
+    assert.match(runtime, /legacyParser\.exists\(\) && !legacyParser\.delete\(\)/);
+    assert.match(runtime, /ready\.exists\(\) && !ready\.delete\(\)/);
+    assert.ok(runtime.indexOf("!ready.delete()") < runtime.indexOf('context.getAssets().open("app.zip")'));
+    assert.match(container, /"\/stage\/build\/markdown\/vditor\/dist\/js\/lute\/lute\.min\.js"\.equals\(uri\.getEncodedPath\(\)\)/);
+    assert.match(container, /uri\.buildUpon\(\)\.path\("\/stage\/protyle\/js\/lute\/lute\.min\.js"\)\.build\(\)/);
+    assert.ok(container.indexOf('!trusted(uri)') < container.indexOf('uri = uri.buildUpon()'));
+    assert.ok(container.indexOf('!uri.getPath().startsWith("/stage/build/markdown/")') < container.indexOf('uri = uri.buildUpon()'));
+});
 const assert = require("node:assert/strict");
 const {mkdtempSync, rmSync, readFileSync} = require("node:fs");
 const {execFileSync} = require("node:child_process");
@@ -8,7 +22,7 @@ const {tmpdir} = require("node:os");
 test("native Markdown encoding, routing, session reservation, image types and draft storage", () => {
     const output = mkdtempSync(join(tmpdir(), "siyuan-markdown-core-"));
     try {
-        const sources = ["MarkdownCodec", "MarkdownRegistry", "MarkdownStore", "MarkdownRouting", "MarkdownImages", "MarkdownImageImport"].map(name =>
+        const sources = ["MarkdownIds", "MarkdownCodec", "MarkdownRegistry", "MarkdownStore", "MarkdownRouting", "MarkdownImages", "MarkdownImageImport"].map(name =>
             join(__dirname, "../app/src/main/java/org/b3log/siyuan/markdown", name + ".java"));
         sources.push(join(__dirname, "../app/src/test/java/org/b3log/siyuan/markdown/MarkdownCoreTest.java"));
         execFileSync("javac", ["-encoding", "UTF-8", "-d", output, ...sources], {windowsHide: true});

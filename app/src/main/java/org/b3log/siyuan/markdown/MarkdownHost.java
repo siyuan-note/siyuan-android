@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /** Native authority behind the shared frontend contract. Called on one I/O executor. */
 public final class MarkdownHost {
@@ -45,7 +44,10 @@ public final class MarkdownHost {
 
     MarkdownHost(MarkdownFiles files, MarkdownStore store, MarkdownRegistry registry) throws Exception {
         this.files = files; this.store = store; this.registry = registry;
-        sessionId = UUID.randomUUID().toString();
+        sessionId = MarkdownIds.newId();
+        for (String key : store.keys("")) {
+            if (key.contains(sessionId)) throw new IOException("identifier collision");
+        }
         // Restore unresolved claims before granting a fresh open/Save As to anyone.
         for (String key : store.keys("write-")) {
             try {
@@ -71,6 +73,7 @@ public final class MarkdownHost {
     }
 
     void openTarget(MarkdownFiles.Target opened) throws Exception {
+        if (targets.containsKey(opened.handle)) throw new IOException("identifier collision");
         registry.claim(opened.identity, sessionId, false);
         target = opened; targets.put(opened.handle, opened); content = opened.initialContent;
     }
@@ -83,7 +86,7 @@ public final class MarkdownHost {
         if (!selected.writable) throw new IOException("readonly");
         selected.bom = format.getBoolean("bom"); selected.newline = format.getString("newline");
         if (registry.owner(selected.identity) != null) throw new IOException("occupied");
-        targets.put(selected.handle, selected);
+        if (targets.putIfAbsent(selected.handle, selected) != null) throw new IOException("identifier collision");
         return selected;
     }
 

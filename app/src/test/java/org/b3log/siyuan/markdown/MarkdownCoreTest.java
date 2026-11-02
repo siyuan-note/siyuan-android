@@ -14,6 +14,16 @@ public final class MarkdownCoreTest {
         try { operation.run(); throw new AssertionError(reason); } catch (IOException expected) { }
     }
     public static void main(String[] args) throws Exception {
+        check(MarkdownIds.newId().matches("[0-9]{14}-[a-z0-9]{7}"), "SiYuan ID format");
+        check(MarkdownIds.token().matches("[0-9a-f]{64}"), "Capability tokens retain 256 bits");
+        check(!MarkdownIds.token().equals(MarkdownIds.token()), "Fresh capability tokens");
+        Path idDirectory = Files.createTempDirectory("markdown-id-");
+        Path collision = idDirectory.resolve("same.tmp");
+        Files.writeString(collision, "other writer");
+        try {
+            rejects(() -> MarkdownIds.temporary(idDirectory.toFile(), "", ".tmp", () -> "same"), "Colliding temporary files must not be acquired");
+            check(Files.readString(collision).equals("other writer"), "Collision never truncates or removes another writer's file");
+        } finally { Files.delete(collision); Files.delete(idDirectory); }
         check(MarkdownRouting.matches("android.intent.action.VIEW", "content", "text/markdown", "opaque"), "Markdown MIME route");
         check(MarkdownRouting.matches("android.intent.action.VIEW", "content", "application/octet-stream", "README.MD"), "Provider filename route");
         check(!MarkdownRouting.matches("android.intent.action.VIEW", "content", "application/pdf", "document.pdf"), "PDF keeps existing route");
@@ -47,6 +57,8 @@ public final class MarkdownCoreTest {
 
         MarkdownRegistry registry = new MarkdownRegistry();
         registry.attach("A"); registry.attach("B");
+        rejects(() -> registry.attach("A"), "Duplicate session cannot replace an active owner");
+        check(registry.isSessionActive("A"), "Collision leaves original session active");
         registry.claim("original", "A", false);
         MarkdownRegistry.Claim reserved = registry.claim("candidate", "A", true);
         rejects(() -> registry.claim("candidate", "B", true), "Concurrent Save As must reserve before writing");
@@ -85,7 +97,7 @@ public final class MarkdownCoreTest {
             store.put("draft-C", 0, 1, "durable old draft");
             byte[] prior = Files.readAllBytes(root.resolve("draft-C.record"));
             store.put("draft-C", 0, 2, "complete pending draft");
-            Path pending = root.resolve("draft-C-00000000-0000-0000-0000-000000000001.pending");
+            Path pending = root.resolve("draft-C-" + MarkdownIds.newId() + ".pending");
             Files.move(root.resolve("draft-C.record"), pending);
             Files.write(root.resolve("draft-C.record"), prior);
             MarkdownStore interrupted = new MarkdownStore(root.toFile());

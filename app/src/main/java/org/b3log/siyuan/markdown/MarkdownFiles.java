@@ -18,7 +18,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.UUID;
 
 /** SAF operations never turn a document URI into a filesystem path. */
 public class MarkdownFiles {
@@ -26,7 +25,7 @@ public class MarkdownFiles {
     private final ContentResolver resolver;
 
     public static final class Target {
-        public final String handle = UUID.randomUUID().toString();
+        public final String handle = MarkdownIds.newId();
         public final Uri uri;
         public final String identity;
         public final String name;

@@ -12,7 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -92,8 +91,10 @@ public class MarkdownStore {
         if (files == null) throw new IOException("io");
         for (File pending : files) {
             String name = pending.getName();
-            if (!name.matches("[a-zA-Z0-9_-]{1,160}-[a-f0-9-]{36}\\.pending")) continue;
-            String key = name.substring(0, name.length() - 45);
+            java.util.regex.Matcher match = java.util.regex.Pattern.compile(
+                    "^([a-zA-Z0-9_-]{1,160})-[0-9]{14}-[a-z0-9]{7}\\.pending$").matcher(name);
+            if (!match.matches()) continue;
+            String key = match.group(1);
             try {
                 Record candidate = readFile(pending, key), current = read(key);
                 if (current == null || candidate.generation > current.generation || candidate.generation == current.generation && candidate.revision > current.revision) {
@@ -139,7 +140,7 @@ public class MarkdownStore {
             output.writeInt(0x4d440001); output.writeLong(generation); output.writeLong(revision);
             output.writeUTF(checksum(key, generation, revision, data)); output.writeInt(data.length); output.write(data);
         }
-        File pending = new File(directory, key + "-" + UUID.randomUUID() + ".pending");
+        File pending = MarkdownIds.temporary(directory, key + "-", ".pending");
         try (FileOutputStream output = new FileOutputStream(pending)) { output.write(bytes.toByteArray()); output.getFD().sync(); }
         // If promotion fails, leave the checksummed pending bytes for diagnosis
         // and recovery rather than deleting the only new durable snapshot.

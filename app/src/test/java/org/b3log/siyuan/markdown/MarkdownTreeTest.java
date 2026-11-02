@@ -54,6 +54,20 @@ public final class MarkdownTreeTest {
     }
     private JSONObject childLocation(JSONObject parent, String id) throws Exception { return new JSONObject(parent.toString()).put("nodeId", id); }
 
+    @Test public void generatedIdsRemainStableAcrossRefreshAndExpandedStateReload() throws Exception {
+        Provider p = new Provider(); p.add(null, "root", "Notes", true); p.add("root", "sub", "Sub", true);
+        File file = new File(temporary.newFolder(), "tree-view.json");
+        MarkdownTree first = new MarkdownTree(p, new MarkdownTreeView(file, ignored -> { })); first.select(p.root("root"));
+        JSONObject location = rootLocation(first);
+        String id = first.list(location).getJSONArray("entries").getJSONObject(0).getString("id");
+        assertTrue(location.getString("rootId").matches("[0-9]{14}-[a-z0-9]{7}")); assertTrue(id.matches("[0-9]{14}-[a-z0-9]{7}"));
+        assertEquals(id, first.list(location).getJSONArray("entries").getJSONObject(0).getString("id"));
+        first.saveView(new JSONObject(location.toString()).put("expanded", new JSONArray().put(id)));
+        MarkdownTree next = new MarkdownTree(p, new MarkdownTreeView(file, ignored -> { })); next.select(p.root("root"));
+        assertEquals(location.getString("rootId"), next.state().getString("rootId"));
+        assertEquals(id, next.list(rootLocation(next)).getJSONArray("entries").getJSONObject(0).getString("id"));
+    }
+
     @Test public void lazyDirectoriesFirstNumericSortAndMarkdownOnly() throws Exception {
         Provider p = new Provider(); p.add(null, "root", "Notes", true); p.add("root", "sub", "zFolder", true);
         p.add("root", "ten", "Note10.md", false); p.add("root", "two", "note2.MARKDOWN", false); p.add("root", "png", "image.png", false);
@@ -134,10 +148,10 @@ public final class MarkdownTreeTest {
         File valid = new File(temporary.newFolder(), "tree-view.json"); view = new MarkdownTreeView(valid, ignored -> { });
         try { view.save(null, new JSONObject().put("width", 481)); fail(); } catch (IOException expected) { }
         assertFalse(valid.exists());
-        for (int i = 0; i < 17; i++) { String id = MarkdownCodec.digest(("root" + i).getBytes(StandardCharsets.UTF_8)); view.save(id, new JSONObject().put("expanded", new JSONArray().put(id))); }
+        for (int i = 0; i < 17; i++) { String id = MarkdownIds.newId(); view.save(id, new JSONObject().put("expanded", new JSONArray().put(id))); }
         assertEquals(16, new JSONObject(new String(Files.readAllBytes(valid.toPath()), StandardCharsets.UTF_8)).getJSONArray("roots").length());
-        JSONArray tooMany = new JSONArray(); for (int i = 0; i < 257; i++) tooMany.put("a".repeat(64));
-        try { view.save("b".repeat(64), new JSONObject().put("expanded", tooMany)); fail(); } catch (IOException expected) { }
+        JSONArray tooMany = new JSONArray(); for (int i = 0; i < 257; i++) tooMany.put(MarkdownIds.newId());
+        try { view.save(MarkdownIds.newId(), new JSONObject().put("expanded", tooMany)); fail(); } catch (IOException expected) { }
     }
 
     @Test public void acceptedViewSnapshotStaysWithOldRootAfterRootOrDocumentSwitch() throws Exception {

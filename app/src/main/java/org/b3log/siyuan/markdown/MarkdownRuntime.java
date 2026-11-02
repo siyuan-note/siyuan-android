@@ -16,7 +16,11 @@ public final class MarkdownRuntime {
         long version = android.os.Build.VERSION.SDK_INT >= 28 ? info.getLongVersionCode() : info.versionCode;
         File root = new File(context.getFilesDir(), "markdown-runtime/" + version + "-" + info.lastUpdateTime);
         File ready = new File(root, ".ready");
-        if (!ready.isFile()) {
+        File parser = new File(root, "stage/protyle/js/lute/lute.min.js");
+        File legacyParser = new File(root, "stage/build/markdown/vditor/dist/js/lute/lute.min.js");
+        if (!ready.isFile() || !parser.isFile() || legacyParser.exists()) {
+            // A failed refresh must never leave a previous completion marker valid.
+            if (ready.exists() && !ready.delete()) throw new IOException("unavailable");
             if (!root.isDirectory() && !root.mkdirs()) throw new IOException("space");
             String prefix = root.getCanonicalPath() + File.separator;
             long extracted = 0;
@@ -24,7 +28,8 @@ public final class MarkdownRuntime {
                 ZipEntry entry;
                 while ((entry = zip.getNextEntry()) != null) {
                     String name = entry.getName();
-                    if (entry.isDirectory() || !(name.startsWith("stage/build/markdown/") || name.startsWith("appearance/langs/"))) continue;
+                    if (entry.isDirectory() || !(name.startsWith("stage/build/markdown/") || name.startsWith("appearance/langs/") ||
+                            name.equals("stage/protyle/js/lute/lute.min.js"))) continue;
                     File destination = new File(root, name);
                     if (!destination.getCanonicalPath().startsWith(prefix)) throw new IOException("protocol");
                     if (!destination.getParentFile().isDirectory() && !destination.getParentFile().mkdirs()) throw new IOException("space");
@@ -38,9 +43,10 @@ public final class MarkdownRuntime {
                     }
                 }
             }
-            for (String name : new String[]{"stage/build/markdown/index.html", "stage/build/markdown/vditor/dist/js/lute/lute.min.js", "appearance/langs/en.json"}) {
+            for (String name : new String[]{"stage/build/markdown/index.html", "stage/protyle/js/lute/lute.min.js", "appearance/langs/en.json"}) {
                 if (!new File(root, name).isFile()) throw new IOException("unavailable");
             }
+            if (legacyParser.exists() && !legacyParser.delete()) throw new IOException("unavailable");
             try (FileOutputStream output = new FileOutputStream(ready)) { output.write(1); output.getFD().sync(); }
         }
         return root;

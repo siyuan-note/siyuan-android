@@ -27,6 +27,7 @@ import androidx.webkit.WebViewCompat;
 import androidx.webkit.WebViewFeature;
 
 import org.b3log.siyuan.markdown.MarkdownCodec;
+import org.b3log.siyuan.markdown.MarkdownIds;
 import org.b3log.siyuan.markdown.MarkdownFiles;
 import org.b3log.siyuan.markdown.MarkdownHost;
 import org.b3log.siyuan.markdown.MarkdownRegistry;
@@ -50,7 +51,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -88,7 +88,7 @@ public final class MarkdownActivity extends AppCompatActivity {
     private Uri imageSource;
     private Uri imageDirectory;
     private String imageName;
-    private final String activityLease = UUID.randomUUID().toString();
+    private final String activityLease = MarkdownIds.newId();
     private final ActivityResultLauncher<Intent> picker = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         String action = pickerAction, request = pickerRequest;
         JSONObject format = pickerFormat;
@@ -245,6 +245,10 @@ public final class MarkdownActivity extends AppCompatActivity {
                     } catch (Exception error) { return denied(); }
                 }
                 if (uri.getPath() == null || !uri.getPath().startsWith("/stage/build/markdown/")) return denied();
+                // Only this bundled script aliases outside the editor's asset root.
+                if ("/stage/build/markdown/vditor/dist/js/lute/lute.min.js".equals(uri.getEncodedPath())) {
+                    uri = uri.buildUpon().path("/stage/protyle/js/lute/lute.min.js").build();
+                }
                 WebResourceResponse result = loader.shouldInterceptRequest(uri);
                 if (result == null) return denied();
                 Map<String, String> headers = new HashMap<>();
@@ -502,7 +506,7 @@ public final class MarkdownActivity extends AppCompatActivity {
             String mime = MarkdownFiles.imageMime(reference.split("[?#]", 2)[0]);
             if (mime == null) return JSONObject.NULL;
             Uri uri = host.files.resource(host.resourceTree, reference);
-            String url = ORIGIN + "/resource/" + host.sessionId + "/" + UUID.randomUUID();
+            String url = ORIGIN + "/resource/" + host.sessionId + "/" + MarkdownIds.token();
             resources.put(url, new Resource(uri, mime, host, false));
             resourceReferences.put(host.sessionId + ":" + reference, url);
             return url;
@@ -578,7 +582,7 @@ public final class MarkdownActivity extends AppCompatActivity {
             @Override public boolean same(Uri first, Uri second) { return first.getAuthority().equals(second.getAuthority()) && DocumentsContract.getDocumentId(first).equals(DocumentsContract.getDocumentId(second)); }
         });
         String reference = Uri.encode(leaf);
-        String url = ORIGIN + "/resource/" + host.sessionId + "/" + UUID.randomUUID();
+        String url = ORIGIN + "/resource/" + host.sessionId + "/" + MarkdownIds.token();
         resources.put(url, new Resource(destination, MarkdownFiles.imageMime(leaf), host, true));
         resourceReferences.put(host.sessionId + ":" + reference, url);
         return object("kind", "inserted").put("reference", reference);
@@ -618,7 +622,8 @@ public final class MarkdownActivity extends AppCompatActivity {
             });
             return;
         }
-        String id = UUID.randomUUID().toString();
+        String id = MarkdownIds.newId();
+        if (commands.containsKey(id)) { closing = false; showFailure(); return; }
         if (accepted != null) commands.put(id, accepted);
         try { replyProxy.postMessage(object("type", "command").put("command", object("id", id).put("type", type).put("dark", dark())).toString()); }
         catch (Exception error) { commands.remove(id); closing = false; }

@@ -3,7 +3,6 @@ package org.b3log.siyuan.markdown;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 /** One process-wide authority; all opens and first Save As writes pass through it. */
 public final class MarkdownRegistry {
@@ -27,7 +26,10 @@ public final class MarkdownRegistry {
         }
     }
 
-    public synchronized void attach(String session) { sessions.put(session, true); }
+    public synchronized void attach(String session) throws IOException {
+        if (sessions.containsKey(session)) throw new IOException("identifier collision");
+        sessions.put(session, true);
+    }
     public synchronized boolean hasSessions() { return !sessions.isEmpty(); }
     public synchronized boolean isSessionActive(String session) { return sessions.containsKey(session); }
     public synchronized boolean hasProtectedClaims(String session) {
@@ -49,7 +51,7 @@ public final class MarkdownRegistry {
             if (!prior.session.equals(session)) throw new IOException("occupied");
             return prior;
         }
-        Claim claim = new Claim(identity, session, reserve ? UUID.randomUUID().toString() : "");
+        Claim claim = new Claim(identity, session, reserve ? MarkdownIds.newId() : "");
         claims.put(identity, claim);
         return claim;
     }

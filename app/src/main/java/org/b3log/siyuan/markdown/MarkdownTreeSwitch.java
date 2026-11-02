@@ -3,7 +3,6 @@ package org.b3log.siyuan.markdown;
 import android.net.Uri;
 import org.json.JSONObject;
 import java.io.IOException;
-import java.util.UUID;
 
 /** One prepared, occupied document per container. Commit performs no provider I/O. */
 public final class MarkdownTreeSwitch {
@@ -24,7 +23,9 @@ public final class MarkdownTreeSwitch {
         try {
             next.openTarget(selected);
             JSONObject initial = next.bootstrap(languages, language, dark);
-            previous = current; candidate = next; bootstrap = initial; ticket = UUID.randomUUID().toString();
+            String nextTicket = MarkdownIds.newId();
+            if (nextTicket.equals(committedTicket)) throw new IOException("identifier collision");
+            previous = current; candidate = next; bootstrap = initial; ticket = nextTicket;
             return new JSONObject().put("kind", "ready").put("ticket", ticket).put("sessionId", next.sessionId);
         } catch (Exception error) { next.discardPrepared(); throw error; }
     }

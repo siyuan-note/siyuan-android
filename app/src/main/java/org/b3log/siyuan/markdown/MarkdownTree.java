@@ -57,14 +57,14 @@ public final class MarkdownTree {
 
     public MarkdownTree(Provider provider, MarkdownTreeView view) { this.provider = provider; this.view = view; }
     private static String digest(String value) { return MarkdownCodec.digest(value.getBytes(StandardCharsets.UTF_8)); }
-    private String id(Entry entry) { return entry.key.equals(root.entry.key) ? rootId : digest(root.identity + "\0" + entry.key); }
+    private String id(Entry entry) throws Exception { return entry.key.equals(root.entry.key) ? rootId : view.node(rootId, digest(root.identity + "\0" + entry.key)); }
     public synchronized Root root() { return root; }
     public synchronized long generation() { return generation; }
     public synchronized void current(String key) { currentKey = key; }
 
     public synchronized void select(Root selected) throws Exception {
         if (selected == null || !selected.entry.directory) throw new IOException("permission");
-        root = selected; rootId = digest(selected.identity); generation++; kind = "ready"; failure = null; nodes.clear();
+        root = selected; rootId = view.root(digest(selected.identity)); generation++; kind = "ready"; failure = null; nodes.clear();
         nodes.put(rootId, new Node(selected.entry, null, 0));
         viewAuthority = new ViewAuthority(rootId, generation);
     }
