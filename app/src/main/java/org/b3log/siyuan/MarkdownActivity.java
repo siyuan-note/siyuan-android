@@ -89,6 +89,7 @@ public final class MarkdownActivity extends AppCompatActivity {
     private Uri imageDirectory;
     private String imageName;
     private final String activityLease = MarkdownIds.newId();
+    private boolean activityLeaseAttached;
     private final ActivityResultLauncher<Intent> picker = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         String action = pickerAction, request = pickerRequest;
         JSONObject format = pickerFormat;
@@ -180,9 +181,15 @@ public final class MarkdownActivity extends AppCompatActivity {
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
-        MarkdownRegistry.INSTANCE.attach(activityLease);
         SystemBars.configure(this, !dark());
         TextView loading = new TextView(this); loading.setText("SiYuan"); setContentView(loading); SystemBars.fitContent(this);
+        try {
+            MarkdownRegistry.INSTANCE.attach(activityLease);
+            activityLeaseAttached = true;
+        } catch (IOException error) {
+            showFailure();
+            return;
+        }
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override public void handleOnBackPressed() { closeEditor(); }
         });
@@ -697,12 +704,12 @@ public final class MarkdownActivity extends AppCompatActivity {
             try {
                 if (treeSwitch != null) treeSwitch.drain();
                 if (previous != null && !previous.closed) MarkdownRegistry.INSTANCE.detach(previous.sessionId);
-                MarkdownRegistry.INSTANCE.detach(activityLease);
+                if (activityLeaseAttached) MarkdownRegistry.INSTANCE.detach(activityLease);
             } catch (Exception ignored) {
                 // I/O tasks ahead of this callback have drained. Keep their claims,
                 // but expose durable drafts as crashed recoveries to a new container.
                 if (previous != null) MarkdownRegistry.INSTANCE.abandonCrashed(previous.sessionId);
-                MarkdownRegistry.INSTANCE.abandonCrashed(activityLease);
+                if (activityLeaseAttached) MarkdownRegistry.INSTANCE.abandonCrashed(activityLease);
             }
         });
         // Its :markdown process owns no kernel and never invokes Mobile.exit.
