@@ -108,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         InputManager.InputDeviceListener {
 
     WebView webView;
+    AndroidBug5497Workaround keyboardWorkaround;
     private WebView bootWebView;
     private ImageView bootLogo;
     private ProgressBar bootProgressBar;
@@ -284,7 +285,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
         }
 
         // Fix https://github.com/siyuan-note/siyuan/issues/9726
-        AndroidBug5497Workaround.assistActivity(this);
+        keyboardWorkaround = AndroidBug5497Workaround.assistActivity(this);
     }
 
     private void registerInputDeviceListener() {
@@ -419,6 +420,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 if (view != webView) {
                     return;
                 }
+                if (keyboardWorkaround != null) keyboardWorkaround.resetNavigationOverlay();
                 if (isMainPageNavigation(url)) {
                     mainPageReady = false;
                     bootNavigationCompleted.set(true);
@@ -433,6 +435,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 if (view != webView) {
                     return;
                 }
+                if (keyboardWorkaround != null) keyboardWorkaround.enableNavigationOverlay(view);
                 if (null != url && url.contains("/stage/build/")) {
                     appStatusSyncEnabled = true;
                 }

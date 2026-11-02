@@ -35,8 +35,8 @@ import java.util.Map;
  */
 public class AndroidBug5497Workaround {
 
-    public static void assistActivity(Activity activity) {
-        new AndroidBug5497Workaround(activity);
+    public static AndroidBug5497Workaround assistActivity(Activity activity) {
+        return new AndroidBug5497Workaround(activity);
     }
 
     private int windowMode = 0;
@@ -47,6 +47,24 @@ public class AndroidBug5497Workaround {
     private final FrameLayout frameLayout;
     private final View view;
     private final FrameLayout.LayoutParams frameLayoutParams;
+    private final NavigationBarOverlay navigationOverlay = new NavigationBarOverlay();
+
+    void resetNavigationOverlay() {
+        navigationOverlay.reset(view);
+    }
+
+    void enableNavigationOverlay(WebView webView) {
+        navigationOverlay.enable(webView, view);
+    }
+
+    private void applyContentInsets(WindowInsetsCompat insets, boolean includeKeyboard) {
+        final WebView webView = activity.findViewById(R.id.webView);
+        if (webView != null && webView.getParent() == view) {
+            navigationOverlay.apply(view, webView, insets, includeKeyboard);
+        } else {
+            SystemBars.applyInsets(view, insets, Insets.NONE, includeKeyboard);
+        }
+    }
 
     private AndroidBug5497Workaround(Activity activity) {
         this.activity = activity;
@@ -57,8 +75,15 @@ public class AndroidBug5497Workaround {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S_V2) {
             registerKeyboardInsets();
         } else {
-            SystemBars.fitContent(activity);
+            ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
+                applyContentInsets(insets, true);
+                return WindowInsetsCompat.CONSUMED;
+            });
         }
+
+        view.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            if (right - left != oldRight - oldLeft) ViewCompat.requestApplyInsets(v);
+        });
 
         // 兼容旧逻辑
         this.frameLayout.getViewTreeObserver().addOnGlobalLayoutListener(this::possiblyResizeChildOfContent);
@@ -106,7 +131,7 @@ public class AndroidBug5497Workaround {
         this.view.setOnApplyWindowInsetsListener((v, insets) -> {
             // 在键盘动画开始前按目标高度布局，确保退场时露出的是已恢复的页面。
             currentInsets[0] = insets;
-            SystemBars.applyInsets(container, WindowInsetsCompat.toWindowInsetsCompat(insets, v), Insets.NONE, false);
+            applyContentInsets(WindowInsetsCompat.toWindowInsetsCompat(insets, v), false);
             resizeForKeyboard(container, insets);
             final View webView = activity.findViewById(R.id.webView);
             if (webView instanceof android.webkit.WebView) {

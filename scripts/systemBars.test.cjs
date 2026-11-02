@@ -28,6 +28,15 @@ const doubles = {
     "android/view/ViewGroup.java": `package android.view; public class ViewGroup extends View {
         public View child=new View(); public View getChildAt(int index){return child;}
     }`,
+    "android/webkit/WebView.java": `package android.webkit; public class WebView extends android.view.View {
+        public int width=1080;
+        public java.util.function.Consumer<String> callback;
+        public final java.util.List<String> scripts=new java.util.ArrayList<>();
+        public int getWidth(){return width;}
+        public void evaluateJavascript(String script, java.util.function.Consumer<String> callback){
+            scripts.add(script); this.callback=callback;
+        }
+    }`,
     "android/view/WindowManager.java": `package android.view; public class WindowManager {
         public static class LayoutParams {
             public static final int FLAG_TRANSLUCENT_STATUS=1, FLAG_TRANSLUCENT_NAVIGATION=2,
@@ -112,6 +121,7 @@ const doubles = {
                 public static int systemBars(){return 19;} public static int displayCutout(){return 4;}
                 public static int captionBar(){return 16;}
                 public static int ime(){return 8;}
+                public static int tappableElement(){return 32;}
             }
         }`,
 };
@@ -125,9 +135,11 @@ test("system bars preserve safe content, theme contrast and fullscreen restorati
             writeFileSync(file, source, "utf8");
             return file;
         });
-        files.push(join(javaRoot, "SystemBars.java"), join(__dirname, "fixtures/SystemBarsTest.java"));
+        files.push(join(javaRoot, "SystemBars.java"), join(__dirname, "fixtures/SystemBarsTest.java"),
+            join(javaRoot, "NavigationBarOverlay.java"), join(__dirname, "fixtures/NavigationBarOverlayTest.java"));
         execFileSync("javac", ["-encoding", "UTF-8", "-d", temporary, ...files], {windowsHide: true});
         execFileSync("java", ["-cp", temporary, "org.b3log.siyuan.SystemBarsTest"], {windowsHide: true});
+        execFileSync("java", ["-cp", temporary, "org.b3log.siyuan.NavigationBarOverlayTest"], {windowsHide: true});
     } finally {
         assert.equal(dirname(temporary), tmpdir());
         rmSync(temporary, {recursive: true, force: true});
@@ -146,8 +158,8 @@ test("all Android entry points use native safe areas without hiding navigation",
     assert.match(themeChange, /SystemBars\.setAppearance/);
     assert.doesNotMatch(themeChange, /isTablet|setNavBarVisibility/);
     const workaround = readFileSync(join(javaRoot, "AndroidBug5497Workaround.java"), "utf8");
-    assert.match(workaround, /SystemBars\.fitContent\(activity\)/);
-    assert.match(workaround, /SystemBars\.applyInsets\(container,.*Insets.NONE, false\)/);
+    assert.match(workaround, /applyContentInsets\(insets, true\)/);
+    assert.match(workaround, /applyContentInsets\(WindowInsetsCompat.toWindowInsetsCompat\(insets, v\), false\)/);
     assert.match(workaround, /return WindowInsets.CONSUMED/);
 });
 

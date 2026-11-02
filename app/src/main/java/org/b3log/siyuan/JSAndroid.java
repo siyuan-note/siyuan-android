@@ -848,6 +848,7 @@ public final class JSAndroid {
             activity.findViewById(android.R.id.content).setBackgroundColor(colorVal);
             ((View) activity.webView.getParent()).setBackgroundColor(colorVal);
             activity.webView.setBackgroundColor(colorVal);
+            if (activity.keyboardWorkaround != null) activity.keyboardWorkaround.enableNavigationOverlay(activity.webView);
         });
     }
 
