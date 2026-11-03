@@ -415,19 +415,19 @@ public final class Utils {
         try {
             final ConnectivityManager manager =
                     (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            final Set<String> cellularAddresses = new HashSet<>();
+            final Set<String> excludedAddresses = new HashSet<>();
             if (manager != null) {
                 final Network activeNetwork = manager.getActiveNetwork();
                 addLANNetworkAddresses(manager, activeNetwork, list);
-                addCellularNetworkAddresses(manager, activeNetwork, cellularAddresses);
+                addExcludedNetworkAddresses(manager, activeNetwork, excludedAddresses);
                 for (final Network network : manager.getAllNetworks()) {
                     if (!network.equals(activeNetwork)) {
                         addLANNetworkAddresses(manager, network, list);
                     }
-                    addCellularNetworkAddresses(manager, network, cellularAddresses);
+                    addExcludedNetworkAddresses(manager, network, excludedAddresses);
                 }
             }
-            addPrivateInterfaceAddresses(cellularAddresses, list);
+            addPrivateInterfaceAddresses(excludedAddresses, list);
         } catch (final Exception e) {
             logError("network", "get LAN IP list failed", e);
         }
@@ -441,7 +441,7 @@ public final class Utils {
             return false;
         }
         final NetworkCapabilities capabilities = manager.getNetworkCapabilities(network);
-        if (capabilities == null ||
+        if (capabilities == null || capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN) ||
                 (!capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) &&
                         !capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET))) {
             return false;
@@ -449,13 +449,14 @@ public final class Utils {
         return addNetworkAddresses(manager, network, addresses);
     }
 
-    private static void addCellularNetworkAddresses(final ConnectivityManager manager, final Network network,
+    private static void addExcludedNetworkAddresses(final ConnectivityManager manager, final Network network,
                                                     final Set<String> addresses) {
         if (network == null) {
             return;
         }
         final NetworkCapabilities capabilities = manager.getNetworkCapabilities(network);
-        if (capabilities != null && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+        if (capabilities != null && (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN))) {
             addNetworkAddresses(manager, network, addresses);
         }
     }
@@ -485,7 +486,8 @@ public final class Utils {
         }
         while (interfaces.hasMoreElements()) {
             final NetworkInterface networkInterface = interfaces.nextElement();
-            if (!networkInterface.isUp() || networkInterface.isLoopback() || networkInterface.isPointToPoint()) {
+            if (!networkInterface.isUp() || networkInterface.isLoopback() || networkInterface.isPointToPoint() ||
+                    !networkInterface.supportsMulticast()) {
                 continue;
             }
             final Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
