@@ -27,10 +27,10 @@ public final class MarkdownCoreTest {
         check(!MarkdownIds.token().equals(MarkdownIds.token()), "Fresh capability tokens");
         Path idDirectory = Files.createTempDirectory("markdown-id-");
         Path collision = idDirectory.resolve("same.tmp");
-        Files.writeString(collision, "other writer");
+        Files.write(collision, "other writer".getBytes(StandardCharsets.UTF_8));
         try {
             rejects(() -> MarkdownIds.temporary(idDirectory.toFile(), "", ".tmp", () -> "same"), "Colliding temporary files must not be acquired");
-            check(Files.readString(collision).equals("other writer"), "Collision never truncates or removes another writer's file");
+            check(new String(Files.readAllBytes(collision), StandardCharsets.UTF_8).equals("other writer"), "Collision never truncates or removes another writer's file");
         } finally { Files.delete(collision); Files.delete(idDirectory); }
         check(MarkdownRouting.matches("android.intent.action.VIEW", "content", "text/markdown", "opaque"), "Markdown MIME route");
         check(MarkdownRouting.matches("android.intent.action.VIEW", "content", "application/octet-stream", "README.MD"), "Provider filename route");

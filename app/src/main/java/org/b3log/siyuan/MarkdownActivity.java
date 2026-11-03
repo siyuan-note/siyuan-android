@@ -33,6 +33,7 @@ import org.b3log.siyuan.markdown.MarkdownTheme;
 import org.b3log.siyuan.markdown.MarkdownIds;
 import org.b3log.siyuan.markdown.MarkdownFiles;
 import org.b3log.siyuan.markdown.MarkdownHost;
+import org.b3log.siyuan.markdown.MarkdownPaths;
 import org.b3log.siyuan.markdown.MarkdownRegistry;
 import org.b3log.siyuan.markdown.MarkdownRuntime;
 import org.b3log.siyuan.markdown.MarkdownRouting;
@@ -204,7 +205,7 @@ public final class MarkdownActivity extends AppCompatActivity {
                 loadLanguages();
                 host = new MarkdownHost(this);
                 treeFiles = new MarkdownTreeFiles(this);
-                tree = new MarkdownTree(treeFiles, new MarkdownTreeView(new File(getNoBackupFilesDir(), "markdown-v1/tree-view.json")));
+                tree = new MarkdownTree(treeFiles, new MarkdownTreeView(new File(MarkdownPaths.directory(this), "tree-view.json")));
                 treeSwitch = new MarkdownTreeSwitch(() -> new MarkdownHost(this), MarkdownRegistry.INSTANCE);
                 preferredTheme = host.preferences(null).optString("theme", "system");
                 runOnUiThread(() -> { if (!destroyed) updateSystemBars(); });

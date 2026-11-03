@@ -19,6 +19,7 @@ public final class MarkdownHost {
     public final String sessionId;
     public final MarkdownFiles files;
     public final MarkdownStore store;
+    private final MarkdownStore preferencesStore;
     private final Map<String, MarkdownFiles.Target> targets = new HashMap<>();
     private final MarkdownRegistry registry;
     private String committedOperation;
@@ -39,11 +40,18 @@ public final class MarkdownHost {
     public volatile Uri resourceTree;
 
     public MarkdownHost(Context context) throws Exception {
-        this(new MarkdownFiles(context), new MarkdownStore(new File(context.getNoBackupFilesDir(), "markdown-v1"), MarkdownDirectorySync::sync), MarkdownRegistry.INSTANCE);
+        this(new MarkdownFiles(context),
+                new MarkdownStore(new File(MarkdownPaths.directory(context), "recovery"), MarkdownDirectorySync::sync),
+                new MarkdownStore(MarkdownPaths.directory(context), MarkdownDirectorySync::sync), MarkdownRegistry.INSTANCE);
     }
 
     MarkdownHost(MarkdownFiles files, MarkdownStore store, MarkdownRegistry registry) throws Exception {
+        this(files, store, store, registry);
+    }
+
+    MarkdownHost(MarkdownFiles files, MarkdownStore store, MarkdownStore preferencesStore, MarkdownRegistry registry) throws Exception {
         this.files = files; this.store = store; this.registry = registry;
+        this.preferencesStore = preferencesStore;
         sessionId = MarkdownIds.newId();
         for (String key : store.keys("")) {
             if (key.contains(sessionId)) throw new IOException("identifier collision");
@@ -389,13 +397,13 @@ public final class MarkdownHost {
     }
 
     public JSONObject preferences(JSONObject patch) throws Exception {
-        MarkdownStore.Record record = store.read("preferences");
+        MarkdownStore.Record record = preferencesStore.read("preferences");
         JSONObject value = record == null ? new JSONObject().put("mode", "ir").put("theme", "system").put("fontSize", 16) : new JSONObject(record.payload);
         if (patch != null) {
             if (patch.has("mode")) { String mode = patch.getString("mode"); if (!mode.matches("ir|wysiwyg|sv")) throw new IOException("protocol"); value.put("mode", mode); }
             if (patch.has("theme")) { String theme = patch.getString("theme"); if (!theme.matches("system|light|dark")) throw new IOException("protocol"); value.put("theme", theme); }
             if (patch.has("fontSize")) { int size = patch.getInt("fontSize"); if (size < 12 || size > 40) throw new IOException("protocol"); value.put("fontSize", size); }
-            store.put("preferences", 0, record == null ? 0 : record.revision + 1, value.toString());
+            preferencesStore.put("preferences", 0, record == null ? 0 : record.revision + 1, value.toString());
         }
         return value;
     }

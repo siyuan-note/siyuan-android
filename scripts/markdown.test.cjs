@@ -19,6 +19,25 @@ const {execFileSync} = require("node:child_process");
 const {join, dirname, resolve} = require("node:path");
 const {tmpdir} = require("node:os");
 
+test("Markdown home storage is excluded from legacy backup, cloud backup and device transfer", () => {
+    const source = file => readFileSync(join(__dirname, "../app/src/main", file), "utf8");
+    const manifest = source("AndroidManifest.xml");
+    assert.match(manifest, /android:fullBackupContent="@xml\/backup_rules"/);
+    assert.match(manifest, /android:dataExtractionRules="@xml\/data_extraction_rules"/);
+    const exclusion = /<exclude domain="external" path="home\/\.config\/siyuan\/markdown\/"\s*\/>/;
+    assert.match(source("res/xml/backup_rules.xml"), exclusion);
+    const rules = source("res/xml/data_extraction_rules.xml");
+    for (const section of ["cloud-backup", "device-transfer"]) {
+        assert.match(rules.match(new RegExp(`<${section}>([\\s\\S]*?)</${section}>`))[1], exclusion);
+    }
+    const paths = source("java/org/b3log/siyuan/markdown/MarkdownPaths.java");
+    assert.match(paths, /context\.getExternalFilesDir\(null\)/);
+    assert.match(paths, /"home\/\.config\/siyuan\/markdown"/);
+    const container = source("java/org/b3log/siyuan/MarkdownActivity.java");
+    assert.match(container, /new File\(MarkdownPaths\.directory\(this\), "tree-view\.json"\)/);
+    assert.doesNotMatch(paths + container, /markdown-v1/);
+});
+
 test("network image requests retain CSP, native origin ownership and top-level navigation restrictions", () => {
     const container = readFileSync(join(__dirname, "../app/src/main/java/org/b3log/siyuan/MarkdownActivity.java"), "utf8");
     assert.match(container, /img-src [^;]*http: https:/);

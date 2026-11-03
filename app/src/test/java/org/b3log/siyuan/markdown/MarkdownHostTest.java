@@ -84,6 +84,31 @@ public final class MarkdownHostTest {
                 .put("previousTarget", host.target == null ? JSONObject.NULL : host.target.json()).put("nextTargetGeneration", request.getLong("targetGeneration"));
     }
 
+    @Test public void homeStorageSeparatesPreferencesFromRecoveryWithoutKernelStartup() throws Exception {
+        Context context = mock(Context.class);
+        File base = temporary.newFolder();
+        when(context.getExternalFilesDir(null)).thenReturn(base);
+        File root = MarkdownPaths.directory(context);
+        assertEquals(new File(base, "home/.config/siyuan/markdown"), root);
+        MarkdownStore drafts = new MarkdownStore(new File(root, "recovery"));
+        MarkdownStore preferences = new MarkdownStore(root);
+        MarkdownHost host = new MarkdownHost(new Provider(), drafts, preferences, new MarkdownRegistry());
+        host.preferences(new JSONObject().put("mode", "sv").put("theme", "dark"));
+        drafts.put("draft-fixture", 0, 1, "draft content");
+        assertTrue(new File(root, "preferences.record").isFile());
+        assertTrue(new File(root, "recovery/draft-fixture.record").isFile());
+        assertNull(drafts.read("preferences"));
+        assertNull(preferences.read("draft-fixture"));
+        MarkdownHost reopened = new MarkdownHost(new Provider(), new MarkdownStore(new File(root, "recovery")),
+                new MarkdownStore(root), new MarkdownRegistry());
+        assertEquals("sv", reopened.preferences(null).getString("mode"));
+        assertEquals("draft content", reopened.store.read("draft-fixture").payload);
+        verify(context, never()).getNoBackupFilesDir();
+        when(context.getExternalFilesDir(null)).thenReturn(null);
+        try { MarkdownPaths.directory(context); fail("Unavailable home storage must not fall back to another directory"); }
+        catch (IOException expected) { assertEquals("unavailable", expected.getMessage()); }
+    }
+
     @Test public void sharedSaveAsGenerationAndLateDraftContract() throws Exception {
         Provider provider = new Provider(); Uri original = provider.file("original.md", "original"), destination = provider.file("new.md", "");
         Store store = new Store(temporary.newFolder()); MarkdownRegistry registry = new MarkdownRegistry();
