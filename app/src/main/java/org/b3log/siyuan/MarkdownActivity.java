@@ -236,7 +236,8 @@ public final class MarkdownActivity extends AppCompatActivity {
         settings.setJavaScriptEnabled(true); settings.setDomStorageEnabled(false);
         settings.setAllowFileAccess(false); settings.setAllowContentAccess(false);
         settings.setAllowFileAccessFromFileURLs(false); settings.setAllowUniversalAccessFromFileURLs(false);
-        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+        // 网络子资源由页面 CSP 限定为图片，HTTP 图片与 HTTPS 图片使用相同的预览入口。
+        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         settings.setSupportMultipleWindows(false); settings.setJavaScriptCanOpenWindowsAutomatically(false);
         settings.setSafeBrowsingEnabled(true);
         WebViewAssetLoader loader = new WebViewAssetLoader.Builder().setDomain("siyuan-markdown.local")
@@ -245,7 +246,12 @@ public final class MarkdownActivity extends AppCompatActivity {
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) { return !request.isForMainFrame() || !PAGE.equals(request.getUrl().toString()); }
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
-                if (!"GET".equals(request.getMethod()) || !trusted(uri)) return denied();
+                if (!"GET".equals(request.getMethod())) return denied();
+                if (!trusted(uri)) {
+                    if (!request.isForMainFrame() && ("https".equals(uri.getScheme()) || "http".equals(uri.getScheme())) &&
+                            uri.getUserInfo() == null && !"siyuan-markdown.local".equals(uri.getHost())) return null;
+                    return denied();
+                }
                 if (uri.getPath() != null && uri.getPath().startsWith("/resource/")) {
                     Resource resource = resources.get(uri.toString());
                     MarkdownHost current = host;
@@ -273,7 +279,7 @@ public final class MarkdownActivity extends AppCompatActivity {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("X-Content-Type-Options", "nosniff");
                 headers.put("Cache-Control", "no-store");
-                headers.put("Content-Security-Policy", "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'");
+                headers.put("Content-Security-Policy", "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; font-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'");
                 result.setResponseHeaders(headers);
                 return result;
             }

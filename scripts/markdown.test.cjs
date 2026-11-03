@@ -19,6 +19,15 @@ const {execFileSync} = require("node:child_process");
 const {join, dirname, resolve} = require("node:path");
 const {tmpdir} = require("node:os");
 
+test("network image requests retain CSP, native origin ownership and top-level navigation restrictions", () => {
+    const container = readFileSync(join(__dirname, "../app/src/main/java/org/b3log/siyuan/MarkdownActivity.java"), "utf8");
+    assert.match(container, /img-src [^;]*http: https:/);
+    assert.match(container, /connect-src 'none'; object-src 'none'; frame-src 'none'/);
+    assert.match(container, /!request\.isForMainFrame\(\)[\s\S]*uri\.getUserInfo\(\) == null[\s\S]*!"siyuan-markdown\.local"\.equals\(uri\.getHost\(\)\)\) return null/);
+    assert.match(container, /setMixedContentMode\(WebSettings\.MIXED_CONTENT_ALWAYS_ALLOW\)/);
+    assert.match(container, /return !request\.isForMainFrame\(\) \|\| !PAGE\.equals\(request\.getUrl\(\)\.toString\(\)\)/);
+});
+
 test("native Markdown encoding, routing, session reservation, image types and draft storage", () => {
     const output = mkdtempSync(join(tmpdir(), "siyuan-markdown-core-"));
     try {
