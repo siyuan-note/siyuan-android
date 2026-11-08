@@ -187,7 +187,7 @@ public final class MarkdownActivity extends AppCompatActivity {
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
         SystemBars.configure(this, !dark());
-        loading = new TextView(this); loading.setText("SiYuan"); setContentView(loading); SystemBars.fitContent(this); updateSystemBars();
+        loading = new TextView(this); setContentView(loading); SystemBars.fitContent(this); updateSystemBars();
         try {
             MarkdownRegistry.INSTANCE.attach(activityLease);
             activityLeaseAttached = true;
