@@ -1,20 +1,3 @@
-/*
- * SiYuan - From thought to insight, with agents
- * Copyright (c) 2020-present, b3log.org
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
 package org.b3log.siyuan;
 
 import android.Manifest;
@@ -141,9 +124,7 @@ public final class JSAndroid {
     public int sendNotification(final String channel, final String title, final String body, final int delayInSeconds) {
         if (ActivityCompat.checkSelfPermission(this.activity, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             Utils.showToast(this.activity, "请允许通知权限以接收通知 / Please allow notification permission to receive notifications");
-            final Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
-            intent.setData(Uri.parse("package:" + this.activity.getPackageName()));
-            this.activity.startActivity(intent);
+            openNotificationSettings(this.activity);
             return -1;
         }
 
@@ -185,6 +166,25 @@ public final class JSAndroid {
                 setCategory(Notification.CATEGORY_REMINDER);
         NotificationManagerCompat.from(this.activity).notify(ret, builder.build());
         return ret;
+    }
+
+    static void openNotificationSettings(final Activity activity) {
+        activity.runOnUiThread(() -> {
+            final Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+            intent.putExtra(Settings.EXTRA_APP_PACKAGE, activity.getPackageName());
+            try {
+                activity.startActivity(intent);
+            } catch (final ActivityNotFoundException | SecurityException e) {
+                // 部分系统未提供通知设置入口，使用应用详情页供用户管理权限。
+                final Intent fallback = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                fallback.setData(Uri.parse("package:" + activity.getPackageName()));
+                try {
+                    activity.startActivity(fallback);
+                } catch (final ActivityNotFoundException | SecurityException fallbackError) {
+                    Utils.logError("notification", "open notification settings failed", fallbackError);
+                }
+            }
+        });
     }
 
     @JavascriptInterface
