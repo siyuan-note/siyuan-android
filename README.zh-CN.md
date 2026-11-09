@@ -59,3 +59,5 @@ siyuanVersionName 和 siyuanVersionCode 两个版本号即可，修改完毕后�
    ```txt
    siyuan-android\app\build-release\siyuan-${versionName}-all
    ```
+
+独立 Markdown 字体选择器需要先从对应思源源码重新构建包含 `mobile.GetSysFonts` 的 `kernel.aar`，再编译应用并同步打包 Markdown 前端资源。字体服务在 IO 线程调用，不启动工作空间内核；请勿搭配旧 AAR 构建。

@@ -84,7 +84,7 @@ test("lightweight process has separate WebView storage and retains original URI 
     assert.match(boot, /markdown\.addFlags\(Intent\.FLAG_ACTIVITY_NEW_TASK\)/);
     const container = source("java/org/b3log/siyuan/MarkdownActivity.java");
     assert.match(container, /!App\.isMarkdownWebViewReady\(\)/);
-    assert.doesNotMatch(container, /\bmobile\.Mobile\.|\bMobile\.exit\(/);
+    assert.doesNotMatch(container, /\b(?:mobile\.)?Mobile\.(?:startKernel\w*|exit)\(/);
     assert.doesNotMatch(container, /addJavascriptInterface\(/);
     assert.match(container, /!isMainFrame \|\| !trusted\(sourceOrigin\)/);
     assert.match(container, /setDomStorageEnabled\(false\)/);
@@ -126,4 +126,14 @@ test("native Markdown paints its saved appearance before loading only the truste
     assert.ok(source.indexOf("web.setBackgroundColor(surfaceColor())") < source.indexOf("setContentView(frame)"));
     assert.match(source, /getWindow\(\)\.setBackgroundDrawable\(new ColorDrawable\(background\)\)/);
     assert.match(source, /if \(web != null\) web\.setBackgroundColor\(background\)/);
+});
+
+
+test("font query is queued on the IO executor and advertises its bridge capability", () => {
+    const container = readFileSync(join(__dirname, "../app/src/main/java/org/b3log/siyuan/MarkdownActivity.java"), "utf8");
+    const host = readFileSync(join(__dirname, "../app/src/main/java/org/b3log/siyuan/markdown/MarkdownHost.java"), "utf8");
+    assert.ok(container.indexOf("IO.execute(() ->", container.indexOf("long requestEpoch")) < container.indexOf('case "system-fonts"'));
+    assert.match(container, /mobile\.Mobile\.getSysFonts\(\)/);
+    assert.match(host, /put\("capabilities", new JSONObject\(\)\.put\("systemFonts", true\)\)/);
+    assert.match(host, /validateFonts\(patch\.getJSONObject\("fonts"\)\)/);
 });

@@ -57,3 +57,5 @@ Android Studio を使用して 【Build】→【Generate Signed Bundle APK...】
    ```txt
    siyuan-android\app\build-release\siyuan-${versionName}-all
    ```
+
+独立 Markdown エディターのフォント選択には、対応する SiYuan ソースから `mobile.GetSysFonts` を含む `kernel.aar` を再ビルドし、同じ版の Markdown フロントエンドを同梱してください。IO スレッドでフォントサービスを呼び出し、ワークスペースのカーネルは起動しません。古い AAR ではビルドできません。

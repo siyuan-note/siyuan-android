@@ -107,7 +107,7 @@ public final class MarkdownHost {
 
     public JSONObject bootstrap(JSONObject languages, String lang, boolean dark) throws Exception {
         JSONObject value = new JSONObject().put("sessionId", sessionId).put("content", content)
-                .put("preferences", preferences(null)).put("languages", languages).put("lang", lang).put("platform", "android").put("dark", dark);
+                .put("preferences", preferences(null)).put("capabilities", new JSONObject().put("systemFonts", true)).put("languages", languages).put("lang", lang).put("platform", "android").put("dark", dark);
         if (target != null) value.put("target", target.json());
         if (recovered || revision > 0) value.put("recovered", new JSONObject().put("revision", revision).put("targetGeneration", generation));
         return value;
@@ -396,13 +396,29 @@ public final class MarkdownHost {
         if (request.getLong("revision") >= revision) { revision = request.getLong("revision"); content = request.getString("content"); }
     }
 
+    private static void validateFonts(JSONObject fonts) throws Exception {
+        if (fonts.length() != 3) throw new IOException("protocol");
+        for (String group : new String[]{"global", "editor", "code"}) {
+            JSONArray items = fonts.getJSONArray(group);
+            if (items.length() > 64) throw new IOException("protocol");
+            for (int i = 0; i < items.length(); i++) {
+                JSONObject item = items.getJSONObject(i);
+                String family = item.getString("family");
+                double weight = item.getDouble("weight");
+                if (item.length() != 2 || family.trim().isEmpty() || family.length() > 256 ||
+                    weight != Math.floor(weight) || weight < 1 || weight > 1000) throw new IOException("protocol");
+            }
+        }
+    }
+
     public JSONObject preferences(JSONObject patch) throws Exception {
         MarkdownStore.Record record = preferencesStore.read("preferences");
         JSONObject value = record == null ? new JSONObject().put("mode", "ir").put("theme", "system").put("fontSize", 16) : new JSONObject(record.payload);
         if (patch != null) {
             if (patch.has("mode")) { String mode = patch.getString("mode"); if (!mode.matches("ir|wysiwyg|sv")) throw new IOException("protocol"); value.put("mode", mode); }
             if (patch.has("theme")) { String theme = patch.getString("theme"); if (!theme.matches("system|light|dark")) throw new IOException("protocol"); value.put("theme", theme); }
-            if (patch.has("fontSize")) { int size = patch.getInt("fontSize"); if (size < 12 || size > 40) throw new IOException("protocol"); value.put("fontSize", size); }
+            if (patch.has("fontSize")) { int size = patch.getInt("fontSize"); if (size < 9 || size > 72) throw new IOException("protocol"); value.put("fontSize", size); }
+            if (patch.has("fonts")) { validateFonts(patch.getJSONObject("fonts")); value.put("fonts", patch.getJSONObject("fonts")); }
             preferencesStore.put("preferences", 0, record == null ? 0 : record.revision + 1, value.toString());
         }
         return value;

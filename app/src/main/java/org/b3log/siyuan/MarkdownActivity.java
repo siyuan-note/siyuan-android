@@ -405,6 +405,7 @@ public final class MarkdownActivity extends AppCompatActivity {
                     if (host.generation != generation) { resources.clear(); resourceReferences.clear(); if (!treePreparing) updateTreeTarget(true); }
                 }
                 else switch (action) {
+                    case "system-fonts": result = new org.json.JSONArray(mobile.Mobile.getSysFonts()); break;
                     case "bootstrap": result = host.bootstrap(languages, language, dark()); break;
                     case "preferences": {
                         JSONObject preferences = host.preferences((JSONObject) payload);
