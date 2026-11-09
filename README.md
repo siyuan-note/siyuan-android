@@ -57,5 +57,3 @@ When building using the command line console, you not only need to modify the `s
    ```txt
    siyuan-android\app\build-release\siyuan-${versionName}-all
    ```
-
-The standalone Markdown font picker requires rebuilding `kernel.aar` from the matching SiYuan source (`mobile.GetSysFonts`) before compiling this app, and packaging the matching Markdown frontend. It loads the Go font service on the IO executor without starting a workspace kernel. Do not reuse an older AAR for this source revision.
