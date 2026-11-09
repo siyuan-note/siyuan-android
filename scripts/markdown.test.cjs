@@ -134,6 +134,26 @@ test("font query is queued on the IO executor and advertises its bridge capabili
     const host = readFileSync(join(__dirname, "../app/src/main/java/org/b3log/siyuan/markdown/MarkdownHost.java"), "utf8");
     assert.ok(container.indexOf("IO.execute(() ->", container.indexOf("long requestEpoch")) < container.indexOf('case "system-fonts"'));
     assert.match(container, /mobile\.Mobile\.getSysFonts\(\)/);
-    assert.match(host, /put\("capabilities", new JSONObject\(\)\.put\("systemFonts", true\)\)/);
+    assert.match(host, /put\("capabilities", new JSONObject\(\)\.put\("systemFonts", true\)/);
     assert.match(host, /validateFonts\(patch\.getJSONObject\("fonts"\)\)/);
+});
+
+
+test("workspace appearance uses trusted native roots and persists resolver output before exposing it", () => {
+    const host = readFileSync(join(__dirname, "../app/src/main/java/org/b3log/siyuan/markdown/MarkdownHost.java"), "utf8");
+    assert.match(host, /getExternalFilesDir\(null\)/);
+    assert.match(host, /newMarkdownAppearance\(MarkdownPaths\.directory\(context\)\.getAbsolutePath\(\), base\.getAbsolutePath\(\)\)/);
+    assert.match(host, /put\("workspaceAppearance", appearanceResolver != null\)/);
+    const method = host.slice(host.indexOf("public JSONObject appearance("), host.indexOf("public byte[] readAppearanceFont("));
+    assert.ok(method.indexOf('preferencesStore.put("preferences"') < method.indexOf('result.getJSONObject("appearance")'));
+    assert.match(method, /put\("url", "https:\/\/siyuan-markdown.local\/appearance-font\/" \+ sessionId/);
+    assert.doesNotMatch(method, /put\("theme", appearanceTheme/);
+    const activity = readFileSync(join(__dirname, "../app/src/main/java/org/b3log/siyuan/MarkdownActivity.java"), "utf8");
+    assert.match(activity, /case "appearance":/);
+    assert.ok(activity.indexOf('!trusted(uri)') < activity.indexOf('uri.getPath().startsWith("/appearance-font/")'));
+    assert.match(activity, /current != host \|\| current.closed/);
+    assert.match(host, /resolver != appearanceResolver \|\| epoch != appearanceEpoch \|\| !appearanceTokens.contains\(token\)/);
+    assert.match(host, /appearanceTokens.clear\(\)/);
+    assert.match(host, /\[a-f0-9\]\{48\}/);
+    assert.match(host, /closed = true; closeAppearance\(\);/);
 });

@@ -207,7 +207,7 @@ public final class MarkdownActivity extends AppCompatActivity {
                 treeFiles = new MarkdownTreeFiles(this);
                 tree = new MarkdownTree(treeFiles, new MarkdownTreeView(new File(MarkdownPaths.directory(this), "tree-view.json")));
                 treeSwitch = new MarkdownTreeSwitch(() -> new MarkdownHost(this), MarkdownRegistry.INSTANCE);
-                preferredTheme = host.preferences(null).optString("theme", "system");
+                preferredTheme = host.appearance(null).getString("theme");
                 runOnUiThread(() -> { if (!destroyed) updateSystemBars(); });
                 if (isMarkdownIntent(this, getIntent())) host.open(getIntent().getData(), getIntent().getFlags());
                 updateTreeTarget(true);
@@ -252,6 +252,15 @@ public final class MarkdownActivity extends AppCompatActivity {
                     if (!request.isForMainFrame() && ("https".equals(uri.getScheme()) || "http".equals(uri.getScheme())) &&
                             uri.getUserInfo() == null && !"siyuan-markdown.local".equals(uri.getHost())) return null;
                     return denied();
+                }
+                if (uri.getPath() != null && uri.getPath().startsWith("/appearance-font/")) {
+                    MarkdownHost current = host;
+                    try {
+                        if (current == null) return denied();
+                        byte[] bytes = current.readAppearanceFont(uri.toString());
+                        if (current != host || current.closed) return denied();
+                        return response("application/octet-stream", new ByteArrayInputStream(bytes));
+                    } catch (Exception error) { return denied(); }
                 }
                 if (uri.getPath() != null && uri.getPath().startsWith("/resource/")) {
                     Resource resource = resources.get(uri.toString());
@@ -406,10 +415,16 @@ public final class MarkdownActivity extends AppCompatActivity {
                 }
                 else switch (action) {
                     case "system-fonts": result = new org.json.JSONArray(mobile.Mobile.getSysFonts()); break;
-                    case "bootstrap": result = host.bootstrap(languages, language, dark()); break;
+                    case "bootstrap":
+                        result = host.bootstrap(languages, language, dark());
+                        preferredTheme = host.appearanceTheme(); runOnUiThread(this::updateSystemBars); break;
+                    case "appearance":
+                        if (payload != null && payload != JSONObject.NULL && !(payload instanceof JSONObject)) throw new IOException("protocol");
+                        result = host.appearance(payload instanceof JSONObject ? (JSONObject) payload : null);
+                        preferredTheme = host.appearanceTheme(); runOnUiThread(this::updateSystemBars); break;
                     case "preferences": {
                         JSONObject preferences = host.preferences((JSONObject) payload);
-                        preferredTheme = preferences.optString("theme", "system");
+                        preferredTheme = host.appearance(null).getString("theme");
                         runOnUiThread(this::updateSystemBars);
                         result = preferences; break;
                     }
@@ -488,6 +503,7 @@ public final class MarkdownActivity extends AppCompatActivity {
                     MarkdownHost next = treeSwitch.commit(ticket, host);
                     if (next != host) {
                         host = next; switchEpoch++; resources.clear(); resourceReferences.clear(); commands.clear(); closing = false;
+                        preferredTheme = host.appearanceTheme(); runOnUiThread(this::updateSystemBars);
                         ReplyToken token = replies.get(id); if (token != null) token.documentEpoch = switchEpoch;
                         updateTreeTarget(false);
                     }
@@ -739,6 +755,8 @@ public final class MarkdownActivity extends AppCompatActivity {
                 // but expose durable drafts as crashed recoveries to a new container.
                 if (previous != null) MarkdownRegistry.INSTANCE.abandonCrashed(previous.sessionId);
                 if (activityLeaseAttached) MarkdownRegistry.INSTANCE.abandonCrashed(activityLease);
+            } finally {
+                if (previous != null) previous.closeAppearance();
             }
         });
         // Its :markdown process owns no kernel and never invokes Mobile.exit.

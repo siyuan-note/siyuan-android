@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -20,6 +22,11 @@ public final class MarkdownHost {
     public final MarkdownFiles files;
     public final MarkdownStore store;
     private final MarkdownStore preferencesStore;
+    private volatile mobile.MarkdownAppearance appearanceResolver;
+    private volatile String appearanceTheme = "system";
+    private final Object appearanceLock = new Object();
+    private Set<String> appearanceTokens = new HashSet<>();
+    private long appearanceEpoch;
     private final Map<String, MarkdownFiles.Target> targets = new HashMap<>();
     private final MarkdownRegistry registry;
     private String committedOperation;
@@ -43,6 +50,9 @@ public final class MarkdownHost {
         this(new MarkdownFiles(context),
                 new MarkdownStore(new File(MarkdownPaths.directory(context), "recovery"), MarkdownDirectorySync::sync),
                 new MarkdownStore(MarkdownPaths.directory(context), MarkdownDirectorySync::sync), MarkdownRegistry.INSTANCE);
+        File base = context.getExternalFilesDir(null);
+        if (base == null) throw new IOException("unavailable");
+        appearanceResolver = mobile.Mobile.newMarkdownAppearance(MarkdownPaths.directory(context).getAbsolutePath(), base.getAbsolutePath());
     }
 
     MarkdownHost(MarkdownFiles files, MarkdownStore store, MarkdownRegistry registry) throws Exception {
@@ -86,7 +96,7 @@ public final class MarkdownHost {
         target = opened; targets.put(opened.handle, opened); content = opened.initialContent;
     }
 
-    public void discardPrepared() throws Exception { registry.detach(sessionId); closed = true; }
+    public void discardPrepared() throws Exception { registry.detach(sessionId); closed = true; closeAppearance(); }
 
     public MarkdownFiles.Target candidate(Uri uri, int flags, JSONObject format) throws Exception {
         if (closed || targets.size() >= (target == null ? 1 : 2)) throw new IOException("unavailable");
@@ -106,8 +116,9 @@ public final class MarkdownHost {
     }
 
     public JSONObject bootstrap(JSONObject languages, String lang, boolean dark) throws Exception {
+        JSONObject appearance = appearanceResolver == null ? null : appearance(null);
         JSONObject value = new JSONObject().put("sessionId", sessionId).put("content", content)
-                .put("preferences", preferences(null)).put("capabilities", new JSONObject().put("systemFonts", true)).put("languages", languages).put("lang", lang).put("platform", "android").put("dark", dark);
+                .put("appearance", appearance).put("preferences", preferences(null)).put("capabilities", new JSONObject().put("systemFonts", true).put("workspaceAppearance", appearanceResolver != null)).put("languages", languages).put("lang", lang).put("platform", "android").put("dark", dark);
         if (target != null) value.put("target", target.json());
         if (recovered || revision > 0) value.put("recovered", new JSONObject().put("revision", revision).put("targetGeneration", generation));
         return value;
@@ -309,7 +320,7 @@ public final class MarkdownHost {
             }
             case "releaseSession": {
                 if (!sessionId.equals(request.getString("sessionId")) || request.getLong("targetGeneration") != generation) throw new IOException("protocol");
-                registry.detach(sessionId); closed = true; cleanupClosedSession(sessionId); return JSONObject.NULL;
+                registry.detach(sessionId); closed = true; closeAppearance(); cleanupClosedSession(sessionId); return JSONObject.NULL;
             }
             default: throw new IOException("protocol");
         }
@@ -394,6 +405,66 @@ public final class MarkdownHost {
                 .put("uri", selected == null ? JSONObject.NULL : selected.uri.toString());
         store.put("draft-" + sessionId, targetGeneration, request.getLong("revision"), payload.toString());
         if (request.getLong("revision") >= revision) { revision = request.getLong("revision"); content = request.getString("content"); }
+    }
+
+    public String appearanceTheme() { return appearanceTheme; }
+
+    public JSONObject appearance(JSONObject patch) throws Exception {
+        if (closed || appearanceResolver == null) throw new IOException("unavailable");
+        MarkdownStore.Record record = preferencesStore.read("preferences");
+        JSONObject previous = preferences(null);
+        JSONObject result = new JSONObject(appearanceResolver.resolve(previous.toString(), patch == null ? "" : patch.toString()));
+        JSONObject saved = result.getJSONObject("preferences");
+        if (!saved.toString().equals(previous.toString())) {
+            preferencesStore.put("preferences", 0, record == null ? 0 : record.revision + 1, saved.toString());
+        }
+        JSONObject value = result.getJSONObject("appearance");
+        JSONArray fonts = value.getJSONArray("customFonts");
+        Set<String> tokens = new HashSet<>();
+        for (int i = 0; i < fonts.length(); i++) {
+            JSONObject font = fonts.getJSONObject(i);
+            String url = font.getString("url");
+            if (!url.matches("/appearance-font/[a-f0-9]{48}")) throw new IOException("protocol");
+            String token = url.substring("/appearance-font/".length());
+            tokens.add(token);
+            font.put("url", "https://siyuan-markdown.local/appearance-font/" + sessionId + "/" + token);
+        }
+        synchronized (appearanceLock) {
+            if (!tokens.equals(appearanceTokens)) appearanceEpoch++;
+            appearanceTokens = tokens;
+        }
+        appearanceTheme = value.getString("theme");
+        return value;
+    }
+
+    public byte[] readAppearanceFont(String url) throws Exception {
+        String prefix = "https://siyuan-markdown.local/appearance-font/" + sessionId + "/";
+        if (!url.startsWith(prefix)) throw new IOException("permission");
+        String token = url.substring(prefix.length());
+        if (!token.matches("[a-f0-9]{48}")) throw new IOException("permission");
+        mobile.MarkdownAppearance resolver;
+        long epoch;
+        synchronized (appearanceLock) {
+            resolver = appearanceResolver;
+            if (closed || resolver == null || !appearanceTokens.contains(token)) throw new IOException("permission");
+            epoch = appearanceEpoch;
+        }
+        byte[] bytes = resolver.readFont(token);
+        synchronized (appearanceLock) {
+            if (closed || resolver != appearanceResolver || epoch != appearanceEpoch || !appearanceTokens.contains(token)) throw new IOException("permission");
+        }
+        return bytes;
+    }
+
+    public void closeAppearance() {
+        mobile.MarkdownAppearance resolver;
+        synchronized (appearanceLock) {
+            resolver = appearanceResolver;
+            appearanceResolver = null;
+            appearanceTokens.clear();
+            appearanceEpoch++;
+        }
+        if (resolver != null) resolver.close();
     }
 
     private static void validateFonts(JSONObject fonts) throws Exception {
