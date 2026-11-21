@@ -75,6 +75,15 @@ public class BootActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onNewIntent(final Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (agreementDialog == null || !agreementDialog.isShowing()) {
+            startMainActivity();
+        }
+    }
+
+    @Override
     public void onConfigurationChanged(final Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         Utils.logInfo("boot", "Change boot activity configuration, process [" + android.os.Process.myPid()
@@ -102,7 +111,11 @@ public class BootActivity extends AppCompatActivity {
     private void startMainActivity() {
         final Intent request = getIntent();
         java.util.concurrent.CompletableFuture.supplyAsync(() -> MarkdownActivity.isMarkdownIntent(this, request))
-                .thenAccept(markdown -> runOnUiThread(() -> { if (!isFinishing() && !isDestroyed()) startRequestedActivity(request, markdown); }));
+                .thenAccept(markdown -> runOnUiThread(() -> {
+                    if (request == getIntent() && !isFinishing() && !isDestroyed()) {
+                        startRequestedActivity(request, markdown);
+                    }
+                }));
     }
 
     private void startRequestedActivity(final Intent request, final boolean markdownRequest) {

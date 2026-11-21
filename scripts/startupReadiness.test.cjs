@@ -14,6 +14,17 @@ const status = (ready, failed, pathname = "/stage/build/mobile/", stage = "") =>
     document: {documentElement: {getAttribute: name => name === "data-startup-stage" ? stage : failed ? "failed" : "loading"}},
 })));
 
+test("external block links enter the workspace task and reuse its boot activity", () => {
+    const receiver = readFileSync(join(__dirname, "../app/src/main/java/org/b3log/siyuan/RedirectUriReceiverActivity.java"), "utf8");
+    const workspace = receiver.slice(receiver.indexOf("target = new Intent(this, BootActivity.class)"));
+    assert.match(workspace, /target\.setData\(data\)/);
+    assert.match(workspace, /target\.addFlags\(Intent\.FLAG_ACTIVITY_NEW_TASK\s*\| Intent\.FLAG_ACTIVITY_REORDER_TO_FRONT\s*\| Intent\.FLAG_ACTIVITY_SINGLE_TOP\)/);
+
+    const boot = readFileSync(join(__dirname, "../app/src/main/java/org/b3log/siyuan/BootActivity.java"), "utf8");
+    assert.match(boot, /void onNewIntent\(final Intent intent\)[\s\S]*?setIntent\(intent\);\s*if \(agreementDialog == null \|\| !agreementDialog\.isShowing\(\)\)\s*\{\s*startMainActivity\(\)/);
+    assert.match(boot, /if \(request == getIntent\(\) && !isFinishing\(\) && !isDestroyed\(\)\)\s*\{\s*startRequestedActivity\(request, markdown\)/);
+});
+
 test("native boot remains after HTML navigation until the frontend is painted", () => {
     assert.deepEqual(status(undefined, false), {ready: false, failed: false, stage: ""});
     assert.deepEqual(status(false, false), {ready: false, failed: false, stage: ""});
