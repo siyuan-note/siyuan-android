@@ -9,6 +9,7 @@ import android.app.PendingIntent;
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +19,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -28,6 +30,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.webkit.JavascriptInterface;
+import android.webkit.MimeTypeMap;
 import android.webkit.WebView;
 
 import androidx.core.app.ActivityCompat;
@@ -50,6 +53,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.Locale;
 
 import mobile.Mobile;
 
@@ -66,6 +70,7 @@ public final class JSAndroid {
     private final WordSelectionController wordSelection;
     private final Object exportFileLock = new Object();
     private PendingExportFile pendingExportFile;
+    private String pendingGalleryAsset;
 
     private static final class PendingExportFile {
         private final String url;
@@ -80,13 +85,13 @@ public final class JSAndroid {
         }
     }
 
-    private static final class ExportFileLease {
+    static final class ExportFileLease {
         private final String id;
         private final String path;
         private final String name;
         private final long size;
 
-        private ExportFileLease(final String id, final String path, final String name, final long size) {
+        ExportFileLease(final String id, final String path, final String name, final long size) {
             this.id = id;
             this.path = path;
             this.name = name;
@@ -491,6 +496,131 @@ public final class JSAndroid {
     }
 
     @JavascriptInterface
+    public void saveAssetToGallery(final String url) {
+        if (url == null || !url.startsWith("assets/")) {
+            Mobile.showMsg(Mobile.language(477), 5000);
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q || ActivityCompat.checkSelfPermission(
+                activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            saveGalleryAsset(url);
+            return;
+        }
+        activity.runOnUiThread(() -> {
+            if (null != pendingGalleryAsset) {
+                return;
+            }
+            pendingGalleryAsset = url;
+            try {
+                activity.launchGalleryPermissionRequest();
+            } catch (final Exception e) {
+                Utils.logError("JSAndroid", "request gallery permission failed", e);
+                onGalleryPermissionResult(false);
+            }
+        });
+    }
+
+    void onGalleryPermissionResult(final boolean granted) {
+        final String url = pendingGalleryAsset;
+        pendingGalleryAsset = null;
+        if (null == url) {
+            return;
+        }
+        if (granted) {
+            saveGalleryAsset(url);
+        } else {
+            Mobile.showMsg(Mobile.language(477), 5000);
+        }
+    }
+
+    private void saveGalleryAsset(final String url) {
+        new Thread(() -> {
+            ExportFileLease lease = null;
+            try {
+                lease = acquireExportFileLease(url, "");
+                final int extensionIndex = lease.name.lastIndexOf('.');
+                final String mappedType = extensionIndex < 0 ? null : MimeTypeMap.getSingleton().getMimeTypeFromExtension(
+                        lease.name.substring(extensionIndex + 1).toLowerCase(Locale.ROOT));
+                final String mimeType = null == mappedType ? Mobile.getMimeTypeByExt(lease.path) : mappedType;
+                final boolean isVideo = mimeType.startsWith("video/");
+                if ((!isVideo && !mimeType.startsWith("image/")) || lease.size == 0) {
+                    throw new IllegalStateException("Asset is not a nonempty image or video");
+                }
+                final String directory = isVideo ? Environment.DIRECTORY_MOVIES : Environment.DIRECTORY_PICTURES;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    final Uri collection = isVideo ? MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+                            : MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+                    saveExportFileToMediaStore(activity.getContentResolver(), lease, mimeType, directory, collection);
+                    Mobile.showMsg(Mobile.language(476), 5000);
+                } else {
+                    saveLegacyGalleryMedia(lease, mimeType, directory);
+                }
+            } catch (final Exception e) {
+                Utils.logError("JSAndroid", "save gallery asset failed", e);
+                Mobile.showMsg(Mobile.language(477), 5000);
+            } finally {
+                releaseExportFileLease(lease);
+            }
+        }).start();
+    }
+
+    static Uri saveExportFileToMediaStore(final ContentResolver resolver, final ExportFileLease lease,
+                                         final String mimeType, final String directory, final Uri collection)
+            throws Exception {
+        final ContentValues values = new ContentValues();
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, lease.name);
+        values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
+        values.put(MediaStore.MediaColumns.RELATIVE_PATH, directory);
+        values.put(MediaStore.MediaColumns.IS_PENDING, 1);
+        final Uri destination = resolver.insert(collection, values);
+        if (null == destination) {
+            throw new IllegalStateException("Cannot create media destination");
+        }
+        try {
+            final java.io.OutputStream output = resolver.openOutputStream(destination, "w");
+            if (null == output) {
+                throw new IllegalStateException("Cannot open media destination");
+            }
+            copyExportFile(lease, output);
+            final ContentValues published = new ContentValues();
+            published.put(MediaStore.MediaColumns.IS_PENDING, 0);
+            if (resolver.update(destination, published, null, null) < 1) {
+                throw new IllegalStateException("Cannot publish media destination");
+            }
+            return destination;
+        } catch (final Exception e) {
+            try {
+                resolver.delete(destination, null, null);
+            } catch (final Exception cleanupError) {
+                Utils.logError("JSAndroid", "remove incomplete media export failed", cleanupError);
+            }
+            throw e;
+        }
+    }
+
+    private void saveLegacyGalleryMedia(final ExportFileLease lease, final String mimeType, final String directory)
+            throws Exception {
+        final File folder = Environment.getExternalStoragePublicDirectory(directory);
+        if (!folder.mkdirs() && !folder.isDirectory()) {
+            throw new IllegalStateException("Cannot create gallery directory");
+        }
+        final File destination = createUniqueExportFile(folder, lease.name);
+        try {
+            copyExportFile(lease, new FileOutputStream(destination));
+            MediaScannerConnection.scanFile(activity, new String[]{destination.getAbsolutePath()},
+                    new String[]{mimeType}, (path, uri) -> {
+                        if (null == uri) {
+                            destination.delete();
+                        }
+                        Mobile.showMsg(Mobile.language(null == uri ? 477 : 476), 5000);
+                    });
+        } catch (final Exception e) {
+            destination.delete();
+            throw e;
+        }
+    }
+
+    @JavascriptInterface
     public void saveExportFile(final String url) {
         saveExportFileV2(url, "");
     }
@@ -528,7 +658,7 @@ public final class JSAndroid {
 
         new Thread(() -> {
             try {
-                request.lease = acquireExportFileLease(request);
+                request.lease = acquireExportFileLease(request.url, request.suggestedName);
                 request.suggestedName = request.lease.name;
                 activity.runOnUiThread(() -> {
                     try {
@@ -586,17 +716,17 @@ public final class JSAndroid {
         }
     }
 
-    private ExportFileLease acquireExportFileLease(final PendingExportFile request) throws Exception {
-        final String leaseJSON = Mobile.acquireExportFile(request.url);
+    private ExportFileLease acquireExportFileLease(final String url, final String suggestedName) throws Exception {
+        final String leaseJSON = Mobile.acquireExportFile(url);
         if (StringUtils.isEmpty(leaseJSON)) {
             throw new IllegalStateException("Export file lease is unavailable");
         }
         final JSONObject lease = new JSONObject(leaseJSON);
         final String leaseID = lease.optString("leaseID");
         final String srcPath = lease.optString("path");
-        String exportFileName = lease.optString("name", request.suggestedName);
+        String exportFileName = lease.optString("name", suggestedName);
         if (StringUtils.isEmpty(exportFileName)) {
-            exportFileName = request.suggestedName;
+            exportFileName = suggestedName;
         }
         final long expectedSize = lease.optLong("size", -1);
         if (StringUtils.isEmpty(srcPath) || StringUtils.isEmpty(leaseID) || expectedSize < 0) {
@@ -611,6 +741,10 @@ public final class JSAndroid {
     private void releaseExportFileLease(final PendingExportFile request) {
         final ExportFileLease lease = request.lease;
         request.lease = null;
+        releaseExportFileLease(lease);
+    }
+
+    private void releaseExportFileLease(final ExportFileLease lease) {
         if (null != lease) {
             try {
                 Mobile.releaseExportFile(lease.id);
@@ -620,10 +754,10 @@ public final class JSAndroid {
         }
     }
 
-    private long copyExportFile(final ExportFileLease lease, final java.io.OutputStream outputStream) throws Exception {
+    private static long copyExportFile(final ExportFileLease lease, final java.io.OutputStream outputStream) throws Exception {
         long writtenSize = 0;
-        try (java.io.FileInputStream inputStream = new java.io.FileInputStream(lease.path);
-             java.io.OutputStream destination = outputStream) {
+        try (java.io.OutputStream destination = outputStream;
+             java.io.FileInputStream inputStream = new java.io.FileInputStream(lease.path)) {
             final byte[] buffer = new byte[65536];
             int bytesRead;
             while ((bytesRead = inputStream.read(buffer)) != -1) {
@@ -674,7 +808,6 @@ public final class JSAndroid {
 
     private void saveExportFileToDownloads(final PendingExportFile request) {
         new Thread(() -> {
-            Uri destinationURI = null;
             File destinationFile = null;
             boolean succeeded = false;
             String savedName = request.suggestedName;
@@ -685,33 +818,16 @@ public final class JSAndroid {
                 }
                 savedName = lease.name;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    final ContentValues values = new ContentValues();
-                    values.put(MediaStore.Downloads.DISPLAY_NAME, lease.name);
-                    values.put(MediaStore.Downloads.MIME_TYPE, Mobile.getMimeTypeByExt(lease.name));
-                    values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
-                    values.put(MediaStore.Downloads.IS_PENDING, 1);
-                    destinationURI = activity.getContentResolver().insert(
-                            MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-                    if (null == destinationURI) {
-                        throw new IllegalStateException("Cannot create export destination");
-                    }
-                    final java.io.OutputStream outputStream = activity.getContentResolver().openOutputStream(destinationURI, "w");
-                    if (null == outputStream) {
-                        throw new IllegalStateException("Cannot open export destination");
-                    }
-                    copyExportFile(lease, outputStream);
-                    final ContentValues published = new ContentValues();
-                    published.put(MediaStore.Downloads.IS_PENDING, 0);
-                    if (activity.getContentResolver().update(destinationURI, published, null, null) < 1) {
-                        throw new IllegalStateException("Cannot publish export destination");
-                    }
+                    final Uri destinationURI = saveExportFileToMediaStore(activity.getContentResolver(), lease,
+                            Mobile.getMimeTypeByExt(lease.name), Environment.DIRECTORY_DOWNLOADS,
+                            MediaStore.Downloads.EXTERNAL_CONTENT_URI);
                     savedName = queryExportFileName(destinationURI, lease.name);
                 } else {
                     final File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                     if (!downloadsDir.exists() && !downloadsDir.mkdirs()) {
                         throw new IllegalStateException("Cannot create downloads directory");
                     }
-                    destinationFile = createUniqueDownloadFile(downloadsDir, lease.name);
+                    destinationFile = createUniqueExportFile(downloadsDir, lease.name);
                     savedName = destinationFile.getName();
                     copyExportFile(lease, new java.io.FileOutputStream(destinationFile));
                 }
@@ -719,9 +835,7 @@ public final class JSAndroid {
             } catch (final Exception e) {
                 Utils.logError("JSAndroid", "saveExportFile fallback failed", e);
                 try {
-                    if (null != destinationURI) {
-                        activity.getContentResolver().delete(destinationURI, null, null);
-                    } else if (null != destinationFile) {
+                    if (null != destinationFile) {
                         destinationFile.delete();
                     }
                 } catch (final Exception ignored) {
@@ -738,7 +852,7 @@ public final class JSAndroid {
         }).start();
     }
 
-    private File createUniqueDownloadFile(final File downloadsDir, final String requestedName) throws Exception {
+    private File createUniqueExportFile(final File directory, final String requestedName) throws Exception {
         String safeName = new File(requestedName).getName();
         if (StringUtils.isEmpty(safeName)) {
             safeName = "export";
@@ -748,7 +862,7 @@ public final class JSAndroid {
         final String extension = extensionIndex > 0 ? safeName.substring(extensionIndex) : "";
         for (int index = 0; index < 10000; index++) {
             final String candidateName = 0 == index ? safeName : baseName + " (" + index + ")" + extension;
-            final File candidate = new File(downloadsDir, candidateName);
+            final File candidate = new File(directory, candidateName);
             if (candidate.createNewFile()) {
                 return candidate;
             }

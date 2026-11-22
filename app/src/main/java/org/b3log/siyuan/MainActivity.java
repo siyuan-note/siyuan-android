@@ -159,6 +159,12 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                     uris.isEmpty() ? null : uris.toArray(new Uri[0])));
     private final ActivityResultLauncher<String> recordAudioPermissionLauncher = registerForActivityResult(
             new RequestPermission(), this::onRecordAudioPermissionResult);
+    private final ActivityResultLauncher<String> galleryPermissionLauncher = registerForActivityResult(
+            new RequestPermission(), granted -> {
+                if (null != jsAndroid) {
+                    jsAndroid.onGalleryPermissionResult(granted);
+                }
+            });
     private final ActivityResultLauncher<Intent> saveExportFileLauncher = registerForActivityResult(
             new StartActivityForResult(), result -> {
                 if (null != jsAndroid) {
@@ -946,6 +952,10 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
     void launchSaveExportFile(final Intent intent) {
         saveExportFileLauncher.launch(intent);
+    }
+
+    void launchGalleryPermissionRequest() {
+        galleryPermissionLauncher.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
     }
 
     private void handleAudioPermissionRequest(final PermissionRequest request) {
