@@ -138,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
     private PermissionRequest pendingAudioPermissionRequest;
     private AlertDialog microphonePermissionDialog;
     private JSAndroid jsAndroid;
+    private final ClipboardImageBridge clipboardImageBridge = new ClipboardImageBridge(this);
     private final AtomicBoolean bootNavigationCompleted = new AtomicBoolean(false);
     private final AtomicBoolean mainFrameRecoveryScheduled = new AtomicBoolean(false);
     private final AtomicBoolean webViewRecoveryInProgress = new AtomicBoolean(false);
@@ -421,6 +422,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
                 if (view != webView) {
                     return;
                 }
+                clipboardImageBridge.navigating(view);
                 if (keyboardWorkaround != null) keyboardWorkaround.resetNavigationOverlay();
                 if (isMainPageNavigation(url)) {
                     mainPageReady = false;
@@ -613,6 +615,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
         jsAndroid = new JSAndroid(this);
         webView.addJavascriptInterface(jsAndroid, "JSAndroid");
+        clipboardImageBridge.register(webView);
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
         final WebSettings ws = webView.getSettings();
         ws.setJavaScriptEnabled(true);
@@ -1404,6 +1407,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
 
     @Override
     protected void onDestroy() {
+        clipboardImageBridge.close();
         Utils.logInfo("boot", "Destroy main activity, process [" + android.os.Process.myPid()
                 + "], instance [" + System.identityHashCode(this) + "], task [" + getTaskId()
                 + "], finishing [" + isFinishing() + "], task root [" + isTaskRoot()
