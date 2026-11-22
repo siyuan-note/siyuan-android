@@ -456,6 +456,41 @@ public final class JSAndroid {
     }
 
     @JavascriptInterface
+    public void shareAsset(final String url) {
+        if (url == null || !url.startsWith("assets/")) {
+            Mobile.showMsg(Mobile.language(475), 5000);
+            return;
+        }
+        new Thread(() -> {
+            try {
+                final String path = Mobile.getAssetSharePath(url);
+                if (StringUtils.isEmpty(path)) {
+                    Mobile.showMsg(Mobile.language(475), 5000);
+                    return;
+                }
+                final Uri uri = FileProvider.getUriForFile(activity, BuildConfig.APPLICATION_ID, new File(path));
+                final String type = Mobile.getMimeTypeByExt(path);
+                final Intent intent = new Intent(Intent.ACTION_SEND)
+                        .setTypeAndNormalize(StringUtils.isEmpty(type) ? "application/octet-stream" : type)
+                        .putExtra(Intent.EXTRA_STREAM, uri)
+                        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                intent.setClipData(ClipData.newRawUri(null, uri));
+                activity.runOnUiThread(() -> {
+                    try {
+                        activity.startActivity(Intent.createChooser(intent, null));
+                    } catch (final Exception e) {
+                        Utils.logError("JSAndroid", "share asset failed", e);
+                        Mobile.showMsg(Mobile.language(475), 5000);
+                    }
+                });
+            } catch (final Exception e) {
+                Utils.logError("JSAndroid", "prepare asset for sharing failed", e);
+                Mobile.showMsg(Mobile.language(475), 5000);
+            }
+        }).start();
+    }
+
+    @JavascriptInterface
     public void saveExportFile(final String url) {
         saveExportFileV2(url, "");
     }
