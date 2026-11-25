@@ -36,7 +36,7 @@
                 android:id="@+id/appName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="思源笔记"
+                android:text="@string/boot_app_name"
                 android:textSize="24sp"
                 android:textColor="#ddd" />
 
@@ -44,7 +44,7 @@
                 android:id="@+id/slogan"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="从思考到洞见，与智能体同行"
+                android:text="@string/boot_slogan"
                 android:textSize="14sp"
                 android:textColor="#aaa" />
         </LinearLayout>

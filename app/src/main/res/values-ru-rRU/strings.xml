@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="boot_app_name">SiYuan</string>
+    <string name="boot_slogan">От мысли к озарению, вместе с агентами</string>
     <string name="markdown_unsupported">Выберите файл Markdown (.md или .markdown)</string>
     <string name="markdown_editor">Редактор Markdown</string>
     <string name="markdown_load_error">Не удалось загрузить редактор Markdown</string>

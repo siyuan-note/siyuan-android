@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="boot_app_name">SiYuan</string>
+    <string name="boot_slogan">From thought to insight, with agents</string>
     <string name="markdown_unsupported">Select a Markdown file (.md or .markdown)</string>
     <string name="markdown_editor">Markdown editor</string>
     <string name="markdown_load_error">Unable to load the Markdown editor</string>

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="boot_app_name">思源笔记</string>
+    <string name="boot_slogan">从思考到洞见，与智能体同行</string>
     <string name="markdown_unsupported">请选择 Markdown 文件（.md 或 .markdown）</string>
     <string name="markdown_editor">Markdown 编辑器</string>
     <string name="markdown_load_error">无法加载 Markdown 编辑器</string>
