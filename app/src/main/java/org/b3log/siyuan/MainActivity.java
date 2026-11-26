@@ -1092,7 +1092,7 @@ public class MainActivity extends AppCompatActivity implements com.blankj.utilco
             new Thread(() -> {
                 final String channel = Utils.getChannel(this.getPackageManager());
                 if ("cn".equals(channel) || "huawei".equals(channel)) {
-                    Mobile.disableFeature("ai");
+                    Mobile.setAIModelPolicy("deepseek");
                 }
 
                 final String appDir = getFilesDir().getAbsolutePath() + "/app";
